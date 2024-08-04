@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AgregateLogger.cpp" />
+    <ClCompile Include="AnnotationElementValue.cpp" />
+    <ClCompile Include="AnnotationsEntry.cpp" />
+    <ClCompile Include="AttributeConstantValue.cpp" />
+    <ClCompile Include="BasicClassLibrary.cpp" />
+    <ClCompile Include="BasicExecutionEngine.cpp" />
+    <ClCompile Include="BasicStackManager.cpp" />
+    <ClCompile Include="BasicVirtualMachineState.cpp" />
+    <ClCompile Include="BigEndianStream.cpp" />
+    <ClCompile Include="CheneyGarbageCollector.cpp" />
+    <ClCompile Include="ClassAttributeBootstrapMethods.cpp" />
+    <ClCompile Include="ClassAttributeCode.cpp" />
+    <ClCompile Include="ClassAttributeEnclosingMethod.cpp" />
+    <ClCompile Include="ClassAttributeInnerClasses.cpp" />
+    <ClCompile Include="ClassAttributeSourceDebugExtension.cpp" />
+    <ClCompile Include="ClassAttributeSourceFile.cpp" />
+    <ClCompile Include="ClassAttributeSynthetic.cpp" />
+    <ClCompile Include="CodeAttributeAnnotationDefault.cpp" />
+    <ClCompile Include="CodeAttributeDeprecated.cpp" />
+    <ClCompile Include="CodeAttributeExceptions.cpp" />
+    <ClCompile Include="CodeAttributeFactory.cpp" />
+    <ClCompile Include="CodeAttributeLineNumberTable.cpp" />
+    <ClCompile Include="CodeAttributeLocalVariableTable.cpp" />
+    <ClCompile Include="CodeAttributeLocalVariableTypeTable.cpp" />
+    <ClCompile Include="CodeAttributeRuntimeInvisibleAnnotations.cpp" />
+    <ClCompile Include="CodeAttributeRuntimeInvisibleParameterAnnotations.cpp" />
+    <ClCompile Include="CodeAttributeRuntimeVisibleAnnotations.cpp" />
+    <ClCompile Include="CodeAttributeRuntimeVisibleParameterAnnotations.cpp" />
+    <ClCompile Include="CodeAttributeSignature.cpp" />
+    <ClCompile Include="CodeAttributeStackMapTable.cpp" />
+    <ClCompile Include="CodeAttributeUknown.cpp" />
+    <ClCompile Include="CodeSegmentDataBuffer.cpp" />
+    <ClCompile Include="ConsoleLogger.cpp" />
+    <ClCompile Include="ConstantPool.cpp" />
+    <ClCompile Include="ConstantPoolClassReference.cpp" />
+    <ClCompile Include="ConstantPoolDualReference.cpp" />
+    <ClCompile Include="ConstantPoolEntry.cpp" />
+    <ClCompile Include="ConstantPoolNameAndTypeDescriptor.cpp" />
+    <ClCompile Include="ConstantPoolNullEntry.cpp" />
+    <ClCompile Include="ConstantPoolStringReference.cpp" />
+    <ClCompile Include="DataBuffer.cpp" />
+    <ClCompile Include="DefaultClassLoader.cpp" />
+    <ClCompile Include="DefaultGarbageCollector.cpp" />
+    <ClCompile Include="DefaultJavaLangClassList.cpp" />
+    <ClCompile Include="Endian.cpp" />
+    <ClCompile Include="ExceptionTableEntry.cpp" />
+    <ClCompile Include="FieldInfo.cpp" />
+    <ClCompile Include="FileLoader.cpp" />
+    <ClCompile Include="FileLogger.cpp" />
+    <ClCompile Include="FileSearchPathCollection.cpp" />
+    <ClCompile Include="GlobalCatalog.cpp" />
+    <ClCompile Include="HelperConversion.cpp" />
+    <ClCompile Include="HelperTypes.cpp" />
+    <ClCompile Include="HelperVMChannel.cpp" />
+    <ClCompile Include="HelperVMClass.cpp" />
+    <ClCompile Include="HelperVMDouble.cpp" />
+    <ClCompile Include="HelperVMRuntime.cpp" />
+    <ClCompile Include="HelperVMSystem.cpp" />
+    <ClCompile Include="HelperVMThread.cpp" />
+    <ClCompile Include="IFloatingPointBase.cpp" />
+    <ClCompile Include="IJavaVariableTypes.cpp" />
+    <ClCompile Include="InterfaceInfo.cpp" />
+    <ClCompile Include="IVirtualMachineState.cpp" />
+    <ClCompile Include="JavaArray.cpp" />
+    <ClCompile Include="JavaAttributeUnknown.cpp" />
+    <ClCompile Include="JavaBool.cpp" />
+    <ClCompile Include="JavaByte.cpp" />
+    <ClCompile Include="JavaChar.cpp" />
+    <ClCompile Include="JavaClass.cpp" />
+    <ClCompile Include="JavaClassReference.cpp" />
+    <ClCompile Include="JavaCodeAttribute.cpp" />
+    <ClCompile Include="JavaDouble.cpp" />
+    <ClCompile Include="JavaFloat.cpp" />
+    <ClCompile Include="JavaInteger.cpp" />
+    <ClCompile Include="JavaLong.cpp" />
+    <ClCompile Include="JavaNativeInterface.cpp" />
+    <ClCompile Include="JavaNullReference.cpp" />
+    <ClCompile Include="JavaObject.cpp" />
+    <ClCompile Include="JavaReturnAddress.cpp" />
+    <ClCompile Include="JavaShort.cpp" />
+    <ClCompile Include="JavaString.cpp" />
+    <ClCompile Include="JavaVariableTypeIntrusiveRefCounter.cpp" />
+    <ClCompile Include="jni_internal.cpp" />
+    <ClCompile Include="JVMX.cpp" />
+    <ClCompile Include="LineNumberTableEntry.cpp" />
+    <ClCompile Include="LocalVariableTableEntry.cpp" />
+    <ClCompile Include="LocalVariableTypeTableEntry.cpp" />
+    <ClCompile Include="Lockable.cpp" />
+    <ClCompile Include="MallocFreeMemoryManager.cpp" />
+    <ClCompile Include="MethodInfo.cpp" />
+    <ClCompile Include="NativeLibraryContainer.cpp" />
+    <ClCompile Include="ObjectFactory.cpp" />
+    <ClCompile Include="ObjectReference.cpp" />
+    <ClCompile Include="ObjectRegistryLocalMachine.cpp" />
+    <ClCompile Include="ObjectRegistryRedis.cpp" />
+    <ClCompile Include="OperatingSystemWindows.cpp" />
+    <ClCompile Include="OsFunctions.cpp" />
+    <ClCompile Include="OsFunctionsSingletonFactory.cpp" />
+    <ClCompile Include="ParameterAnnotationsEntry.cpp" />
+    <ClCompile Include="RedisGarbageCollector.cpp" />
+    <ClCompile Include="SimpleGreedyMemoryManager.cpp" />
+    <ClCompile Include="StackFrame.cpp" />
+    <ClCompile Include="StackFrameAppendFrame.cpp" />
+    <ClCompile Include="StackFrameChop.cpp" />
+    <ClCompile Include="StackFrameFactory.cpp" />
+    <ClCompile Include="StackFrameFullFrame.cpp" />
+    <ClCompile Include="StackFrameSame.cpp" />
+    <ClCompile Include="StackFrameSameFrameExtended.cpp" />
+    <ClCompile Include="StackFrameSameLocals1StackItem.cpp" />
+    <ClCompile Include="StackFrameSameLocals1StackItemFrameExtended.cpp" />
+    <ClCompile Include="Stream.cpp" />
+    <ClCompile Include="ThreadInfo.cpp" />
+    <ClCompile Include="ThreadManager.cpp" />
+    <ClCompile Include="TypeParser.cpp" />
+    <ClCompile Include="VerificationTypeInfo.cpp" />
+    <ClCompile Include="VerificationTypeInfoConstant.cpp" />
+    <ClCompile Include="VerificationTypeInfoFactory.cpp" />
+    <ClCompile Include="VerificationTypeInfoUninitialised.cpp" />
+    <ClCompile Include="VirtualMachine.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AgregateLogger.h" />
+    <ClInclude Include="AnnotationElementValue.h" />
+    <ClInclude Include="AnnotationsEntry.h" />
+    <ClInclude Include="AssertionFailedException.h" />
+    <ClInclude Include="AttributeConstantValue.h" />
+    <ClInclude Include="BasicClassLibrary.h" />
+    <ClInclude Include="BasicExecutionEngine.h" />
+    <ClInclude Include="BasicStackManager.h" />
+    <ClInclude Include="BasicVirtualMachineState.h" />
+    <ClInclude Include="BigEndianStream.h" />
+    <ClInclude Include="CharacterCoversionFailedException.h" />
+    <ClInclude Include="CheneyGarbageCollector.h" />
+    <ClInclude Include="ClassAttributeBootstrapMethods.h" />
+    <ClInclude Include="ClassAttributeCode.h" />
+    <ClInclude Include="ClassAttributeEnclosingMethod.h" />
+    <ClInclude Include="ClassAttributeInnerClasses.h" />
+    <ClInclude Include="ClassAttributeSourceDebugExtension.h" />
+    <ClInclude Include="ClassAttributeSourceFile.h" />
+    <ClInclude Include="ClassAttributeSynthetic.h" />
+    <ClInclude Include="ClassAttributeUnknown.h" />
+    <ClInclude Include="ClassFactory.h" />
+    <ClInclude Include="CodeAttributeAnnotationDefault.h" />
+    <ClInclude Include="CodeAttributeDeprecated.h" />
+    <ClInclude Include="CodeAttributeExceptions.h" />
+    <ClInclude Include="CodeAttributeFactory.h" />
+    <ClInclude Include="CodeAttributeLineNumberTable.h" />
+    <ClInclude Include="CodeAttributeLocalVariableTable.h" />
+    <ClInclude Include="CodeAttributeLocalVariableTypeTable.h" />
+    <ClInclude Include="CodeAttributeRuntimeInvisibleAnnotations.h" />
+    <ClInclude Include="CodeAttributeRuntimeInvisibleParameterAnnotations.h" />
+    <ClInclude Include="CodeAttributeRuntimeVisibleAnnotations.h" />
+    <ClInclude Include="CodeAttributeRuntimeVisibleParameterAnnotations.h" />
+    <ClInclude Include="CodeAttributeSignature.h" />
+    <ClInclude Include="CodeAttributeStackMapTable.h" />
+    <ClInclude Include="CodeAttributeUnknown.h" />
+    <ClInclude Include="CodeSegmentDataBuffer.h" />
+    <ClInclude Include="ConsoleLogger.h" />
+    <ClInclude Include="ConstantPool.h" />
+    <ClInclude Include="ConstantPoolClassReference.h" />
+    <ClInclude Include="ConstantPoolDualReference.h" />
+    <ClInclude Include="ConstantPoolEntry.h" />
+    <ClInclude Include="ConstantPoolFieldReference.h" />
+    <ClInclude Include="ConstantPoolInterfaceMethodReference.h" />
+    <ClInclude Include="ConstantPoolMethodReference.h" />
+    <ClInclude Include="ConstantPoolNameAndTypeDescriptor.h" />
+    <ClInclude Include="ConstantPoolNullEntry.h" />
+    <ClInclude Include="ConstantPoolStringReference.h" />
+    <ClInclude Include="DataBuffer.h" />
+    <ClInclude Include="DefaultClassLoader.h" />
+    <ClInclude Include="DefaultGarbageCollector.h" />
+    <ClInclude Include="DefaultJavaLangClassList.h" />
+    <ClInclude Include="Endian.h" />
+    <ClInclude Include="ExceptionTableEntry.h" />
+    <ClInclude Include="FieldInfo.h" />
+    <ClInclude Include="FileDoesNotExistException.h" />
+    <ClInclude Include="FileInvalidException.h" />
+    <ClInclude Include="FileLoader.h" />
+    <ClInclude Include="FileLogger.h" />
+    <ClInclude Include="FileSearchPathCollection.h" />
+    <ClInclude Include="ForceGarbageCollection.h" />
+    <ClInclude Include="GenericIterator.h" />
+    <ClInclude Include="GlobalCatalog.h" />
+    <ClInclude Include="GlobalConstants.h" />
+    <ClInclude Include="GlobalFileOperations.h" />
+    <ClInclude Include="HelperConversion.h" />
+    <ClInclude Include="HelperTypes.h" />
+    <ClInclude Include="HelperVMChannel.h" />
+    <ClInclude Include="HelperVMClass.h" />
+    <ClInclude Include="HelperVMDouble.h" />
+    <ClInclude Include="HelperVMRuntime.h" />
+    <ClInclude Include="HelperVMSystem.h" />
+    <ClInclude Include="HelperVMThread.h" />
+    <ClInclude Include="IClassLibrary.h" />
+    <ClInclude Include="IConstantPoolEntryValue.h" />
+    <ClInclude Include="IEnumerable.h" />
+    <ClInclude Include="IExecutionEngine.h" />
+    <ClInclude Include="IFloatingPointBase.h" />
+    <ClInclude Include="IGarbageCollector.h" />
+    <ClInclude Include="IIterator.h" />
+    <ClInclude Include="IJavaLangClassList.h" />
+    <ClInclude Include="IJavaVariableType.h" />
+    <ClInclude Include="ILogger.h" />
+    <ClInclude Include="IMemoryManager.h" />
+    <ClInclude Include="ImmediateReturnRequired.h" />
+    <ClInclude Include="IncreaseCallStackDepth.h" />
+    <ClInclude Include="IndexOutOfBoundsException.h" />
+    <ClInclude Include="InterfaceInfo.h" />
+    <ClInclude Include="InternalErrorException.h" />
+    <ClInclude Include="InvalidArgumentException.h" />
+    <ClInclude Include="InvalidStateException.h" />
+    <ClInclude Include="IObjectRegistry.h" />
+    <ClInclude Include="IOperatingSystemDelegate.h" />
+    <ClInclude Include="IStackManager.h" />
+    <ClInclude Include="IThreadManager.h" />
+    <ClInclude Include="IVirtualMachineState.h" />
+    <ClInclude Include="JavaArray.h" />
+    <ClInclude Include="JavaArrayTypes.h" />
+    <ClInclude Include="JavaAttributeUnknown.h" />
+    <ClInclude Include="JavaBool.h" />
+    <ClInclude Include="JavaByte.h" />
+    <ClInclude Include="JavaChar.h" />
+    <ClInclude Include="JavaClass.h" />
+    <ClInclude Include="JavaClassConstants.h" />
+    <ClInclude Include="JavaClassReference.h" />
+    <ClInclude Include="JavaCodeAttribute.h" />
+    <ClInclude Include="JavaDouble.h" />
+    <ClInclude Include="JavaExceptionConstants.h" />
+    <ClInclude Include="JavaFloat.h" />
+    <ClInclude Include="JavaInteger.h" />
+    <ClInclude Include="JavaLong.h" />
+    <ClInclude Include="JavaNativeInterface.h" />
+    <ClInclude Include="JavaNativeInterfaceLibrary.h" />
+    <ClInclude Include="JavaNullReference.h" />
+    <ClInclude Include="JavaObject.h" />
+    <ClInclude Include="JavaOpCodes.h" />
+    <ClInclude Include="JavaReturnAddress.h" />
+    <ClInclude Include="JavaShort.h" />
+    <ClInclude Include="JavaString.h" />
+    <ClInclude Include="JavaTypes.h" />
+    <ClInclude Include="JavaVariableTypeIntrusiveRefCounter.h" />
+    <ClInclude Include="jni_internal.h" />
+    <ClInclude Include="JVMRegisters.h" />
+    <ClInclude Include="JVMXException.h" />
+    <ClInclude Include="LineNumberTableEntry.h" />
+    <ClInclude Include="LocalVariableTableEntry.h" />
+    <ClInclude Include="LocalVariableTypeTableEntry.h" />
+    <ClInclude Include="Lockable.h" />
+    <ClInclude Include="MallocFreeMemoryManager.h" />
+    <ClInclude Include="MemoryAllocator.h" />
+    <ClInclude Include="MethodAlreadyIdentified.h" />
+    <ClInclude Include="MethodInfo.h" />
+    <ClInclude Include="NativeLibraryContainer.h" />
+    <ClInclude Include="NotImplementedException.h" />
+    <ClInclude Include="NullPointerException.h" />
+    <ClInclude Include="ObjectFactory.h" />
+    <ClInclude Include="ObjectReference.h" />
+    <ClInclude Include="ObjectRegistryLocalMachine.h" />
+    <ClInclude Include="ObjectRegistryRedis.h" />
+    <ClInclude Include="OperatingSystemWindows.h" />
+    <ClInclude Include="OsFunctions.h" />
+    <ClInclude Include="OsFunctionsSingletonFactory.h" />
+    <ClInclude Include="OutOfMemoryException.h" />
+    <ClInclude Include="ParameterAnnotationsEntry.h" />
+    <ClInclude Include="RedisGarbageCollector.h" />
+    <ClInclude Include="SimpleGreedyMemoryManager.h" />
+    <ClInclude Include="StackFrame.h" />
+    <ClInclude Include="StackFrameAppendFrame.h" />
+    <ClInclude Include="StackFrameChop.h" />
+    <ClInclude Include="StackFrameFactory.h" />
+    <ClInclude Include="StackFrameFullFrame.h" />
+    <ClInclude Include="StackFrameSame.h" />
+    <ClInclude Include="StackFrameSameFrameExtended.h" />
+    <ClInclude Include="StackFrameSameLocals1StackItem.h" />
+    <ClInclude Include="StackFrameSameLocals1StackItemFrameExtended.h" />
+    <ClInclude Include="StackOverflowException.h" />
+    <ClInclude Include="StackUnderrunException.h" />
+    <ClInclude Include="Stream.h" />
+    <ClInclude Include="SynchronizationException.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="ThreadInfo.h" />
+    <ClInclude Include="ThreadManager.h" />
+    <ClInclude Include="TypeMismatchException.h" />
+    <ClInclude Include="TypeParser.h" />
+    <ClInclude Include="UnsupportedOperationException.h" />
+    <ClInclude Include="UnsupportedPlatformException.h" />
+    <ClInclude Include="UnsupportedTypeException.h" />
+    <ClInclude Include="VariableComparison.h" />
+    <ClInclude Include="VerificationTypeInfo.h" />
+    <ClInclude Include="VerificationTypeInfoConstant.h" />
+    <ClInclude Include="VerificationTypeInfoDouble.h" />
+    <ClInclude Include="VerificationTypeInfoFactory.h" />
+    <ClInclude Include="VerificationTypeInfoFloat.h" />
+    <ClInclude Include="VerificationTypeInfoInteger.h" />
+    <ClInclude Include="VerificationTypeInfoLong.h" />
+    <ClInclude Include="VerificationTypeInfoNull.h" />
+    <ClInclude Include="VerificationTypeInfoTop.h" />
+    <ClInclude Include="VerificationTypeInfoUninitialised.h" />
+    <ClInclude Include="VerificationTypeInfoUninitialisedThis.h" />
+    <ClInclude Include="VirtualMachine.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{a9d7da4d-6405-4a8e-8f1e-dced393847e6}</ProjectGuid>
+    <RootNamespace>JVMX2</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LibraryPath>C:\dev\JVMX2\boost_1_67_0\stage\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LibraryPath>C:\dev\JVMX2\boost_1_67_0\stage\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;JVMX_LOG_VERBOSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\dev\JVMX2\boost_1_67_0;C:\dev\JVMX2\wallaroo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <Profile>true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\dev\JVMX2\boost_1_67_0;C:\dev\JVMX2\wallaroo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ws2_32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\dev\JVMX2\boost_1_67_0;C:\dev\JVMX2\wallaroo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <Profile>true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
