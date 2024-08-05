@@ -23,17 +23,19 @@ Wallaroo does not need compiling.
 
 Now you just have to point Visual Studio in the direction of the boost include folder, the boost binaries and the wallaroo include folder.
 
-Set your `Library Directories` under `VC++ Directories` to e.g. `<root folder>\boost_1_67_0\stage\lib;$(LibraryPath)`. 
-Set your `Additional Include Directories` under `C/C++` to e.g. `<root folder>\boost_1_67_0;<root folder>\wallaroo;%(AdditionalIncludeDirectories)` 
-Set your `Additional Dependencies` under `Linker Input` (under `Linker`) to include `ws2_32.lib`
+* Set your `Library Directories` under `VC++ Directories` to e.g. `<root folder>\boost_1_67_0\stage\lib;$(LibraryPath)`. 
+* Set your `Additional Include Directories` under `C/C++` to e.g. `<root folder>\boost_1_67_0;<root folder>\wallaroo;%(AdditionalIncludeDirectories)` 
+* Set your `Additional Dependencies` under `Linker Input` (under `Linker`) to include `ws2_32.lib`
 
 Remeber to use Win32 build. JVMX does not run on x64 just yet, mostly because I am not super familiar with x64 assembly. I do intend to get there, but if you don't want to wait, pull requests are welcome.
 
 ## Running
 
 To run JVMX2, you need GNU Classpath v0.99.0. Compiling GNU Classpath on Windows is not easy without WSL, so I recommend using that.
+
 You can compile it using:
 `./configure --disable-gtk-peer --disable-gconf-peer --disable-jni  --build=x86_64-linux-gnu`
+
 You will need to have antlr-2.7.5.jar and Java 7 installed. I just copied the antlr jar file into my classpath folder, but there are better ways.
 
 You can copy the output of the build to the `<root folder>/JVMX2/JVMX2/classpath` folder since that is where JVMX2 will search for it.
