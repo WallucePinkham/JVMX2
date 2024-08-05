@@ -17,3 +17,11 @@ I didn't want to call it "Yet another JVM". This is the second incarnation of th
 ## Why Java 7?
 
 When I started the project, Java 7 was the latest version. Because this is only a pet project for learning, I have never felt the need to upgrade.
+
+## Does JVMX2 run on x64 architecture
+
+JVMX2 is a 32 bit application for now, it will run on x64 but it will use a maximum of 2GB of ram. The main reason for this is that I still need to do the work for the Java Native Interface on x64 architectures. Pull requests are welcome.
+
+## Does JVMX2 run on Linux?
+
+Not at the moment. My focus has been getting it working on my development machine, which is Windows. There is an OS abstraction layer and everything is meant to be portable, but no porting has happened. Pull requests are welcome.
