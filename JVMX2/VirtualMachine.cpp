@@ -1128,11 +1128,6 @@ void VirtualMachine::AddThreadToGroup( const std::shared_ptr<IVirtualMachineStat
 {
   std::shared_ptr<MethodInfo> pMethodInfo = pInitialState->ResolveMethod( pThreadGroupClass.get(), JavaString::FromCString( "addThread" ), JavaString::FromCString( "(Ljava/lang/Thread;)V" ) );
 
-  if ( pMethodInfo->IsSynchronised() )
-  {
-    pInitialState->PushMonitor( pRootGroup->GetContainedObject()->MonitorEnter( pInitialState->GetCurrentClassAndMethodName().ToUtf8String().c_str() ) );
-  }
-
   pInitialState->PushOperand( pRootGroup );
   pInitialState->PushOperand( pThread );
   pInitialState->ExecuteMethod( *pThreadGroupClass->GetName(), JavaString::FromCString( "addThread" ), JavaString::FromCString( "(Ljava/lang/Thread;)V" ), pMethodInfo );
