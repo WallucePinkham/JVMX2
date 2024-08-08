@@ -19,11 +19,11 @@ int _tmain( int argc, _TCHAR *argv[] )
 
   optionsDesc.add_options()
   ( "help", "Produces this message." )
-  ( "-jar,f", "Jar file to load." )
+  ( "-jar", "Jar file to load." )
   ( "starting-classfile,f", boost::program_options::value<std::string>(), "ClassFile to run, e.g. Boom.class." );
 
   boost::program_options::positional_options_description positionalDesc;
-  positionalDesc.add( "starting-classfile", -1 );
+  positionalDesc.add( "starting-classfile", 1 );
 
   boost::program_options::variables_map variablesMap;
   boost::program_options::store( boost::program_options::wcommand_line_parser( argc, argv ).options( optionsDesc ).positional( positionalDesc ).run(), variablesMap );
@@ -40,11 +40,16 @@ int _tmain( int argc, _TCHAR *argv[] )
 
     pJVM->Initialise( variablesMap, pInitialState );
 
+    auto fileName = variablesMap["starting-classfile"];
+
     //pJVM->Run(JVMX_T("..\\Tests\\InitialiseCharset.class"), pInitialState, false);
 
     //pJVM->Run( JVMX_T( "..\\Tests\\TestFloat.class" ), pInitialState, false );
     //pJVM->Run(JVMX_T("..\\Tests\\TestLanguageFeatures.class"), pInitialState, false);
-    pJVM->Run(JVMX_T("..\\Tests\\TestThreads.class"), pInitialState, false);
+    //pJVM->Run(JVMX_T("..\\Tests\\TestThreads.class"), pInitialState, false);
+
+    JavaString fileNameJs = JavaString::FromCString(fileName.as<std::string>().c_str());
+    pJVM->Run(fileNameJs.ToCharacterArray(), pInitialState, false);
     
     //pJVM->Run( JVMX_T( "TestThreads.class" ), pInitialState );
     //pJVM->Run( JVMX_T( "TestFontNames.class" ), pInitialState );

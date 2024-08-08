@@ -2,7 +2,7 @@
 #include "Lockable.h"
 #include <future>
 
-#define JVMX_DEBUG_LOCKS 1
+#define JVMX_DEBUG_LOCKS 0
 
 static uint32_t s_nextDebugLockID = 1;
 

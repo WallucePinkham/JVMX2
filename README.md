@@ -25,3 +25,12 @@ JVMX2 is a 32 bit application for now, it will run on x64 but it will use a maxi
 ## Does JVMX2 run on Linux?
 
 Not at the moment. My focus has been getting it working on my development machine, which is Windows. There is an OS abstraction layer and everything is meant to be portable, but no porting has happened. Pull requests are welcome.
+
+## GNU Classpath
+
+This project requires the [GNU Classpath](https://www.gnu.org/software/classpath/home.html) to run. I am distributing a compiled version of the classpath along with the JVMX2 binary. Please see the license file in the `classpath` folder for what you can do with GNU Classpath.
+
+## Getting Started
+
+You can run `JVMX2 Tests/TestThreads.class`, for example, to test the JVM.
+
