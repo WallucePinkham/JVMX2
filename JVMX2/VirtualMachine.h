@@ -41,7 +41,7 @@ protected:
 public:
   static std::shared_ptr<VirtualMachine> Create();
 
-  void Initialise( boost::program_options::variables_map &variablesMap, const std::shared_ptr<IVirtualMachineState> &pInitialState );
+  void Initialise(const std::string& startingClassfile, const std::shared_ptr<IVirtualMachineState> &pInitialState );
   void Run( const JVMX_CHAR_TYPE *pFileName, const std::shared_ptr<IVirtualMachineState> &pInitialState, bool userCode = true );
   void Stop( const std::shared_ptr<IVirtualMachineState> &pInitialState );
 

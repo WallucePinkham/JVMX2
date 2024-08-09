@@ -771,7 +771,7 @@ void VirtualMachine::CreateInitialThreadObject( const std::shared_ptr<IVirtualMa
   AddToInheritableThreadLocal( pInitialState, pThread );
 }
 
-void VirtualMachine::Initialise( boost::program_options::variables_map &variablesMap, const std::shared_ptr<IVirtualMachineState> &pInitialState )
+void VirtualMachine::Initialise( const std::string &startingClassfile, const std::shared_ptr<IVirtualMachineState> &pInitialState )
 {
   m_pJNI = std::make_shared<JavaNativeInterface>();
   m_pJNI->SetVMState( pInitialState );
@@ -782,10 +782,7 @@ void VirtualMachine::Initialise( boost::program_options::variables_map &variable
 
   RegisterNativeMethods( m_pJNI );
 
-  if ( variablesMap.count( "starting-classfile" ) > 0 )
-  {
-    m_pLogger->LogInformation( "starting-classfile: %s", variablesMap[ "starting-classfile" ].as< std::string >().c_str() );
-  }
+  m_pLogger->LogInformation( "starting-classfile: %s", startingClassfile.c_str() );
 
   m_pLogger->LogInformation( "Initializing system classes..." );
 
