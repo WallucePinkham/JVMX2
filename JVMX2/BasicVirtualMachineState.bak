@@ -1,0 +1,981 @@
+
+#include <cassert>
+
+#include "GlobalConstants.h"
+
+#include "Stream.h"
+#include "JavaTypes.h"
+#include "TypeParser.h"
+
+#include "IRuntimeConstantPool.h"
+#include "IStackManager.h"
+#include "ILogger.h"
+#include "IExecutionEngine.h"
+
+#include "NullPointerException.h"
+#include "InvalidStateException.h"
+#include "InvalidArgumentException.h"
+#include "UnsupportedTypeException.h"
+#include "NotImplementedException.h"
+
+#include "JavaCodeAttribute.h"
+#include "ClassAttributeCode.h"
+#include "CodeSegmentDataBuffer.h"
+
+#include "JavaClassFileLoader.h"
+#include "JavaNativeInterface.h"
+
+#include "BasicVirtualMachineState.h"
+
+
+extern const JavaString c_ClassInitialisationMethodName = JavaString::FromCString( JVMX_T( "<clinit>" ) );
+extern const JavaString c_InstanceInitialisationMethodName = JavaString::FromCString( JVMX_T( "<init>" ) );
+extern const JavaString c_InstanceInitialisationMethodType = JavaString::FromCString( JVMX_T( "()V" ) );
+
+const uint32_t c_NullReferenceValue = UINT32_MAX;
+
+BasicVirtualMachineState::BasicVirtualMachineState( std::shared_ptr<IMemoryManager> pHeapManager, std::shared_ptr<IStackManager> pStackManager, std::shared_ptr<ILogger> pLogger, std::shared_ptr<IExecutionEngine> pExecutionEngine, std::shared_ptr<IRuntimeConstantPool> pConstantPool )
+  : m_pHeapManager( pHeapManager )
+  , m_pStackManager( pStackManager )
+  , m_pLogger( pLogger )
+  , m_pExecutionEngine( pExecutionEngine )
+  , m_pConstantPool( pConstantPool )
+  , m_LocalVariableStackFramePointer( 0 )
+  , m_pJNI( nullptr )
+{
+  m_CurrentRegisters.m_ProgramCounter = 0;
+  m_CurrentRegisters.m_pCodeSegmentStart = nullptr;
+  m_CurrentRegisters.m_CodeSegmentLength = 0;
+}
+
+std::shared_ptr<ILogger> BasicVirtualMachineState::GetLogger() const 
+{
+  return m_pLogger;
+}
+
+std::shared_ptr<IStackManager> BasicVirtualMachineState::GetStack() const 
+{
+  return m_pStackManager;
+}
+
+std::shared_ptr<IMemoryManager> BasicVirtualMachineState::GetHeap() const 
+{
+  return m_pHeapManager;
+}
+
+void BasicVirtualMachineState::Execute( JavaString startingClassName, JavaString methodName, std::shared_ptr<IRuntimeConstantPool> pConstantPool, std::shared_ptr<JavaNativeInterface> pJNI )
+{
+  //std::shared_ptr<MethodInfo> pInitialMethod = GetMethodByName( startingClassName, c_ProgramStartMethodName, pConstantPool );
+  std::shared_ptr<MethodInfo> pInitialMethod = GetMethodByName( startingClassName, methodName, pConstantPool );
+
+  if ( nullptr == pInitialMethod )
+  {
+    if ( methodName != c_ClassInitialisationMethodName && methodName != c_InstanceInitialisationMethodName )
+    {
+      throw InvalidStateException( __FUNCTION__ " - Initial Method was not found" );
+    }
+    else
+    {
+      m_pLogger->LogDebug( "Class %s does not have a method called %s", startingClassName.ToByteArray(), methodName.ToByteArray() );
+      return;
+    }
+  }
+
+//   if ( !pInitialMethod->IsStatic( ) )
+//   {
+//     throw InvalidStateException( __FUNCTION__ " - Initial Method was not static" );
+//   }
+
+  // TODO: Initalise the class here
+  if ( !pInitialMethod->GetClass()->IsInitialsed() && methodName == c_ClassInitialisationMethodName )
+  {
+    pInitialMethod->GetClass()->SetInitialising();
+  }
+  
+  PushState( startingClassName, methodName, *(pInitialMethod->GetType()) );
+  SetupLocalVariables( pInitialMethod );
+  m_pConstantPool = pConstantPool;
+  m_pJNI = pJNI;
+
+  Execute( *pInitialMethod );
+
+  if ( pInitialMethod->GetClass()->IsInitialsing() && methodName == c_ClassInitialisationMethodName )
+  {
+    pInitialMethod->GetClass()->SetInitialised();
+  }
+
+  //PopState();
+}
+
+void BasicVirtualMachineState::Execute( const MethodInfo &method )
+{
+  ClassAttributeCode code = FindCodeAttribute( method );
+
+  //m_RegisterStack.push( m_CurrentRegisters );
+
+  CodeSegmentDataBuffer codeSegment( code.GetCode() );
+  m_CurrentRegisters.m_pCodeSegmentStart = codeSegment.GetRawDataPointer( );
+  m_CurrentRegisters.m_CodeSegmentLength = codeSegment.GetByteLength( );
+  m_CurrentRegisters.m_ProgramCounter = 0;
+
+  m_pLogger->LogDebug( "Executing Method: %s::%s", m_CurrentDisplayCallStackEntry.m_ClassName.ToByteArray( ), method.GetName( )->ToByteArray( ) );
+
+  // Create Stack Space for Local Variables.
+  m_pStackManager->AllocateBytes( code.GetLocalVariableArraySizeIncludingPassedParameters() * sizeof( LocalVariable ) );
+
+  m_pExecutionEngine->Run( m_pLogger, this, m_pConstantPool, m_pJNI );
+
+//   m_CurrentRegisters = m_RegisterStack.top();
+//   m_RegisterStack.pop();
+//   PopMethodStack();
+}
+
+std::shared_ptr<MethodInfo> BasicVirtualMachineState::GetMethodByName( JavaString className, JavaString methodName, std::shared_ptr<IRuntimeConstantPool> pConstantPool )
+{
+  std::shared_ptr<JavaClassFile> pClass = pConstantPool->FindClass( className );
+  if ( nullptr == pClass )
+  {
+    pClass = LoadClass( className );
+    if ( nullptr == pClass )
+    {
+      throw InvalidArgumentException( __FUNCTION__ " - Could not load class." );
+    }
+  }
+
+  for ( size_t i = 0; i < pClass->GetMethodCount(); ++ i )
+  {
+    std::shared_ptr<MethodInfo> pMethod = pClass->GetMethodInfo( i );
+
+    if ( methodName == *pMethod->GetName( ) )
+    {
+      return pMethod;
+    }
+  }
+
+  return nullptr;
+}
+
+ClassAttributeCode BasicVirtualMachineState::FindCodeAttribute( const MethodInfo &method )
+{
+
+  const CodeAttributeList &attributes = method.GetAttributes();
+  for ( auto attrib : attributes )
+  {
+    if ( c_AttributeNameCode == attrib->GetName() )
+    {
+      return attrib->ToCode();
+    }
+  }
+
+  throw InvalidStateException( __FUNCTION__ " - Code Attribute not found." );
+}
+
+void BasicVirtualMachineState::PushMethodStack( const JavaString &newClassName, const JavaString &newMethodName, const JavaString &newMethodType )
+{
+//   m_ClassStack.push( m_CurrentClassName );
+//   m_MethodStack.push( m_CurrentMethodName );
+//   m_MethodTypeStack.push( m_CurrentMethodType );
+
+  m_DisplayCallStack.push_back( m_CurrentDisplayCallStackEntry );
+
+  m_CurrentDisplayCallStackEntry.m_ClassName = newClassName;
+  m_CurrentDisplayCallStackEntry.m_MethodName = newMethodName;
+  m_CurrentDisplayCallStackEntry.m_MethodType = newMethodType;
+}
+
+bool BasicVirtualMachineState::IsInitialRun( ) const JVMX_NOEXCEPT
+{
+  return m_CurrentDisplayCallStackEntry.m_ClassName.IsEmpty( ) && m_CurrentDisplayCallStackEntry.m_MethodName.IsEmpty( );
+}
+
+void BasicVirtualMachineState::PopMethodStack()
+{
+//   m_CurrentClassName = m_ClassStack.top();
+//   m_CurrentMethodName = m_MethodStack.top();
+//   m_CurrentMethodType = m_MethodTypeStack.top();
+  m_CurrentDisplayCallStackEntry = m_DisplayCallStack.back();
+  m_DisplayCallStack.pop_back();
+
+//   m_MethodTypeStack.pop();
+//   m_MethodStack.pop();
+//   m_ClassStack.pop( );
+}
+
+uintptr_t BasicVirtualMachineState::GetProgramCounter( ) const
+{
+  return m_CurrentRegisters.m_ProgramCounter;
+}
+
+void BasicVirtualMachineState::AdvanceProgramCounter( int byteCount )
+{
+  if ( m_CurrentRegisters.m_ProgramCounter + byteCount < 0 || m_CurrentRegisters.m_ProgramCounter + byteCount > m_CurrentRegisters.m_CodeSegmentLength )
+  {
+    throw InvalidArgumentException( __FUNCTION__ " - Trying to jump to an address outside of the current code block." );
+  }
+
+  m_CurrentRegisters.m_ProgramCounter += byteCount;
+}
+
+size_t BasicVirtualMachineState::GetCodeSegmentLength() const
+{
+  return m_CurrentRegisters.m_CodeSegmentLength;
+}
+
+const uint8_t * BasicVirtualMachineState::GetCodeSegmentStart() const
+{
+  return m_CurrentRegisters.m_pCodeSegmentStart;
+}
+
+bool BasicVirtualMachineState::CanReadBytes( int byteCount ) const
+{
+  return m_CurrentRegisters.m_ProgramCounter + byteCount < m_CurrentRegisters.m_CodeSegmentLength;
+}
+
+std::shared_ptr<ConstantPoolEntry> BasicVirtualMachineState::GetConstantFromCurrentClass( ConstantPoolIndex index ) const
+{
+  return m_pConstantPool->GetConstant( m_CurrentDisplayCallStackEntry.m_ClassName, index );
+}
+
+std::shared_ptr<MethodInfo> BasicVirtualMachineState::GetMethod( size_t index ) const
+{
+  return m_pConstantPool->GetMethod( m_CurrentDisplayCallStackEntry.m_ClassName, index );
+}
+
+bool BasicVirtualMachineState::IsClassInitialised( JavaString className ) const 
+{
+  return m_pConstantPool->IsClassInitalised( className );
+}
+
+std::shared_ptr<JavaClassFile> BasicVirtualMachineState::GetCurrentClass() const
+{
+  return m_pConstantPool->FindClass( m_CurrentDisplayCallStackEntry.m_ClassName );
+}
+
+void BasicVirtualMachineState::PushState( const JavaString &newClassName, const JavaString &newMethodName, const JavaString &newMethodType )
+{
+  PushMethodStack( newClassName, newMethodName, newMethodType );
+  m_RegisterStack.push( m_CurrentRegisters );
+  m_LocalVariableStackFrameStack.push( m_LocalVariableStackFramePointer );
+  m_ConstantPoolStack.push( m_pConstantPool );
+  m_pJNIStack.push( m_pJNI );
+}
+
+void BasicVirtualMachineState::PopState() 
+{
+  m_pJNI = m_pJNIStack.top();
+  m_pJNIStack.pop();
+
+  m_pConstantPool = m_ConstantPoolStack.top();
+  m_ConstantPoolStack.pop( );
+
+  m_LocalVariableStackFramePointer = m_LocalVariableStackFrameStack.top();
+  m_LocalVariableStackFrameStack.pop();
+
+  m_CurrentRegisters = m_RegisterStack.top();
+  m_RegisterStack.pop();
+
+  PopMethodStack();
+}
+
+const CodeAttributeStackMapTable *BasicVirtualMachineState::GetCurrentStackMap()
+{
+  return GetMethodByName( m_CurrentDisplayCallStackEntry.m_ClassName, m_CurrentDisplayCallStackEntry.m_MethodName, m_pConstantPool )->GetFrame( );
+}
+
+const ClassAttributeCode *BasicVirtualMachineState::GetCurrentCodeInfo()
+{
+  return GetMethodByName( m_CurrentDisplayCallStackEntry.m_ClassName, m_CurrentDisplayCallStackEntry.m_MethodName, m_pConstantPool )->GetCodeInfo( );
+}
+
+JavaString BasicVirtualMachineState::GetCurrentClassAndMethodName()
+{
+  return m_CurrentDisplayCallStackEntry.m_ClassName.Append( "::" ).Append( reinterpret_cast<const char *>(m_CurrentDisplayCallStackEntry.m_MethodName.ToByteArray( )) );
+}
+
+void BasicVirtualMachineState::SetCodeSegment( const ClassAttributeCode * pCodeInfo )
+{
+//  PushState();
+
+  m_CurrentRegisters.m_pCodeSegmentStart = pCodeInfo->GetCode().ToByteArray();
+  m_CurrentRegisters.m_CodeSegmentLength = pCodeInfo->GetCode( ).GetByteLength( );
+  m_CurrentRegisters.m_ProgramCounter = 0;
+}
+
+void BasicVirtualMachineState::PushOperand( std::shared_ptr<IJavaVariableType> pOperand )
+{
+  if ( nullptr == pOperand )
+  {
+    LogCallStack();
+    LogOperandStack();
+    LogLocalVariables();
+
+    throw InvalidArgumentException( __FUNCTION__ " - Invalid argument passed. Operand was NULL" );
+  }
+
+  if ( pOperand->ToString().Contains( "IllegalArgumentException" ) )
+  {
+    __asm int 3;
+  }
+  m_OperandStack.push_back( pOperand );
+}
+
+std::shared_ptr<IJavaVariableType> BasicVirtualMachineState::PopOperand()
+{
+  std::shared_ptr<IJavaVariableType> pOperand = PeekOperand();
+  m_OperandStack.pop_back();
+
+  return pOperand;
+}
+
+JavaString BasicVirtualMachineState::GetCurrentClassName()
+{
+  return m_CurrentDisplayCallStackEntry.m_ClassName;
+}
+
+JavaString BasicVirtualMachineState::GetCurrentMethodName() 
+{
+  return m_CurrentDisplayCallStackEntry.m_MethodName;
+}
+
+void BasicVirtualMachineState::AllocateStackSpace( uint16_t localVariableCount )
+{
+  m_pStackManager->AllocateBytes( localVariableCount * sizeof(LocalVariable) );
+}
+
+void BasicVirtualMachineState::FreeStackSpace( uint16_t localVariableCount )
+{
+  m_pStackManager->FreeBytes( localVariableCount * sizeof(LocalVariable) );
+}
+
+std::shared_ptr<JavaObject> BasicVirtualMachineState::SetupLocalVariables( std::shared_ptr<MethodInfo> pMethodInfo )
+{
+  std::vector<std::shared_ptr<IJavaVariableType> > paramArray = PopulateParameterArrayFromOperandStack( pMethodInfo );
+  std::shared_ptr<JavaObject> pObject = nullptr;
+
+  //if ( m_OperandStack.size() != 0 || *pMethodInfo->GetName() != c_ClassInitialisationMethodName )
+  if ( !pMethodInfo->IsStatic() )
+  {
+    pObject = std::dynamic_pointer_cast<JavaObject>(paramArray[ 0 ]);
+
+    if ( nullptr == pObject )
+    {
+      LogCallStack();
+      LogOperandStack();
+
+      throw InvalidStateException( __FUNCTION__ " - Expected object pointer to be valid." );
+    }
+  }
+
+  SetupLocalVariables( pMethodInfo, pObject, paramArray );
+
+  return pObject;
+}
+
+void BasicVirtualMachineState::SetupLocalVariables( std::shared_ptr<MethodInfo> pMethodInfo, std::shared_ptr<JavaObject> pObject, const std::vector<std::shared_ptr<IJavaVariableType> > &paramArray )
+{
+  InitialiseLocalVariables( pMethodInfo->GetCodeInfo()->GetLocalVariableArraySizeIncludingPassedParameters() );
+  TypeParser::ParsedMethodType parsedType = TypeParser::ParseMethodType( *pMethodInfo->GetType() );
+
+  size_t paramIndex = 1;
+  uint16_t localVariableIndex = 1;
+  uint16_t nonStaticMethodModifier = 1;
+
+  if ( pMethodInfo->IsStatic() )
+  {
+    localVariableIndex = 0;
+    paramIndex = 0;
+    nonStaticMethodModifier = 0;
+  }
+
+  m_pLogger->LogDebug( "Method %s descriptor is: %s", pMethodInfo->GetName()->ToByteArray(), pMethodInfo->GetType()->ToByteArray() );
+  while ( paramIndex < paramArray.size( ) )
+  {
+    // Now Assign the Value
+    switch ( parsedType.parameters[ paramIndex - nonStaticMethodModifier ]->At( 0 ) )
+    {
+      case c_JavaTypeSpecifierByte:
+        SetLocalVariable( localVariableIndex, std::dynamic_pointer_cast<JavaByte>(paramArray[ paramIndex ]) );
+        break;
+
+      case c_JavaTypeSpecifierChar:
+      {
+        if ( paramArray[ paramIndex ]->GetVariableType( ) == e_JavaVariableTypes::Integer )
+        {
+          SetLocalVariable( localVariableIndex, DownCastFromInteger( std::dynamic_pointer_cast<JavaInteger>( paramArray[paramIndex] ), e_JavaVariableTypes::Char ) );
+        }
+        else
+        {
+          SetLocalVariable( localVariableIndex, std::dynamic_pointer_cast<JavaChar>( paramArray[paramIndex] ) );
+        }
+      }
+      break;
+
+      case c_JavaTypeSpecifierInteger:
+        if ( paramArray[ paramIndex ]->GetVariableType( ) != e_JavaVariableTypes::Integer )
+        {
+          throw InvalidStateException( __FUNCTION__ " - Expected integer on the operand stack." );
+        }
+        SetLocalVariable( localVariableIndex, std::dynamic_pointer_cast<JavaInteger>( paramArray[paramIndex] ) );
+        break;
+
+      case c_JavaTypeSpecifierShort:
+        SetLocalVariable( localVariableIndex, std::dynamic_pointer_cast<JavaShort>( paramArray[paramIndex] ) );
+        break;
+
+      case c_JavaTypeSpecifierBool:
+        if ( paramArray[ paramIndex ]->GetVariableType() == e_JavaVariableTypes::Integer )
+        {
+          SetLocalVariable( localVariableIndex, DownCastFromInteger( std::dynamic_pointer_cast<JavaInteger>(paramArray[ paramIndex ]), e_JavaVariableTypes::Bool ) );
+        }
+        else
+        {
+          SetLocalVariable( localVariableIndex, std::dynamic_pointer_cast<JavaBool>(paramArray[ paramIndex ]) );
+        }
+        break;
+
+      case c_JavaTypeSpecifierFloat:
+        if ( paramArray[ paramIndex ]->GetVariableType( ) != e_JavaVariableTypes::Float )
+        {
+          throw InvalidStateException( __FUNCTION__ " - Expected float on the operand stack." );
+        }
+
+        SetLocalVariable( localVariableIndex, std::dynamic_pointer_cast<JavaFloat>( paramArray[paramIndex] ) );
+        break;
+
+      case c_JavaTypeSpecifierDouble:
+        SetLocalVariable( localVariableIndex, std::dynamic_pointer_cast<JavaDouble>( paramArray[paramIndex] ) );
+        --localVariableIndex;
+        break;
+
+      case c_JavaTypeSpecifierLong:
+        SetLocalVariable( localVariableIndex, std::dynamic_pointer_cast<JavaLong>( paramArray[paramIndex] ) );
+        --localVariableIndex;
+        break;
+
+      case c_JavaTypeSpecifierArray:
+        SetLocalVariable( localVariableIndex, std::dynamic_pointer_cast<JavaArray>( paramArray[paramIndex] ) );
+        break;
+
+      case c_JavaTypeSpecifierReference:
+      {
+        auto pOperand = paramArray[paramIndex];
+        if ( nullptr != std::dynamic_pointer_cast<JavaNullReference>( pOperand ) )
+        {
+          SetLocalVariable( localVariableIndex, std::make_shared<JavaNullReference>() );
+        }
+        else
+        {
+          // TODO: More options here.
+          auto pObjectParam = std::dynamic_pointer_cast<JavaObject>( pOperand );
+          if ( nullptr == pObjectParam )
+          {
+            auto pArray = std::dynamic_pointer_cast<JavaArray>( pOperand );
+            if ( nullptr == pArray )
+            {
+              throw NotImplementedException( __FUNCTION__ " - Not yet implemented" );
+            }
+            else
+            {
+              SetLocalVariable( localVariableIndex, pArray );
+            }
+          }
+          else
+          {
+            SetLocalVariable( localVariableIndex, pObjectParam );
+          }
+        }
+      }
+      break;
+
+      default:
+        throw UnsupportedTypeException( __FUNCTION__ " - Unknown type found." );
+        break;
+    }
+
+    ++localVariableIndex;
+    ++paramIndex;
+  }
+
+  if ( !pMethodInfo->IsStatic() )
+  {
+    SetLocalVariable( 0, pObject );
+  }
+
+#ifdef _DEBUG
+  LogLocalVariables();
+#endif // _DEBUG
+
+  return;
+}
+
+void BasicVirtualMachineState::SetLocalVariable( uint16_t localVariableIndex, std::shared_ptr<IJavaVariableType> pValue )
+{
+  if ( nullptr == pValue )
+  {
+    throw NullPointerException( __FUNCTION__ " - Value argument was NULL." );
+  }
+  m_LocalVariableStack[m_LocalVariableStackFramePointer + localVariableIndex] = pValue;
+}
+
+std::shared_ptr<IJavaVariableType> BasicVirtualMachineState::GetLocalVariable( uint16_t localVariableIndex )
+{
+  return m_LocalVariableStack.at( m_LocalVariableStackFramePointer + localVariableIndex );
+}
+
+std::shared_ptr<JavaClassFile> BasicVirtualMachineState::LoadClass( JavaString className )
+{
+  JavaClassFileLoader loader;
+  std::shared_ptr<JavaClassFile> pClassFile = nullptr;
+
+  try
+  {
+    loader.AddSearchPath( JVMX_T( "../classpath/" ) );
+    loader.AddSearchPath( JVMX_T( "classpath/" ) );
+    pClassFile = std::make_shared<JavaClassFile>( loader.LoadClassFile( className.Append( ".class" ).ToWideString().c_str() ) );
+  }
+  catch ( FileInvalidException & )
+  {
+    // TODO: Fix this.
+    pClassFile = nullptr;
+    throw;
+  }
+  catch ( FileDoesNotExistException & )
+  {
+    //ThrowJavaException( "ClassNotFoundException" );
+    pClassFile = nullptr;
+    throw;
+  }
+
+  if ( nullptr != pClassFile )
+  {
+    m_pConstantPool->AddClass( pClassFile );
+  }
+
+  return pClassFile;
+}
+
+std::shared_ptr<IJavaVariableType> BasicVirtualMachineState::PeekOperand()
+{
+  return m_OperandStack.back();
+}
+
+// size_t BasicVirtualMachineState::CalculateNumberOfParameters( const JavaString &type )
+// {
+//   size_t result = 0;
+//   size_t index = 0;
+// 
+//   index = type.FindNext( index, ';' );
+// 
+//   while ( index != type.GetLastStringPosition( ) )
+//   {
+//     ++result;
+//     index = type.FindNext( index + 1, ';' );
+//   }
+// 
+//   return result;
+// }
+
+void BasicVirtualMachineState::InitialiseLocalVariables( size_t numberofLocalVariables )
+{
+  m_LocalVariableStackFramePointer = m_LocalVariableStack.size();
+
+  m_LocalVariableStack.resize( m_LocalVariableStack.size() + numberofLocalVariables );
+  for ( size_t index = 0; index < numberofLocalVariables; ++ index )
+  {
+    SetLocalVariable( static_cast<uint16_t>(index), std::make_shared<JavaNullReference>() );
+  }
+}
+
+void BasicVirtualMachineState::UpdateCurrentClassName( std::shared_ptr<JavaString> pNewName ) 
+{
+  if ( !m_CurrentDisplayCallStackEntry.m_ClassName.IsEmpty( ) )
+  {
+    throw InvalidStateException( __FUNCTION__ " - Tried to update the current class name when it already exists." );
+  }
+
+  m_CurrentDisplayCallStackEntry.m_ClassName = *pNewName;
+}
+
+void BasicVirtualMachineState::ReleaseLocalVariables()
+{
+  // Do nothing. This was done in PopState;
+}
+
+std::shared_ptr<MethodInfo> BasicVirtualMachineState::GetCurrentMethodInfo()
+{
+  if ( JavaString::EmptyString( ) == m_CurrentDisplayCallStackEntry.m_MethodType )
+  {
+    return m_pConstantPool->FindClass( m_CurrentDisplayCallStackEntry.m_ClassName )->GetMethodByName( m_CurrentDisplayCallStackEntry.m_MethodName );
+  }
+
+  return m_pConstantPool->FindClass( m_CurrentDisplayCallStackEntry.m_ClassName )->GetMethodByNameAndType( m_CurrentDisplayCallStackEntry.m_MethodName, m_CurrentDisplayCallStackEntry.m_MethodType );
+}
+
+std::shared_ptr<JavaObject> BasicVirtualMachineState::CreateObject( std::shared_ptr<JavaClassFile> pClass )
+{
+  m_pLogger->LogDebug( "Creating instance of class: %s", pClass->GetName()->ToByteArray() );
+  std::shared_ptr<JavaObject> pObject = std::make_shared<JavaObject>( pClass );
+  AddFieldsToObject( pClass, pObject );
+
+  std::shared_ptr<JavaString> pSuperClassName = pClass->GetSuperClassName();
+  while ( !pSuperClassName->IsEmpty() )
+  {
+    std::shared_ptr<JavaClassFile> pSuperClass = LoadClass( *pSuperClassName );
+    
+    if ( !pSuperClass->IsInitialsed() )
+    {
+      InitialiseClass( *pSuperClassName );
+    }
+
+    AddFieldsToObject( pSuperClass, pObject );
+    pSuperClassName = pSuperClass->GetSuperClassName();
+  }
+
+  // Add the object to the garbage collector here.
+  m_GarbageHeap.push_back( pObject );
+
+  return pObject;
+}
+
+std::shared_ptr<IRuntimeConstantPool> BasicVirtualMachineState::GetRuntimeConstantPool() 
+{
+  return m_pConstantPool;
+}
+
+
+std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethod( JavaClassFile *pClassFile, const JavaString &methodName, const JavaString &methodSignature )
+{
+  if ( pClassFile->IsInterface() )
+  {
+    m_pExecutionEngine->ThrowJavaException( c_JavaIncompatibleClassChangeErrorException );
+    return nullptr;
+  }
+
+  std::shared_ptr<MethodInfo> pMethodInfo = pClassFile->GetMethodByNameAndType( methodName, methodSignature );
+  if ( nullptr == pMethodInfo )
+  {
+    if ( pClassFile->GetSuperClassName()->IsEmpty() )
+    {
+      return nullptr;
+    }
+
+    m_pLogger->LogDebug( __FUNCTION__ " - Method %s with type %s *not* found on class %s. Trying Super class %s ", methodName.ToByteArray( ), methodSignature.ToByteArray( ), pClassFile->GetName()->ToByteArray( ), pClassFile->GetSuperClassName( )->ToByteArray( ) );
+
+    JavaClassFile *pSuperClass = m_pConstantPool->FindClass( *(pClassFile->GetSuperClassName()) ).get();
+    if ( nullptr == pSuperClass )
+    {
+      std::shared_ptr<JavaClassFile> pSuperClassPointer = LoadClass( *(pClassFile->GetSuperClassName()) );
+      pSuperClass = pSuperClassPointer.get( );
+      if ( nullptr == pSuperClass )
+      {
+        m_pLogger->LogError( __FUNCTION__ " - %s Could not load class file %s", GetCurrentClassAndMethodName( ), pClassFile->GetSuperClassName( )->ToByteArray( ) );
+        m_pConstantPool->AddClass( pSuperClassPointer );
+
+        // Assume Java Exception already thrown.
+        return nullptr;
+      }
+    }
+
+    pMethodInfo = ResolveMethod( pSuperClass, methodName, methodSignature );
+  }
+
+  m_pLogger->LogDebug( __FUNCTION__ " - Method %s with type %s  found on class %s. ", methodName.ToByteArray( ), methodSignature.ToByteArray( ), pClassFile->GetName()->ToByteArray( ) );
+  return pMethodInfo;
+}
+
+std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethodOnClass( std::shared_ptr<JavaString> pClassName, const ConstantPoolMethodReference * pMethodRef )
+{
+// #ifdef _DEBUG
+//   if ( *pClassName == JavaString::FromCString( "java/util/Properties" ) )
+//   {
+//     __asm int 3;
+//   }
+// #endif // _DEBUG
+
+  std::shared_ptr<JavaClassFile> pClassFile = m_pConstantPool->FindClass( *pClassName );
+  if ( nullptr == pClassFile )
+  {
+    pClassFile = LoadClass( *pClassName );
+    if ( nullptr == pClassFile )
+    {
+      m_pLogger->LogError( __FUNCTION__ " - %s Could not load class file %s", GetCurrentClassAndMethodName(), pClassName->ToByteArray() );
+      m_pConstantPool->AddClass( pClassFile );
+
+      // Assume Java Exception already thrown.
+      return nullptr;
+    }
+  }
+
+  if ( pClassFile->IsInterface() )
+  {
+    m_pExecutionEngine->ThrowJavaException( c_JavaIncompatibleClassChangeErrorException );
+    return nullptr;
+  }
+
+  std::shared_ptr<MethodInfo> pMethodInfo = pClassFile->GetMethodByNameAndType( *pMethodRef->GetName(), *pMethodRef->GetType() );
+  if ( nullptr == pMethodInfo )
+  {
+    if ( pClassFile->GetSuperClassName()->IsEmpty() )
+    {
+      return nullptr;
+    }
+
+//     if ( 0 == strcmp( (const char *)pMethodInfo->GetName()->ToByteArray(), "toString" ) )
+//     {
+//       __asm int 3;
+//     }
+
+    m_pLogger->LogDebug( __FUNCTION__ " - Method %s with type %s *not* found on class %s. Trying Super class %s ", pMethodRef->GetName()->ToByteArray(), pMethodRef->GetType()->ToByteArray(), pClassName->ToByteArray(), pClassFile->GetSuperClassName()->ToByteArray() );
+    pMethodInfo = ResolveMethodOnClass( pClassFile->GetSuperClassName(), pMethodRef );
+  }
+
+//   if ( 0 == strcmp( (const char *)pMethodInfo->GetName()->ToByteArray(), "toString" ) )
+//   {
+//     LogCallStack();
+//     LogOperandStack();
+//     __asm int 3;
+//   }
+
+  m_pLogger->LogDebug( __FUNCTION__ " - Method %s with type %s  found on class %s. ", pMethodRef->GetName()->ToByteArray(), pMethodRef->GetType()->ToByteArray(), pClassName->ToByteArray() );
+  return pMethodInfo;
+}
+
+std::shared_ptr<JavaNativeInterface> BasicVirtualMachineState::GetJavaNativeInterface()
+{
+  return m_pJNI;
+}
+
+void BasicVirtualMachineState::LogLocalVariables()  
+{
+  m_pLogger->LogDebug( "Dumping Local Variables (%d):", m_LocalVariableStackFramePointer );
+
+  for ( size_t i = 0; i < m_LocalVariableStack.size( ); ++ i )
+  {
+    auto pLocalVariable = GetLocalVariable( static_cast<uint16_t>(i) );
+
+    if ( nullptr == pLocalVariable )
+    {
+      m_pLogger->LogDebug( "NULL Local variable found. Bailing" );
+      return;
+    }
+
+    e_JavaVariableTypes type = pLocalVariable->GetVariableType( );
+
+    JavaString typeString = JavaString::EmptyString();
+    switch ( type )
+    {
+      case e_JavaVariableTypes::Array:
+        typeString = JavaString::FromCString( "Array" );
+        break;
+
+      case e_JavaVariableTypes::Object:
+        typeString = JavaString::FromCString( "Object: " );
+        typeString = typeString.Append( *std::dynamic_pointer_cast<JavaObject>(pLocalVariable)->GetClass()->GetName() );
+        break;
+
+      case e_JavaVariableTypes::Bool:
+        typeString = JavaString::FromCString( "Bool" );
+        break;
+
+      case e_JavaVariableTypes::Byte:
+        typeString = JavaString::FromCString( "Byte" );
+        break;
+
+      case e_JavaVariableTypes::Char:
+        typeString = JavaString::FromCString( "Char" );
+        break;
+
+      case e_JavaVariableTypes::ClassReference:
+        typeString = JavaString::FromCString( "ClassReference" );
+        break;
+
+      case e_JavaVariableTypes::Double:
+        typeString = JavaString::FromCString( "Double" );
+        break;
+
+      case e_JavaVariableTypes::Float:
+        typeString = JavaString::FromCString( "Float" );
+        break;
+
+      case e_JavaVariableTypes::Integer:
+        typeString = JavaString::FromCString( "Integer" );
+        break;
+
+      case e_JavaVariableTypes::Long:
+        typeString = JavaString::FromCString( "Long" );
+        break;
+
+      case e_JavaVariableTypes::NullReference:
+        typeString = JavaString::FromCString( "Null Reference" );
+        break;
+
+      case e_JavaVariableTypes::ReturnAddress:
+        typeString = JavaString::FromCString( "Return Address" );
+        break;
+
+      case e_JavaVariableTypes::Short:
+        typeString = JavaString::FromCString( "Short" );
+        break;
+
+      default:
+        typeString = JavaString::FromCString( "Unknown" );
+        break;
+    }
+
+    m_pLogger->LogDebug( "\t [%d] : %s", i, typeString.ToByteArray() );
+  }
+  
+}
+
+void BasicVirtualMachineState::InitialiseClass( JavaString className )
+{
+  std::shared_ptr<JavaClassFile> pClassFile = m_pConstantPool->FindClass( className );
+  if ( nullptr == pClassFile )
+  {
+    m_pLogger->LogDebug( __FUNCTION__ " - Class %s not loaded. Loading now.", className.ToByteArray() );
+
+    pClassFile = LoadClass( className );
+    if ( nullptr == pClassFile )
+    {
+      m_pLogger->LogDebug( __FUNCTION__ " - Returning because of load failure. Assume JavaException has been thrown." );
+      // We'd already have thrown a Java Exception.
+      return;
+    }
+  }
+
+  if ( pClassFile->IsInitialsed() )
+  {
+    m_pLogger->LogDebug( __FUNCTION__ " - Class %s already initialized.", className.ToByteArray() );
+    return;
+  }
+
+  // Recursively Load + Initialise Super Classes
+  JavaString superClassName = *pClassFile->GetSuperClassName();
+  if ( !superClassName.IsEmpty() )
+  {
+    InitialiseClass( superClassName );
+
+    //     m_pVirtualMachineState->PushState();
+    //     m_pVirtualMachineState->Execute( superClassName, c_ClassInitialisationMethodName, m_pConstantPool );
+    //     m_pVirtualMachineState->PopState( );
+  }
+
+  pClassFile->SetInitialising();
+
+  // Execute() will call PushState() and PopState()!!
+  Execute( className, c_ClassInitialisationMethodName, m_pConstantPool, m_pJNI );
+
+  pClassFile->SetInitialised();
+
+  return;
+}
+
+void BasicVirtualMachineState::AddFieldsToObject( std::shared_ptr<JavaClassFile> pClass, std::shared_ptr<JavaObject> pObject )
+{
+  for ( size_t index = 0; index < pClass->GetFieldCount(); ++ index )
+  {
+    std::shared_ptr<FieldInfo> pField = pClass->GetFieldByIndex( index );
+    if ( !pField->IsStatic() )
+    {
+      m_pLogger->LogDebug( "Adding field: %s of type %s", pField->GetName()->ToByteArray(), pField->GetType()->ToByteArray() );
+      pObject->AddField( *(pField->GetName()), pField );
+    }
+  }
+}
+
+void BasicVirtualMachineState::LogCallStack()
+{
+  m_pLogger->LogDebug( "Current Call Stack:" );
+  for ( auto callStackEntry : m_DisplayCallStack)
+  {
+    m_pLogger->LogDebug( "\t%s::%s%s", callStackEntry.m_ClassName.ToByteArray(), callStackEntry.m_MethodName.ToByteArray(), callStackEntry.m_MethodType.ToByteArray() );
+  }
+
+  m_pLogger->LogDebug( "\t%s::%s%s", m_CurrentDisplayCallStackEntry.m_ClassName.ToByteArray( ), m_CurrentDisplayCallStackEntry.m_MethodName.ToByteArray( ), m_CurrentDisplayCallStackEntry.m_MethodType.ToByteArray( ) );
+}
+
+void BasicVirtualMachineState::LogOperandStack()
+{
+  m_pLogger->LogDebug( "Current Operand Stack:" );
+  for ( auto operand : m_OperandStack )
+  {
+    m_pLogger->LogDebug( "\t%s = %s", TypeParser::ConvertTypeToString( operand->GetVariableType() ).ToByteArray(), operand->ToString().ToByteArray() );
+  }
+}
+
+std::shared_ptr<JavaObject> BasicVirtualMachineState::CreateAndInitialiseObject( std::shared_ptr<JavaClassFile> pClass )
+{
+  std::shared_ptr<JavaObject> pObject = CreateObject( pClass );
+  
+  std::shared_ptr<MethodInfo> pMethodInfo = pClass->GetMethodByNameAndType( c_InstanceInitialisationMethodName, c_InstanceInitialisationMethodType );
+  if ( nullptr == pMethodInfo )
+  {
+    std::shared_ptr<JavaClassFile> pSuperClass = pClass;
+    while ( JavaString::EmptyString() != *(pSuperClass->GetSuperClassName()) )
+    {
+      pSuperClass = m_pConstantPool->FindClass( *(pSuperClass->GetSuperClassName()) );
+      pMethodInfo = pSuperClass->GetMethodByNameAndType( c_InstanceInitialisationMethodName, c_InstanceInitialisationMethodType );
+      if ( nullptr != pMethodInfo )
+      {
+        m_pLogger->LogDebug( "Method found on Superclass of %s : Found method %s with type %s on superclass %s.", pClass->GetName( )->ToByteArray( ), pMethodInfo->GetName( )->ToByteArray( ), pMethodInfo->GetType( )->ToByteArray( ), pMethodInfo->GetClass( )->GetName( )->ToByteArray( ) );
+        break;
+      }
+    }
+  }
+
+  if ( nullptr == pMethodInfo )
+  {
+    throw InvalidStateException( __FUNCTION__ " - Default constructor not found." );
+  }
+  
+  std::vector<std::shared_ptr<IJavaVariableType> > paramArray;
+  PushState( *(pClass->GetName( )), c_InstanceInitialisationMethodName, c_InstanceInitialisationMethodType );
+  SetupLocalVariables( pMethodInfo, pObject, paramArray );
+  Execute( *pMethodInfo );
+  ReleaseLocalVariables();
+  PopState();
+}
+
+
+BasicVirtualMachineState::DisplayCallStackEntry::DisplayCallStackEntry()
+  : m_ClassName( JavaString::EmptyString() )
+  , m_MethodName( JavaString::EmptyString() )
+  , m_MethodType( JavaString::EmptyString() )
+{
+}
+
+std::vector<std::shared_ptr<IJavaVariableType> > BasicVirtualMachineState::PopulateParameterArrayFromOperandStack( std::shared_ptr<MethodInfo> pMethodInfo )
+{
+  TypeParser::ParsedMethodType parsedType = TypeParser::ParseMethodType( *(pMethodInfo->GetType()) );
+
+  if ( !pMethodInfo->IsStatic() )
+  {
+    size_t arrayLength = parsedType.parameters.size( );
+    std::vector<std::shared_ptr<IJavaVariableType> > paramArray( arrayLength + 1 );
+
+    for ( size_t i = 0; i <= arrayLength; ++ i )
+    {
+      paramArray[ arrayLength - i ] = PopOperand();
+    }
+    return paramArray;
+  }
+  else
+  {
+    size_t arrayLength = parsedType.parameters.size();
+    std::vector<std::shared_ptr<IJavaVariableType> > paramArray( arrayLength );
+
+    for ( size_t i = 0; i < arrayLength; ++ i )
+    {
+      paramArray[ (arrayLength - 1) - i ] = PopOperand();
+    }
+    return paramArray;
+  }
+  
+
+//   if ( 0 != m_OperandStack.size() || *pMethodInfo->GetName() != c_ClassInitialisationMethodName )
+//   {
+
+//  }
+
+  
+}

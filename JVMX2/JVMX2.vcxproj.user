@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>..\Tests\TestThreads.class</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-jar C:\Users\Walluce\AppData\Roaming\Code\User\globalStorage\redhat.java\1.32.0\config_win\org.eclipse.osgi\12\0\.cp\lib\ant.jar</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>..\Tests\TestThreads.class</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-jar C:\Users\Walluce\AppData\Roaming\Code\User\globalStorage\redhat.java\1.32.0\config_win\org.eclipse.osgi\12\0\.cp\lib\ant.jar</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

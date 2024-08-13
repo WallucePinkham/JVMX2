@@ -42,7 +42,7 @@ public:
   static std::shared_ptr<VirtualMachine> Create();
 
   void Initialise(const std::string& startingClassfile, const std::shared_ptr<IVirtualMachineState> &pInitialState );
-  void Run( const JVMX_CHAR_TYPE *pFileName, const std::shared_ptr<IVirtualMachineState> &pInitialState, bool userCode = true );
+  void Run( const JavaString &fileName, const std::shared_ptr<IVirtualMachineState> &pInitialState, bool userCode = true );
   void Stop( const std::shared_ptr<IVirtualMachineState> &pInitialState );
 
   std::shared_ptr<JavaNativeInterface> GetNativeInterface() const;
@@ -63,7 +63,7 @@ public:
 
   static const char *GetClassNameFromType( JavaString finalStringValue );
 
-  static JavaString GetClassNameFromFileName( const JVMX_CHAR_TYPE *pFileName );
+  static JavaString GetClassNameFromFileName( const JavaString &fileName );
 
   void RegisterNativeMethods( std::shared_ptr<JavaNativeInterface> pJNI );
 
@@ -73,6 +73,8 @@ private:
   void SetupDependencies( std::shared_ptr<VirtualMachine> pThis );
 
   void InitialiseClass( const JVMX_CHAR_TYPE *pClassName, const std::shared_ptr<IVirtualMachineState> &pInitialState );
+
+  int GetMainClassFromJarFile(const JavaString& fileName, DataBuffer& mainClassOuput);
 
 private:
   static jobject JNICALL java_lang_VMClassLoader_getPrimitiveClass( JNIEnv *pEnv, jobject obj, jchar typeAsChar );

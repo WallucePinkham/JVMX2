@@ -6,17 +6,17 @@
 #include "ClassAttributeBootstrapMethods.h"
 
 ClassAttributeBootstrapMethods::ClassAttributeBootstrapMethods( const JavaString &name,
-  BootstrapMethodList list )
+  BootstrapMethodList list ) JVMX_NOEXCEPT
   : JavaCodeAttribute( name, e_JavaAttributeTypeInnerClasses )
   , m_MethodList( list )
 {}
 
-ClassAttributeBootstrapMethods::ClassAttributeBootstrapMethods( const ClassAttributeBootstrapMethods &other )
+ClassAttributeBootstrapMethods::ClassAttributeBootstrapMethods( const ClassAttributeBootstrapMethods &other ) JVMX_NOEXCEPT
   : JavaCodeAttribute( other.m_Name, e_JavaAttributeTypeInnerClasses )
   , m_MethodList( other.m_MethodList )
 {}
 
-ClassAttributeBootstrapMethods::ClassAttributeBootstrapMethods( ClassAttributeBootstrapMethods &&other )
+ClassAttributeBootstrapMethods::ClassAttributeBootstrapMethods( ClassAttributeBootstrapMethods &&other ) JVMX_NOEXCEPT
   : JavaCodeAttribute( other.m_Name, e_JavaAttributeTypeInnerClasses )
 {
   swap( *this, other );

@@ -51,11 +51,14 @@
     <ClCompile Include="CodeAttributeStackMapTable.cpp" />
     <ClCompile Include="CodeAttributeUknown.cpp" />
     <ClCompile Include="CodeSegmentDataBuffer.cpp" />
+    <ClCompile Include="CommandLineProcessor.cpp" />
     <ClCompile Include="ConsoleLogger.cpp" />
     <ClCompile Include="ConstantPool.cpp" />
     <ClCompile Include="ConstantPoolClassReference.cpp" />
     <ClCompile Include="ConstantPoolDualReference.cpp" />
     <ClCompile Include="ConstantPoolEntry.cpp" />
+    <ClCompile Include="ConstantPoolInvokeDynamic.cpp" />
+    <ClCompile Include="ConstantPoolMethodHandle.cpp" />
     <ClCompile Include="ConstantPoolNameAndTypeDescriptor.cpp" />
     <ClCompile Include="ConstantPoolNullEntry.cpp" />
     <ClCompile Include="ConstantPoolStringReference.cpp" />
@@ -138,6 +141,9 @@
     <ClCompile Include="VerificationTypeInfoFactory.cpp" />
     <ClCompile Include="VerificationTypeInfoUninitialised.cpp" />
     <ClCompile Include="VirtualMachine.cpp" />
+    <ClCompile Include="ZipFile.cpp" />
+    <ClCompile Include="Zip\ioapi.cpp" />
+    <ClCompile Include="Zip\unzip.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AgregateLogger.h" />
@@ -176,6 +182,7 @@
     <ClInclude Include="CodeAttributeStackMapTable.h" />
     <ClInclude Include="CodeAttributeUnknown.h" />
     <ClInclude Include="CodeSegmentDataBuffer.h" />
+    <ClInclude Include="CommandLineProcessor.h" />
     <ClInclude Include="ConsoleLogger.h" />
     <ClInclude Include="ConstantPool.h" />
     <ClInclude Include="ConstantPoolClassReference.h" />
@@ -183,6 +190,8 @@
     <ClInclude Include="ConstantPoolEntry.h" />
     <ClInclude Include="ConstantPoolFieldReference.h" />
     <ClInclude Include="ConstantPoolInterfaceMethodReference.h" />
+    <ClInclude Include="ConstantPoolInvokeDynamic.h" />
+    <ClInclude Include="ConstantPoolMethodHandle.h" />
     <ClInclude Include="ConstantPoolMethodReference.h" />
     <ClInclude Include="ConstantPoolNameAndTypeDescriptor.h" />
     <ClInclude Include="ConstantPoolNullEntry.h" />
@@ -319,6 +328,16 @@
     <ClInclude Include="VerificationTypeInfoUninitialised.h" />
     <ClInclude Include="VerificationTypeInfoUninitialisedThis.h" />
     <ClInclude Include="VirtualMachine.h" />
+    <ClInclude Include="ZipFile.h" />
+    <ClInclude Include="Zip\ioapi.h" />
+    <ClInclude Include="Zip\unzip.h" />
+    <ClInclude Include="Zip\zconf.h" />
+    <ClInclude Include="Zip\zlib.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\zlib\zlib.vcxproj">
+      <Project>{365c5ec9-bcc8-419b-a677-bf7065a72526}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

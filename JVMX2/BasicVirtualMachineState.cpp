@@ -39,36 +39,36 @@
 #include "CodeAttributeLineNumberTable.h"
 
 
-extern const JavaString c_ClassInitialisationMethodName = JavaString::FromCString( JVMX_T( "<clinit>" ) );
-extern const JavaString c_ClassInitialisationMethodType = JavaString::FromCString( JVMX_T( "()V" ) );
-extern const JavaString c_InstanceInitialisationMethodName = JavaString::FromCString( JVMX_T( "<init>" ) );
-extern const JavaString c_InstanceInitialisationMethodType = JavaString::FromCString( JVMX_T( "()V" ) );
+extern const JavaString c_ClassInitialisationMethodName = JavaString::FromCString(JVMX_T("<clinit>"));
+extern const JavaString c_ClassInitialisationMethodType = JavaString::FromCString(JVMX_T("()V"));
+extern const JavaString c_InstanceInitialisationMethodName = JavaString::FromCString(JVMX_T("<init>"));
+extern const JavaString c_InstanceInitialisationMethodType = JavaString::FromCString(JVMX_T("()V"));
 
-extern const JavaString c_StringInitialisationMethodTypeWithArrayIntIntBool = JavaString::FromCString( JVMX_T( "([CIIZ)V" ) );
-extern const JavaString c_StringInitialisationMethodTypeWithArrayOnly = JavaString::FromCString( JVMX_T( "([C)V" ) );
+extern const JavaString c_StringInitialisationMethodTypeWithArrayIntIntBool = JavaString::FromCString(JVMX_T("([CIIZ)V"));
+extern const JavaString c_StringInitialisationMethodTypeWithArrayOnly = JavaString::FromCString(JVMX_T("([C)V"));
 
 
-extern const JavaString c_JavaLangClassInitialisationMethodType = JavaString::FromCString( JVMX_T( "(Ljava/lang/Object;)V" ) );
+extern const JavaString c_JavaLangClassInitialisationMethodType = JavaString::FromCString(JVMX_T("(Ljava/lang/Object;)V"));
 
-extern const JavaString c_JavaLangClassName = JavaString::FromCString( JVMX_T( "java/lang/Class" ) );
-extern const JavaString c_SyntheticField_ClassName = JavaString::FromCString( JVMX_T( "__class" ) );
+extern const JavaString c_JavaLangClassName = JavaString::FromCString(JVMX_T("java/lang/Class"));
+extern const JavaString c_SyntheticField_ClassName = JavaString::FromCString(JVMX_T("__class"));
 
 const uint32_t c_NullReferenceValue = UINT32_MAX;
 
-BasicVirtualMachineState::BasicVirtualMachineState( std::shared_ptr<VirtualMachine> pVM, bool hasUserCodeStarted)
-  : m_pVM( pVM )
-  , m_LocalVariableStackFramePointer( 0 )
-  , m_isShuttingDown( false )
-  , m_CurrentClassAndMethodName( JavaString::EmptyString() )
-  , m_ExitCode( 0 )
-  , m_isPaused( false )
-  , m_isPausing( false )
-  , m_ExceptionOccurred( false )
-  , m_pException( nullptr )
-  , m_CallStackDepth( 0 )
-  , m_StackLevel( 0 )
-  , m_isInterrupted( false )
-  , m_NativeExecutionCount( 0 )
+BasicVirtualMachineState::BasicVirtualMachineState(std::shared_ptr<VirtualMachine> pVM, bool hasUserCodeStarted)
+  : m_pVM(pVM)
+  , m_LocalVariableStackFramePointer(0)
+  , m_isShuttingDown(false)
+  , m_CurrentClassAndMethodName(JavaString::EmptyString())
+  , m_ExitCode(0)
+  , m_isPaused(false)
+  , m_isPausing(false)
+  , m_ExceptionOccurred(false)
+  , m_pException(nullptr)
+  , m_CallStackDepth(0)
+  , m_StackLevel(0)
+  , m_isInterrupted(false)
+  , m_NativeExecutionCount(0)
   , m_hasUserCodeStarted(hasUserCodeStarted)
 {
   m_CurrentRegisters.m_ProgramCounter = 0;
@@ -86,7 +86,7 @@ void BasicVirtualMachineState::ReleaseMemory()
   m_OperandStack.clear();
   m_LocalVariableStack.clear();
 
-  while ( !m_RegisterStack.empty() )
+  while (!m_RegisterStack.empty())
   {
     m_RegisterStack.pop_back();
   }
@@ -111,11 +111,11 @@ int BasicVirtualMachineState::GetExitCode() const
 
 void BasicVirtualMachineState::RunAllFinalizers()
 {
-  std::shared_ptr<IGarbageCollector> pGC = GlobalCatalog::GetInstance().Get( "GarbageCollector" );
-  pGC->RunAllFinalizers( shared_from_this() );
+  std::shared_ptr<IGarbageCollector> pGC = GlobalCatalog::GetInstance().Get("GarbageCollector");
+  pGC->RunAllFinalizers(shared_from_this());
 }
 
-void BasicVirtualMachineState::SetExceptionThrown( boost::intrusive_ptr<ObjectReference> pException )
+void BasicVirtualMachineState::SetExceptionThrown(boost::intrusive_ptr<ObjectReference> pException)
 {
   m_ExceptionOccurred = true;
   m_pException = pException;
@@ -137,9 +137,9 @@ void BasicVirtualMachineState::ResetException()
   m_pException = nullptr;
 }
 
-void BasicVirtualMachineState::PushMonitor( std::shared_ptr<Lockable> pMutex )
+void BasicVirtualMachineState::PushMonitor(std::shared_ptr<Lockable> pMutex)
 {
-  m_MutexStack.push( pMutex );
+  m_MutexStack.push(pMutex);
 }
 
 std::shared_ptr<Lockable> BasicVirtualMachineState::PopMonitor()
@@ -151,7 +151,7 @@ std::shared_ptr<Lockable> BasicVirtualMachineState::PopMonitor()
 
 void BasicVirtualMachineState::PushAndZeroCallStackDepth()
 {
-  m_CallStackDepthStack.push( m_CallStackDepth );
+  m_CallStackDepthStack.push(m_CallStackDepth);
   m_CallStackDepth = 0;
 }
 
@@ -169,15 +169,15 @@ uint16_t BasicVirtualMachineState::GetCallStackDepth()
 
 uint16_t BasicVirtualMachineState::IncrementCallStackDepth()
 {
-  return ++ m_CallStackDepth;
+  return ++m_CallStackDepth;
 }
 
 uint16_t BasicVirtualMachineState::DecrementCallStackDepth()
 {
-  return -- m_CallStackDepth;
+  return --m_CallStackDepth;
 }
 
-void BasicVirtualMachineState::SetJavaNativeInterface( std::weak_ptr<JavaNativeInterface> pJNI )
+void BasicVirtualMachineState::SetJavaNativeInterface(std::weak_ptr<JavaNativeInterface> pJNI)
 {
   m_pJNI = pJNI;
 #if _DEBUG // Do this here, because this method is called in the new thread
@@ -190,115 +190,115 @@ ThreadInfo BasicVirtualMachineState::ReturnCurrentThreadInfo()
   return m_pVM->ReturnCurrentThreadObject();
 }
 
-void BasicVirtualMachineState::RegisterNativeMethods( std::shared_ptr<JavaNativeInterface> pJNI )
+void BasicVirtualMachineState::RegisterNativeMethods(std::shared_ptr<JavaNativeInterface> pJNI)
 {
-  return m_pVM->RegisterNativeMethods( pJNI );
+  return m_pVM->RegisterNativeMethods(pJNI);
 }
 
-void BasicVirtualMachineState::AddThread( std::shared_ptr<boost::thread> pNewThread, boost::intrusive_ptr<ObjectReference> pObject, const std::shared_ptr<IVirtualMachineState> &pNewState )
+void BasicVirtualMachineState::AddThread(std::shared_ptr<boost::thread> pNewThread, boost::intrusive_ptr<ObjectReference> pObject, const std::shared_ptr<IVirtualMachineState>& pNewState)
 {
-  return m_pVM->AddThread( pNewThread, pObject, pNewState );
+  return m_pVM->AddThread(pNewThread, pObject, pNewState);
 }
 
 boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::GetCallStackOfClassObjects()
 {
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-    if (HasUserCodeStarted())
-    {
-        LogCallStack();
-    }
+  if (HasUserCodeStarted())
+  {
+    LogCallStack();
+  }
 #endif
 
   size_t arraySize = m_DisplayCallStack.size() - 1;
-  boost::intrusive_ptr<ObjectReference> pResult = CreateArray( e_JavaArrayTypes::Reference, arraySize );
+  boost::intrusive_ptr<ObjectReference> pResult = CreateArray(e_JavaArrayTypes::Reference, arraySize);
 
   size_t arrayIndex = 0;
 
-  for ( auto it = m_DisplayCallStack.crbegin(); it != m_DisplayCallStack.crend(); ++ it )
+  for (auto it = m_DisplayCallStack.crbegin(); it != m_DisplayCallStack.crend(); ++it)
   {
-    boost::intrusive_ptr<JavaString> pName = new JavaString( it->m_ClassName );
+    boost::intrusive_ptr<JavaString> pName = new JavaString(it->m_ClassName);
 
-    if ( !pName->IsEmpty() )
+    if (!pName->IsEmpty())
     {
-      boost::intrusive_ptr<ObjectReference> pClassObject = CreateJavaLangClassFromClassName( pName );
-      pResult->GetContainedArray()->SetAt( arrayIndex, pClassObject.get() );
-      ++ arrayIndex;
+      boost::intrusive_ptr<ObjectReference> pClassObject = CreateJavaLangClassFromClassName(pName);
+      pResult->GetContainedArray()->SetAt(arrayIndex, pClassObject.get());
+      ++arrayIndex;
     }
 
-    JVMX_ASSERT( arrayIndex <= arraySize );
+    JVMX_ASSERT(arrayIndex <= arraySize);
   }
 
   return pResult;
 }
 
-const boost::intrusive_ptr<JavaString> BasicVirtualMachineState::GetSoureFileName( const std::shared_ptr<MethodInfo> pMethodInfo ) const
+const boost::intrusive_ptr<JavaString> BasicVirtualMachineState::GetSoureFileName(const std::shared_ptr<MethodInfo> pMethodInfo) const
 {
   boost::intrusive_ptr<JavaString> pFileName = nullptr;
 
   int classAttributeCount = pMethodInfo->GetClass()->GetAttributeCount();
-  for ( int i = 0; i < classAttributeCount; ++ i )
+  for (int i = 0; i < classAttributeCount; ++i)
   {
-    auto classAttribute = pMethodInfo->GetClass()->GetAttribute( i );
-    if ( e_JavaAttributeTypeSourceFile == classAttribute->JavaCodeAttribute::GetType() )
+    auto classAttribute = pMethodInfo->GetClass()->GetAttribute(i);
+    if (e_JavaAttributeTypeSourceFile == classAttribute->JavaCodeAttribute::GetType())
     {
-      auto pSourceFileAttribute = std::dynamic_pointer_cast<ClassAttributeSourceFile>( classAttribute );
+      auto pSourceFileAttribute = std::dynamic_pointer_cast<ClassAttributeSourceFile>(classAttribute);
       std::shared_ptr<ConstantPool> pConstantPool = pMethodInfo->GetClass()->GetConstantPool();
-      std::shared_ptr<ConstantPoolEntry> pConstant = pConstantPool->GetConstant( pSourceFileAttribute->ClassAttributeSourceFile::GetIndex() );
+      std::shared_ptr<ConstantPoolEntry> pConstant = pConstantPool->GetConstant(pSourceFileAttribute->ClassAttributeSourceFile::GetIndex());
 
       pFileName = pConstant->AsString();
-      JVMX_ASSERT( nullptr != pFileName );
+      JVMX_ASSERT(nullptr != pFileName);
     }
   }
 
   return pFileName;
 }
 
-uint16_t BasicVirtualMachineState::GetLineNumber( int stackPos )
+uint16_t BasicVirtualMachineState::GetLineNumber(int stackPos)
 {
   uint16_t lineNumber = 0;
 
-  for ( auto attribute : m_MethodInfoStack[ stackPos ]->GetAttributes() )
+  for (auto attribute : m_MethodInfoStack[stackPos]->GetAttributes())
   {
-    if ( e_JavaAttributeTypeCode != attribute->GetType() )
+    if (e_JavaAttributeTypeCode != attribute->GetType())
     {
       continue;
     }
 
-    std::shared_ptr<ClassAttributeCode> pAttributeCode = std::dynamic_pointer_cast<ClassAttributeCode>( attribute );
-    for ( auto codeAttribute : pAttributeCode->GetAttributeList() )
+    std::shared_ptr<ClassAttributeCode> pAttributeCode = std::dynamic_pointer_cast<ClassAttributeCode>(attribute);
+    for (auto codeAttribute : pAttributeCode->GetAttributeList())
     {
-      if ( e_JavaAttributeTypeLineNumberTable != codeAttribute->GetType() )
+      if (e_JavaAttributeTypeLineNumberTable != codeAttribute->GetType())
       {
         continue;
       }
 
-      std::shared_ptr<CodeAttributeLineNumberTable> pLineNumberTable = std::dynamic_pointer_cast<CodeAttributeLineNumberTable>( codeAttribute );
+      std::shared_ptr<CodeAttributeLineNumberTable> pLineNumberTable = std::dynamic_pointer_cast<CodeAttributeLineNumberTable>(codeAttribute);
 
-      for ( uint16_t i = 0; i < pLineNumberTable->GetNumberOfLineNumbers(); ++i )
+      for (uint16_t i = 0; i < pLineNumberTable->GetNumberOfLineNumbers(); ++i)
       {
-        if ( m_RegisterStack[ stackPos ].m_ProgramCounter >= pLineNumberTable->GetStartPositionAt( i ) )
+        if (m_RegisterStack[stackPos].m_ProgramCounter >= pLineNumberTable->GetStartPositionAt(i))
         {
-          if ( i >= pLineNumberTable->GetNumberOfLineNumbers() - 1 )
+          if (i >= pLineNumberTable->GetNumberOfLineNumbers() - 1)
           {
-            lineNumber = pLineNumberTable->GetLineNumberAt( i );
+            lineNumber = pLineNumberTable->GetLineNumberAt(i);
             break;
           }
 
-          if ( m_RegisterStack[ stackPos ].m_ProgramCounter < pLineNumberTable->GetStartPositionAt( i + 1 ) )
+          if (m_RegisterStack[stackPos].m_ProgramCounter < pLineNumberTable->GetStartPositionAt(i + 1))
           {
-            lineNumber = pLineNumberTable->GetLineNumberAt( i );
+            lineNumber = pLineNumberTable->GetLineNumberAt(i);
             break;
           }
         }
       }
 
-      if ( lineNumber > 0 )
+      if (lineNumber > 0)
       {
         break;
       }
     }
 
-    if ( lineNumber > 0 )
+    if (lineNumber > 0)
     {
       break;
     }
@@ -310,81 +310,81 @@ uint16_t BasicVirtualMachineState::GetLineNumber( int stackPos )
 boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::GetCallStackOfStackTraceElements()
 {
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-    if (HasUserCodeStarted())
-    {
-        LogCallStack();
-    }
+  if (HasUserCodeStarted())
+  {
+    LogCallStack();
+  }
 #endif
 
   // Preparation in terms of StackTraceElement.
-  std::shared_ptr<JavaClass> pClassOfStackTraceElement = LoadClass( JavaString::FromCString( "java/lang/StackTraceElement" ) );
-  if ( nullptr == pClassOfStackTraceElement )
+  std::shared_ptr<JavaClass> pClassOfStackTraceElement = LoadClass(JavaString::FromCString("java/lang/StackTraceElement"));
+  if (nullptr == pClassOfStackTraceElement)
   {
-    throw InvalidStateException( __FUNCTION__ " - Could not load class StackTraceElement." );
+    throw InvalidStateException(__FUNCTION__ " - Could not load class StackTraceElement.");
   }
 
-  if ( !pClassOfStackTraceElement->IsInitialsed() )
+  if (!pClassOfStackTraceElement->IsInitialsed())
   {
-    InitialiseClass( *pClassOfStackTraceElement->GetName() );
+    InitialiseClass(*pClassOfStackTraceElement->GetName());
   }
 
-  static const JavaString c_MethodType = JavaString::FromCString( "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Z)V" );
-  std::shared_ptr<MethodInfo> pConstructorMethodInfo = ResolveMethod( pClassOfStackTraceElement.get(), c_InstanceInitialisationMethodName, c_MethodType );
+  static const JavaString c_MethodType = JavaString::FromCString("(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Z)V");
+  std::shared_ptr<MethodInfo> pConstructorMethodInfo = ResolveMethod(pClassOfStackTraceElement.get(), c_InstanceInitialisationMethodName, c_MethodType);
   // Done with prep work.
 
   size_t arraySize = m_MethodInfoStack.size();// - 1;
-  boost::intrusive_ptr<ObjectReference> pResult = CreateArray( e_JavaArrayTypes::Reference, arraySize );
+  boost::intrusive_ptr<ObjectReference> pResult = CreateArray(e_JavaArrayTypes::Reference, arraySize);
 
   size_t arrayIndex = 0;
 
-  for ( int stackPos = m_MethodInfoStack.size() - 1; stackPos >= 0; -- stackPos )
+  for (int stackPos = m_MethodInfoStack.size() - 1; stackPos >= 0; --stackPos)
   {
 
-    if ( !m_MethodInfoStack[stackPos]->GetFullName().IsEmpty() )
+    if (!m_MethodInfoStack[stackPos]->GetFullName().IsEmpty())
     {
-      boost::intrusive_ptr<ObjectReference> pStackTraceElement = CreateObject( pClassOfStackTraceElement );
+      boost::intrusive_ptr<ObjectReference> pStackTraceElement = CreateObject(pClassOfStackTraceElement);
 
       // Call Constructor
       //////////////////////////////////////////////////////////////////////////
-      if ( pConstructorMethodInfo->IsSynchronised() )
+      if (pConstructorMethodInfo->IsSynchronised())
       {
-        PushMonitor( pStackTraceElement->GetContainedObject()->MonitorEnter( GetCurrentClassAndMethodName().ToUtf8String().c_str() ) );
+        PushMonitor(pStackTraceElement->GetContainedObject()->MonitorEnter(GetCurrentClassAndMethodName().ToUtf8String().c_str()));
       }
 
-      boost::intrusive_ptr<JavaString> pFileName = GetSoureFileName( m_MethodInfoStack[ stackPos ] );
-      uint16_t lineNumber = GetLineNumber( stackPos );
+      boost::intrusive_ptr<JavaString> pFileName = GetSoureFileName(m_MethodInfoStack[stackPos]);
+      uint16_t lineNumber = GetLineNumber(stackPos);
 
-      PushOperand( pStackTraceElement );
-      if ( nullptr == pFileName )
+      PushOperand(pStackTraceElement);
+      if (nullptr == pFileName)
       {
-        PushOperand( boost::intrusive_ptr<ObjectReference>( new ObjectReference( nullptr ) ) ); // FileName (treat this as unknown for now).
-      }
-      else
-      {
-        PushOperand( boost::intrusive_ptr<ObjectReference>( CreateStringObject( *pFileName ) ) );
-      }
-
-      if ( 0 == lineNumber )
-      {
-        PushOperand( boost::intrusive_ptr<JavaInteger>( new JavaInteger( JavaInteger::FromHostInt32( -1 ) ) ) ); // Line Number (treat this as unknown for now).
+        PushOperand(boost::intrusive_ptr<ObjectReference>(new ObjectReference(nullptr))); // FileName (treat this as unknown for now).
       }
       else
       {
-        PushOperand( boost::intrusive_ptr<JavaInteger>( new JavaInteger( JavaInteger::FromHostInt32( static_cast< int32_t >( lineNumber ) ) ) ) );
+        PushOperand(boost::intrusive_ptr<ObjectReference>(CreateStringObject(*pFileName)));
       }
 
-      PushOperand( CreateStringObject( *m_MethodInfoStack[ stackPos ]->GetClass()->GetName() ) );
-      PushOperand( CreateStringObject( *m_MethodInfoStack[ stackPos ]->GetName() ) );
-      PushOperand( boost::intrusive_ptr<JavaBool>( new JavaBool( JavaBool::FromBool( m_MethodInfoStack[ stackPos ]->IsNative() ) ) ) );
+      if (0 == lineNumber)
+      {
+        PushOperand(boost::intrusive_ptr<JavaInteger>(new JavaInteger(JavaInteger::FromHostInt32(-1)))); // Line Number (treat this as unknown for now).
+      }
+      else
+      {
+        PushOperand(boost::intrusive_ptr<JavaInteger>(new JavaInteger(JavaInteger::FromHostInt32(static_cast<int32_t>(lineNumber)))));
+      }
 
-      ExecuteMethod( *pClassOfStackTraceElement->GetName(), c_InstanceInitialisationMethodName, c_MethodType, pConstructorMethodInfo );
+      PushOperand(CreateStringObject(*m_MethodInfoStack[stackPos]->GetClass()->GetName()));
+      PushOperand(CreateStringObject(*m_MethodInfoStack[stackPos]->GetName()));
+      PushOperand(boost::intrusive_ptr<JavaBool>(new JavaBool(JavaBool::FromBool(m_MethodInfoStack[stackPos]->IsNative()))));
+
+      ExecuteMethod(*pClassOfStackTraceElement->GetName(), c_InstanceInitialisationMethodName, c_MethodType, pConstructorMethodInfo);
       //////////////////////////////////////////////////////////////////////////
 
-      pResult->GetContainedArray()->SetAt( arrayIndex, pStackTraceElement.get() );
-      ++ arrayIndex;
+      pResult->GetContainedArray()->SetAt(arrayIndex, pStackTraceElement.get());
+      ++arrayIndex;
     }
 
-    JVMX_ASSERT( arrayIndex <= arraySize );
+    JVMX_ASSERT(arrayIndex <= arraySize);
   }
 
   return pResult;
@@ -392,9 +392,9 @@ boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::GetCallStackOfSt
 
 std::shared_ptr<ILogger> BasicVirtualMachineState::GetLogger()
 {
-  if ( nullptr == m_pLogger )
+  if (nullptr == m_pLogger)
   {
-    m_pLogger = GlobalCatalog::GetInstance().Get( "Logger" );
+    m_pLogger = GlobalCatalog::GetInstance().Get("Logger");
   }
 
   return m_pLogger;
@@ -402,34 +402,34 @@ std::shared_ptr<ILogger> BasicVirtualMachineState::GetLogger()
 
 std::shared_ptr<IClassLibrary> BasicVirtualMachineState::GetClassLibrary()
 {
-  if ( nullptr == m_pClassLibrary )
+  if (nullptr == m_pClassLibrary)
   {
-    m_pClassLibrary = GlobalCatalog::GetInstance().Get( "ClassLibrary" );
+    m_pClassLibrary = GlobalCatalog::GetInstance().Get("ClassLibrary");
   }
 
   return m_pClassLibrary;
 }
 
-void BasicVirtualMachineState::Execute( const JavaString &startingClassName, const JavaString &methodName, const JavaString &methodType )
+void BasicVirtualMachineState::Execute(const JavaString& startingClassName, const JavaString& methodName, const JavaString& methodType)
 {
-  std::shared_ptr<MethodInfo> pInitialMethod = GetMethodByNameAndType( startingClassName, methodName, methodType, GetClassLibrary() );
+  std::shared_ptr<MethodInfo> pInitialMethod = GetMethodByNameAndType(startingClassName, methodName, methodType, GetClassLibrary());
 
-  if ( nullptr == pInitialMethod )
+  if (nullptr == pInitialMethod)
   {
-    if ( methodName != c_ClassInitialisationMethodName && methodName != c_InstanceInitialisationMethodName )
+    if (methodName != c_ClassInitialisationMethodName && methodName != c_InstanceInitialisationMethodName)
     {
-      throw InvalidStateException( __FUNCTION__ " - Initial Method was not found" );
+      throw InvalidStateException(__FUNCTION__ " - Initial Method was not found");
     }
     else
     {
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-        if (HasUserCodeStarted())
-        {
-            GetLogger()->LogDebug("Class %s does not have a method called %s", startingClassName.ToUtf8String().c_str(), methodName.ToUtf8String().c_str());
-        }
+      if (HasUserCodeStarted())
+      {
+        GetLogger()->LogDebug("Class %s does not have a method called %s", startingClassName.ToUtf8String().c_str(), methodName.ToUtf8String().c_str());
+      }
 #endif // (_DEBUG) && defined(JVMX_LOG_VERBOSE)
 
-      auto pClass = LoadClass( startingClassName );
+      auto pClass = LoadClass(startingClassName);
       pClass->SetInitialised();
 
       return;
@@ -441,14 +441,14 @@ void BasicVirtualMachineState::Execute( const JavaString &startingClassName, con
   //     throw InvalidStateException( __FUNCTION__ " - Initial Method was not static" );
   //   }
 
-  if ( !pInitialMethod->GetClass()->IsInitialsed() && methodName == c_ClassInitialisationMethodName )
+  if (!pInitialMethod->GetClass()->IsInitialsed() && methodName == c_ClassInitialisationMethodName)
   {
     pInitialMethod->GetClass()->SetInitialising();
   }
 
-  ExecuteMethod( startingClassName, methodName, *( pInitialMethod->GetType() ), pInitialMethod );
+  ExecuteMethod(startingClassName, methodName, *(pInitialMethod->GetType()), pInitialMethod);
 
-  if ( pInitialMethod->GetClass()->IsInitialsing() && methodName == c_ClassInitialisationMethodName )
+  if (pInitialMethod->GetClass()->IsInitialsing() && methodName == c_ClassInitialisationMethodName)
   {
     pInitialMethod->GetClass()->SetInitialised();
   }
@@ -456,11 +456,11 @@ void BasicVirtualMachineState::Execute( const JavaString &startingClassName, con
   //PopState();
 }
 
-void BasicVirtualMachineState::Execute( const MethodInfo &method )
+void BasicVirtualMachineState::Execute(const MethodInfo& method)
 {
-  ClassAttributeCode code = FindCodeAttribute( method );
+  ClassAttributeCode code = FindCodeAttribute(method);
 
-  CodeSegmentDataBuffer codeSegment( code.GetCode() );
+  CodeSegmentDataBuffer codeSegment(code.GetCode());
   m_CurrentRegisters.m_pCodeSegmentStart = codeSegment.GetRawDataPointer();
   m_CurrentRegisters.m_CodeSegmentLength = codeSegment.GetByteLength();
   m_CurrentRegisters.m_ProgramCounter = 0;
@@ -468,26 +468,26 @@ void BasicVirtualMachineState::Execute( const MethodInfo &method )
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (HasUserCodeStarted())
   {
-      //GetLogger()->LogDebug( "Executing Method: %s::%s", m_CurrentDisplayCallStackEntry.m_ClassName.ToUtf8String().c_str(), method.GetName()->ToUtf8String().c_str() );
-      GetLogger()->LogDebug("Executing Method: %s::%s", method.GetClass()->GetName()->ToUtf8String().c_str(), method.GetName()->ToUtf8String().c_str());
-      AssertValid();
+    //GetLogger()->LogDebug( "Executing Method: %s::%s", m_CurrentDisplayCallStackEntry.m_ClassName.ToUtf8String().c_str(), method.GetName()->ToUtf8String().c_str() );
+    GetLogger()->LogDebug("Executing Method: %s::%s", method.GetClass()->GetName()->ToUtf8String().c_str(), method.GetName()->ToUtf8String().c_str());
+    AssertValid();
   }
 #endif // _DEBUG
 
-  std::shared_ptr<IExecutionEngine> pEngine = GlobalCatalog::GetInstance().Get( "ExecutionEngine" );
-  pEngine->Run( shared_from_this() );
+  std::shared_ptr<IExecutionEngine> pEngine = GlobalCatalog::GetInstance().Get("ExecutionEngine");
+  pEngine->Run(shared_from_this());
 
 #ifdef _DEBUG
   AssertValid();
 #endif // _DEBUG
 }
 
-std::shared_ptr<MethodInfo> BasicVirtualMachineState::GetMethodByNameAndType( const JavaString &className, const JavaString &methodName, const JavaString &methodType, std::shared_ptr<IClassLibrary> pConstantPool )
+std::shared_ptr<MethodInfo> BasicVirtualMachineState::GetMethodByNameAndType(const JavaString& className, const JavaString& methodName, const JavaString& methodType, std::shared_ptr<IClassLibrary> pConstantPool)
 {
-  std::shared_ptr<JavaClass> pClass = GetClassByName( pConstantPool, className );
+  std::shared_ptr<JavaClass> pClass = GetClassByName(pConstantPool, className);
 
-  std::shared_ptr<MethodInfo> pMethod = pClass->GetMethodByNameAndType( methodName, methodType );
-  if ( nullptr != pMethod )
+  std::shared_ptr<MethodInfo> pMethod = pClass->GetMethodByNameAndType(methodName, methodType);
+  if (nullptr != pMethod)
   {
     return pMethod;
   }
@@ -495,40 +495,40 @@ std::shared_ptr<MethodInfo> BasicVirtualMachineState::GetMethodByNameAndType( co
   return nullptr;
 }
 
-std::shared_ptr<JavaClass> BasicVirtualMachineState::GetClassByName( std::shared_ptr<IClassLibrary> pConstantPool, const JavaString &className )
+std::shared_ptr<JavaClass> BasicVirtualMachineState::GetClassByName(std::shared_ptr<IClassLibrary> pConstantPool, const JavaString& className)
 {
-  std::shared_ptr<JavaClass> pClass = pConstantPool->FindClass( className );
-  if ( nullptr == pClass )
+  std::shared_ptr<JavaClass> pClass = pConstantPool->FindClass(className);
+  if (nullptr == pClass)
   {
-    pClass = LoadClass( className );
-    if ( nullptr == pClass )
+    pClass = LoadClass(className);
+    if (nullptr == pClass)
     {
-      throw InvalidArgumentException( __FUNCTION__ " - Could not load class." );
+      throw InvalidArgumentException(__FUNCTION__ " - Could not load class.");
     }
   }
 
   return pClass;
 }
 
-ClassAttributeCode BasicVirtualMachineState::FindCodeAttribute( const MethodInfo &method )
+ClassAttributeCode BasicVirtualMachineState::FindCodeAttribute(const MethodInfo& method)
 {
-  const CodeAttributeList &attributes = method.GetAttributes();
-  for ( auto attrib : attributes )
+  const CodeAttributeList& attributes = method.GetAttributes();
+  for (auto attrib : attributes)
   {
-    if ( c_AttributeNameCode == attrib->GetName() )
+    if (c_AttributeNameCode == attrib->GetName())
     {
       return attrib->ToCode();
     }
   }
 
-  throw InvalidStateException( __FUNCTION__ " - Code Attribute not found." );
+  throw InvalidStateException(__FUNCTION__ " - Code Attribute not found.");
 }
 
-void BasicVirtualMachineState::PushMethodStack( const JavaString &newClassName, const JavaString &newMethodName, const JavaString &newMethodType )
+void BasicVirtualMachineState::PushMethodStack(const JavaString& newClassName, const JavaString& newMethodName, const JavaString& newMethodType)
 {
-  m_DisplayCallStack.push_back( m_CurrentDisplayCallStackEntry );
+  m_DisplayCallStack.push_back(m_CurrentDisplayCallStackEntry);
 
-  UpdateCurrentClassName( newClassName );
+  UpdateCurrentClassName(newClassName);
   m_CurrentDisplayCallStackEntry.m_MethodName = newMethodName;
   m_CurrentDisplayCallStackEntry.m_MethodType = newMethodType;
   m_CurrentDisplayCallStackEntry.m_ProgramCounter = m_CurrentRegisters.m_ProgramCounter;
@@ -554,11 +554,11 @@ uintptr_t BasicVirtualMachineState::GetProgramCounter() const
   return m_CurrentRegisters.m_ProgramCounter;
 }
 
-void BasicVirtualMachineState::AdvanceProgramCounter( int byteCount )
+void BasicVirtualMachineState::AdvanceProgramCounter(int byteCount)
 {
-  if ( m_CurrentRegisters.m_ProgramCounter + byteCount < 0 || m_CurrentRegisters.m_ProgramCounter + byteCount > m_CurrentRegisters.m_CodeSegmentLength )
+  if (m_CurrentRegisters.m_ProgramCounter + byteCount < 0 || m_CurrentRegisters.m_ProgramCounter + byteCount > m_CurrentRegisters.m_CodeSegmentLength)
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Trying to jump to an address outside of the current code block." );
+    throw InvalidArgumentException(__FUNCTION__ " - Trying to jump to an address outside of the current code block.");
   }
 
   m_CurrentRegisters.m_ProgramCounter += byteCount;
@@ -569,47 +569,47 @@ size_t BasicVirtualMachineState::GetCodeSegmentLength() const
   return m_CurrentRegisters.m_CodeSegmentLength;
 }
 
-const uint8_t *BasicVirtualMachineState::GetCodeSegmentStart() const
+const uint8_t* BasicVirtualMachineState::GetCodeSegmentStart() const
 {
   return m_CurrentRegisters.m_pCodeSegmentStart;
 }
 
-bool BasicVirtualMachineState::CanReadBytes( int byteCount ) const
+bool BasicVirtualMachineState::CanReadBytes(int byteCount) const
 {
   return m_CurrentRegisters.m_ProgramCounter + byteCount <= m_CurrentRegisters.m_CodeSegmentLength;
 }
 
-std::shared_ptr<ConstantPoolEntry> BasicVirtualMachineState::GetConstantFromCurrentClass( ConstantPoolIndex index )
+std::shared_ptr<ConstantPoolEntry> BasicVirtualMachineState::GetConstantFromCurrentClass(ConstantPoolIndex index)
 {
-  return GetClassLibrary()->GetConstant( m_CurrentDisplayCallStackEntry.m_ClassName, index );
+  return GetClassLibrary()->GetConstant(m_CurrentDisplayCallStackEntry.m_ClassName, index);
 }
 
-std::shared_ptr<MethodInfo> BasicVirtualMachineState::GetMethod( size_t index )
+std::shared_ptr<MethodInfo> BasicVirtualMachineState::GetMethod(size_t index)
 {
-  return GetClassLibrary()->GetMethod( m_CurrentDisplayCallStackEntry.m_ClassName, index );
+  return GetClassLibrary()->GetMethod(m_CurrentDisplayCallStackEntry.m_ClassName, index);
 }
 
-bool BasicVirtualMachineState::IsClassInitialised( const JavaString &className )
+bool BasicVirtualMachineState::IsClassInitialised(const JavaString& className)
 {
-  return GetClassLibrary()->IsClassInitalised( className );
+  return GetClassLibrary()->IsClassInitalised(className);
 }
 
 std::shared_ptr<JavaClass> BasicVirtualMachineState::GetCurrentClass()
 {
-  return GetClassLibrary()->FindClass( m_CurrentDisplayCallStackEntry.m_ClassName );
+  return GetClassLibrary()->FindClass(m_CurrentDisplayCallStackEntry.m_ClassName);
 }
 
-void BasicVirtualMachineState::PushState( const JavaString &newClassName, const JavaString &newMethodName, const JavaString &newMethodType, std::shared_ptr<MethodInfo> pNewMethodInfo )
+void BasicVirtualMachineState::PushState(const JavaString& newClassName, const JavaString& newMethodName, const JavaString& newMethodType, std::shared_ptr<MethodInfo> pNewMethodInfo)
 {
-  PushMethodStack( newClassName, newMethodName, newMethodType );
-  m_MethodInfoStack.push_back( pNewMethodInfo );
-  m_RegisterStack.push_back( m_CurrentRegisters );
-  m_LocalVariableStackFrameStack.push( m_LocalVariableStackFramePointer );
+  PushMethodStack(newClassName, newMethodName, newMethodType);
+  m_MethodInfoStack.push_back(pNewMethodInfo);
+  m_RegisterStack.push_back(m_CurrentRegisters);
+  m_LocalVariableStackFrameStack.push(m_LocalVariableStackFramePointer);
 }
 
 void BasicVirtualMachineState::PopState()
 {
-  m_LocalVariableStack.resize( m_LocalVariableStackFramePointer );
+  m_LocalVariableStack.resize(m_LocalVariableStackFramePointer);
   m_LocalVariableStackFramePointer = m_LocalVariableStackFrameStack.top();
   m_LocalVariableStackFrameStack.pop();
 
@@ -620,79 +620,79 @@ void BasicVirtualMachineState::PopState()
   PopMethodStack();
 }
 
-const CodeAttributeStackMapTable *BasicVirtualMachineState::GetCurrentStackMap()
+const CodeAttributeStackMapTable* BasicVirtualMachineState::GetCurrentStackMap()
 {
-  return GetMethodByNameAndType( m_CurrentDisplayCallStackEntry.m_ClassName, m_CurrentDisplayCallStackEntry.m_MethodName, m_CurrentDisplayCallStackEntry.m_MethodType, GetClassLibrary() )->GetFrame();
+  return GetMethodByNameAndType(m_CurrentDisplayCallStackEntry.m_ClassName, m_CurrentDisplayCallStackEntry.m_MethodName, m_CurrentDisplayCallStackEntry.m_MethodType, GetClassLibrary())->GetFrame();
 }
 
-const ClassAttributeCode *BasicVirtualMachineState::GetCurrentCodeInfo()
+const ClassAttributeCode* BasicVirtualMachineState::GetCurrentCodeInfo()
 {
-  return GetMethodByNameAndType( m_CurrentDisplayCallStackEntry.m_ClassName, m_CurrentDisplayCallStackEntry.m_MethodName, m_CurrentDisplayCallStackEntry.m_MethodType, GetClassLibrary() )->GetCodeInfo();
+  return GetMethodByNameAndType(m_CurrentDisplayCallStackEntry.m_ClassName, m_CurrentDisplayCallStackEntry.m_MethodName, m_CurrentDisplayCallStackEntry.m_MethodType, GetClassLibrary())->GetCodeInfo();
 }
 
-const JavaString &BasicVirtualMachineState::GetCurrentClassAndMethodName() const
+const JavaString& BasicVirtualMachineState::GetCurrentClassAndMethodName() const
 {
   return m_CurrentClassAndMethodName;
 }
 
 JavaString BasicVirtualMachineState::BuildCurrentClassAndMethodName() const
 {
-  size_t length = m_CurrentDisplayCallStackEntry.m_ClassName.GetLengthInCodePoints() + 2 + m_CurrentDisplayCallStackEntry.m_MethodName.GetLengthInCodePoints() + sizeof( uint16_t );
-  char *pBuffer = new char[ length * sizeof( char16_t ) ];
-  char *pPos = pBuffer;
+  size_t length = m_CurrentDisplayCallStackEntry.m_ClassName.GetLengthInCodePoints() + 2 + m_CurrentDisplayCallStackEntry.m_MethodName.GetLengthInCodePoints() + sizeof(uint16_t);
+  char* pBuffer = new char[length * sizeof(char16_t)];
+  char* pPos = pBuffer;
 
   try
   {
-    memcpy( pPos, m_CurrentDisplayCallStackEntry.m_ClassName.ToCharacterArray(), m_CurrentDisplayCallStackEntry.m_ClassName.GetLengthInBytes() );
+    memcpy(pPos, m_CurrentDisplayCallStackEntry.m_ClassName.ToCharacterArray(), m_CurrentDisplayCallStackEntry.m_ClassName.GetLengthInBytes());
     pPos += m_CurrentDisplayCallStackEntry.m_ClassName.GetLengthInBytes();
 
-    memcpy( pPos, u"::", 2 * sizeof( char16_t ) );
-    pPos += 2 * sizeof( char16_t );
+    memcpy(pPos, u"::", 2 * sizeof(char16_t));
+    pPos += 2 * sizeof(char16_t);
 
-    memcpy( pBuffer + m_CurrentDisplayCallStackEntry.m_ClassName.GetLengthInBytes() + 2 * sizeof( char16_t ), m_CurrentDisplayCallStackEntry.m_MethodName.ToCharacterArray(), m_CurrentDisplayCallStackEntry.m_MethodName.GetLengthInBytes() );
+    memcpy(pBuffer + m_CurrentDisplayCallStackEntry.m_ClassName.GetLengthInBytes() + 2 * sizeof(char16_t), m_CurrentDisplayCallStackEntry.m_MethodName.ToCharacterArray(), m_CurrentDisplayCallStackEntry.m_MethodName.GetLengthInBytes());
     pPos += m_CurrentDisplayCallStackEntry.m_MethodName.GetLengthInBytes();
 
-    pPos[ 0 ] = ( '\0' );
-    pPos[ 1 ] = ( '\0' );
+    pPos[0] = ('\0');
+    pPos[1] = ('\0');
 
-    JavaString result = JavaString::FromCString( reinterpret_cast<const char16_t *>( pBuffer ) );
+    JavaString result = JavaString::FromCString(reinterpret_cast<const char16_t*>(pBuffer));
 
     delete[] pBuffer;
     pBuffer = nullptr;
 
     return result;
   }
-  catch ( ... )
+  catch (...)
   {
     delete[] pBuffer;
     throw;
   }
 }
 
-void BasicVirtualMachineState::SetCodeSegment( const ClassAttributeCode *pCodeInfo )
+void BasicVirtualMachineState::SetCodeSegment(const ClassAttributeCode* pCodeInfo)
 {
   m_CurrentRegisters.m_pCodeSegmentStart = pCodeInfo->GetCode().ToByteArray();
   m_CurrentRegisters.m_CodeSegmentLength = pCodeInfo->GetCode().GetByteLength();
   m_CurrentRegisters.m_ProgramCounter = 0;
 }
 
-void BasicVirtualMachineState::PushOperand( const boost::intrusive_ptr<IJavaVariableType> &pOperand )
+void BasicVirtualMachineState::PushOperand(const boost::intrusive_ptr<IJavaVariableType>& pOperand)
 {
-  if ( nullptr == pOperand )
+  if (nullptr == pOperand)
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Invalid argument passed. Operand was NULL" );
+    throw InvalidArgumentException(__FUNCTION__ " - Invalid argument passed. Operand was NULL");
   }
 
   // TODO: There should be a way to avoid the string copies here. This is too expensive and kills performance.
 
-  m_OperandStack.push_back( { pOperand, GetProgramCounter(), m_DisplayCallStack.size(), GetCurrentClassName(), GetCurrentMethodName(), GetCurrentMethodType() } );
+  m_OperandStack.push_back({ pOperand, GetProgramCounter(), m_DisplayCallStack.size(), GetCurrentClassName(), GetCurrentMethodName(), GetCurrentMethodType() });
 }
 
 boost::intrusive_ptr<IJavaVariableType> BasicVirtualMachineState::PopOperand()
 {
-  if ( m_OperandStack.size() < 1 )
+  if (m_OperandStack.size() < 1)
   {
-    throw InvalidStateException( __FUNCTION__ " - PopOperand called on empty operand stack." );
+    throw InvalidStateException(__FUNCTION__ " - PopOperand called on empty operand stack.");
   }
 
   boost::intrusive_ptr<IJavaVariableType> pOperand = PeekOperand();
@@ -701,55 +701,55 @@ boost::intrusive_ptr<IJavaVariableType> BasicVirtualMachineState::PopOperand()
   return pOperand;
 }
 
-const JavaString &BasicVirtualMachineState::GetCurrentClassName() const
+const JavaString& BasicVirtualMachineState::GetCurrentClassName() const
 {
   return m_CurrentDisplayCallStackEntry.m_ClassName;
 }
 
-const JavaString &BasicVirtualMachineState::GetCurrentMethodName() const
+const JavaString& BasicVirtualMachineState::GetCurrentMethodName() const
 {
   return m_CurrentDisplayCallStackEntry.m_MethodName;
 }
 
-const JavaString &BasicVirtualMachineState::GetCurrentMethodType() const
+const JavaString& BasicVirtualMachineState::GetCurrentMethodType() const
 {
   return m_CurrentDisplayCallStackEntry.m_MethodType;
 }
 
-boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::SetupLocalVariables( std::shared_ptr<MethodInfo> pMethodInfo )
+boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::SetupLocalVariables(std::shared_ptr<MethodInfo> pMethodInfo)
 {
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-    if (HasUserCodeStarted())
-    {
-        GetLogger()->LogDebug("Setting up %u local variables", pMethodInfo->GetCodeInfo()->GetLocalVariableArraySizeIncludingPassedParameters());
-        LogOperandStack();
-    }
+  if (HasUserCodeStarted())
+  {
+    GetLogger()->LogDebug("Setting up %u local variables", pMethodInfo->GetCodeInfo()->GetLocalVariableArraySizeIncludingPassedParameters());
+    LogOperandStack();
+  }
 #endif
 
-  std::vector<boost::intrusive_ptr<IJavaVariableType> > paramArray = PopulateParameterArrayFromOperandStack( pMethodInfo );
+  std::vector<boost::intrusive_ptr<IJavaVariableType> > paramArray = PopulateParameterArrayFromOperandStack(pMethodInfo);
   boost::intrusive_ptr<ObjectReference> pObject = nullptr;
 
-  if ( !pMethodInfo->IsStatic() )
+  if (!pMethodInfo->IsStatic())
   {
-    pObject = boost::dynamic_pointer_cast<ObjectReference>( paramArray[ 0 ] );
+    pObject = boost::dynamic_pointer_cast<ObjectReference>(paramArray[0]);
 
-    if ( nullptr == pObject )
+    if (nullptr == pObject)
     {
 #if defined (_DEBUG)
       LogCallStack();
       LogOperandStack();
 #endif
 
-      throw InvalidStateException( __FUNCTION__ " - Expected object pointer to be valid." );
+      throw InvalidStateException(__FUNCTION__ " - Expected object pointer to be valid.");
     }
   }
 
-  SetupLocalVariables( pMethodInfo, pObject, paramArray );
+  SetupLocalVariables(pMethodInfo, pObject, paramArray);
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (HasUserCodeStarted())
   {
-      LogLocalVariables();
+    LogLocalVariables();
   }
 #endif // _DEBUG
 
@@ -878,24 +878,24 @@ boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::SetupLocalVariab
 //   return;
 // }
 
-void BasicVirtualMachineState::SetupLocalVariables( std::shared_ptr<MethodInfo> pMethodInfo, boost::intrusive_ptr<ObjectReference> pObject, const std::vector<boost::intrusive_ptr<IJavaVariableType> > &paramArray )
+void BasicVirtualMachineState::SetupLocalVariables(std::shared_ptr<MethodInfo> pMethodInfo, boost::intrusive_ptr<ObjectReference> pObject, const std::vector<boost::intrusive_ptr<IJavaVariableType> >& paramArray)
 {
   //if ( !pMethodInfo->IsNative() )
   //{
-  InitialiseLocalVariables( pMethodInfo->GetCodeInfo()->GetLocalVariableArraySizeIncludingPassedParameters(), GetLocalVariableTable( pMethodInfo ), pMethodInfo->GetClass()->GetConstantPool() );
+  InitialiseLocalVariables(pMethodInfo->GetCodeInfo()->GetLocalVariableArraySizeIncludingPassedParameters(), GetLocalVariableTable(pMethodInfo), pMethodInfo->GetClass()->GetConstantPool());
   //}
   //else
   //{
   //  InitialiseLocalVariables( paramArray.size(), nullptr, pMethodInfo->GetClass()->GetConstantPool() );
   //}
 
-  TypeParser::ParsedMethodType parsedType = TypeParser::ParseMethodType( *pMethodInfo->GetType() );
+  TypeParser::ParsedMethodType parsedType = TypeParser::ParseMethodType(*pMethodInfo->GetType());
 
   size_t paramIndex = 1;
   uint16_t localVariableIndex = 1;
   uint16_t nonStaticMethodModifier = 1;
 
-  if ( pMethodInfo->IsStatic() )
+  if (pMethodInfo->IsStatic())
   {
     localVariableIndex = 0;
     paramIndex = 0;
@@ -905,129 +905,129 @@ void BasicVirtualMachineState::SetupLocalVariables( std::shared_ptr<MethodInfo> 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (HasUserCodeStarted())
   {
-      GetLogger()->LogDebug("Method %s descriptor is: %s", pMethodInfo->GetName()->ToUtf8String().c_str(), pMethodInfo->GetType()->ToUtf8String().c_str());
-      GetLogger()->LogDebug("Param Array:");
-      for (size_t i = 0; i < paramArray.size(); ++i)
-      {
-          GetLogger()->LogDebug("\tParameter %d is: %s", i, paramArray[i]->ToString().ToUtf8String().c_str());
-      }
-      GetLogger()->LogDebug("Parsed types:");
-      for (size_t i = 0; i < parsedType.parameters.size(); ++i)
-      {
-          GetLogger()->LogDebug("\tParameter %d type: %s", i, parsedType.parameters[i]->ToString().ToUtf8String().c_str());
-      }
+    GetLogger()->LogDebug("Method %s descriptor is: %s", pMethodInfo->GetName()->ToUtf8String().c_str(), pMethodInfo->GetType()->ToUtf8String().c_str());
+    GetLogger()->LogDebug("Param Array:");
+    for (size_t i = 0; i < paramArray.size(); ++i)
+    {
+      GetLogger()->LogDebug("\tParameter %d is: %s", i, paramArray[i]->ToString().ToUtf8String().c_str());
+    }
+    GetLogger()->LogDebug("Parsed types:");
+    for (size_t i = 0; i < parsedType.parameters.size(); ++i)
+    {
+      GetLogger()->LogDebug("\tParameter %d type: %s", i, parsedType.parameters[i]->ToString().ToUtf8String().c_str());
+    }
   }
 #endif // _DEBUG
 
-  while ( paramIndex < paramArray.size() )
+  while (paramIndex < paramArray.size())
   {
     // Now Assign the Value
-    switch ( parsedType.parameters[ paramIndex - nonStaticMethodModifier ]->At( 0 ) )
+    switch (parsedType.parameters[paramIndex - nonStaticMethodModifier]->At(0))
     {
-      case c_JavaTypeSpecifierByte:
-        if ( paramArray[ paramIndex ]->GetVariableType() == e_JavaVariableTypes::Integer )
-        {
-          SetLocalVariable( localVariableIndex, TypeParser::DownCastFromInteger( boost::dynamic_pointer_cast<JavaInteger>( paramArray[ paramIndex ] ), e_JavaVariableTypes::Byte ) );
-        }
-        else
-        {
-          SetLocalVariable( localVariableIndex, boost::dynamic_pointer_cast<JavaByte>( paramArray[ paramIndex ] ) );
-        }
-        break;
+    case c_JavaTypeSpecifierByte:
+      if (paramArray[paramIndex]->GetVariableType() == e_JavaVariableTypes::Integer)
+      {
+        SetLocalVariable(localVariableIndex, TypeParser::DownCastFromInteger(boost::dynamic_pointer_cast<JavaInteger>(paramArray[paramIndex]), e_JavaVariableTypes::Byte));
+      }
+      else
+      {
+        SetLocalVariable(localVariableIndex, boost::dynamic_pointer_cast<JavaByte>(paramArray[paramIndex]));
+      }
+      break;
 
-      case c_JavaTypeSpecifierChar:
-        {
-          if ( paramArray[ paramIndex ]->GetVariableType() == e_JavaVariableTypes::Integer )
-          {
-            SetLocalVariable( localVariableIndex, TypeParser::DownCastFromInteger( boost::dynamic_pointer_cast<JavaInteger>( paramArray[ paramIndex ] ), e_JavaVariableTypes::Char ) );
-          }
-          else
-          {
-            SetLocalVariable( localVariableIndex, boost::dynamic_pointer_cast<JavaChar>( paramArray[ paramIndex ] ) );
-          }
-        }
-        break;
+    case c_JavaTypeSpecifierChar:
+    {
+      if (paramArray[paramIndex]->GetVariableType() == e_JavaVariableTypes::Integer)
+      {
+        SetLocalVariable(localVariableIndex, TypeParser::DownCastFromInteger(boost::dynamic_pointer_cast<JavaInteger>(paramArray[paramIndex]), e_JavaVariableTypes::Char));
+      }
+      else
+      {
+        SetLocalVariable(localVariableIndex, boost::dynamic_pointer_cast<JavaChar>(paramArray[paramIndex]));
+      }
+    }
+    break;
 
-      case c_JavaTypeSpecifierInteger:
-        if ( paramArray[ paramIndex ]->GetVariableType() != e_JavaVariableTypes::Integer )
-        {
-          throw InvalidStateException( __FUNCTION__ " - Expected integer on the operand stack." );
-        }
-        SetLocalVariable( localVariableIndex, boost::dynamic_pointer_cast<JavaInteger>( paramArray[ paramIndex ] ) );
-        break;
+    case c_JavaTypeSpecifierInteger:
+      if (paramArray[paramIndex]->GetVariableType() != e_JavaVariableTypes::Integer)
+      {
+        throw InvalidStateException(__FUNCTION__ " - Expected integer on the operand stack.");
+      }
+      SetLocalVariable(localVariableIndex, boost::dynamic_pointer_cast<JavaInteger>(paramArray[paramIndex]));
+      break;
 
-      case c_JavaTypeSpecifierShort:
-        if ( paramArray[ paramIndex ]->GetVariableType() == e_JavaVariableTypes::Integer )
-        {
-          SetLocalVariable( localVariableIndex, TypeParser::DownCastFromInteger( boost::dynamic_pointer_cast<JavaInteger>( paramArray[ paramIndex ] ), e_JavaVariableTypes::Short ) );
-        }
-        else
-        {
-          SetLocalVariable( localVariableIndex, boost::dynamic_pointer_cast<JavaShort>( paramArray[ paramIndex ] ) );
-        }
-        break;
+    case c_JavaTypeSpecifierShort:
+      if (paramArray[paramIndex]->GetVariableType() == e_JavaVariableTypes::Integer)
+      {
+        SetLocalVariable(localVariableIndex, TypeParser::DownCastFromInteger(boost::dynamic_pointer_cast<JavaInteger>(paramArray[paramIndex]), e_JavaVariableTypes::Short));
+      }
+      else
+      {
+        SetLocalVariable(localVariableIndex, boost::dynamic_pointer_cast<JavaShort>(paramArray[paramIndex]));
+      }
+      break;
 
-      case c_JavaTypeSpecifierBool:
-        if ( paramArray[ paramIndex ]->GetVariableType() == e_JavaVariableTypes::Integer )
-        {
-          SetLocalVariable( localVariableIndex, TypeParser::DownCastFromInteger( boost::dynamic_pointer_cast<JavaInteger>( paramArray[ paramIndex ] ), e_JavaVariableTypes::Bool ) );
-        }
-        else
-        {
-          SetLocalVariable( localVariableIndex, boost::dynamic_pointer_cast<JavaBool>( paramArray[ paramIndex ] ) );
-        }
-        break;
+    case c_JavaTypeSpecifierBool:
+      if (paramArray[paramIndex]->GetVariableType() == e_JavaVariableTypes::Integer)
+      {
+        SetLocalVariable(localVariableIndex, TypeParser::DownCastFromInteger(boost::dynamic_pointer_cast<JavaInteger>(paramArray[paramIndex]), e_JavaVariableTypes::Bool));
+      }
+      else
+      {
+        SetLocalVariable(localVariableIndex, boost::dynamic_pointer_cast<JavaBool>(paramArray[paramIndex]));
+      }
+      break;
 
-      case c_JavaTypeSpecifierFloat:
-        if ( paramArray[ paramIndex ]->GetVariableType() != e_JavaVariableTypes::Float )
-        {
-          throw InvalidStateException( __FUNCTION__ " - Expected float on the operand stack." );
-        }
+    case c_JavaTypeSpecifierFloat:
+      if (paramArray[paramIndex]->GetVariableType() != e_JavaVariableTypes::Float)
+      {
+        throw InvalidStateException(__FUNCTION__ " - Expected float on the operand stack.");
+      }
 
-        SetLocalVariable( localVariableIndex, boost::dynamic_pointer_cast<JavaFloat>( paramArray[ paramIndex ] ) );
-        break;
+      SetLocalVariable(localVariableIndex, boost::dynamic_pointer_cast<JavaFloat>(paramArray[paramIndex]));
+      break;
 
-      case c_JavaTypeSpecifierDouble:
-        SetLocalVariable( localVariableIndex, boost::dynamic_pointer_cast<JavaDouble>( paramArray[ paramIndex ] ) );
-        //--localVariableIndex;
-        ++ localVariableIndex;
-        break;
+    case c_JavaTypeSpecifierDouble:
+      SetLocalVariable(localVariableIndex, boost::dynamic_pointer_cast<JavaDouble>(paramArray[paramIndex]));
+      //--localVariableIndex;
+      ++localVariableIndex;
+      break;
 
-      case c_JavaTypeSpecifierLong:
-        SetLocalVariable( localVariableIndex, boost::dynamic_pointer_cast<JavaLong>( paramArray[ paramIndex ] ) );
-        //--localVariableIndex;
-        ++localVariableIndex;
-        break;
+    case c_JavaTypeSpecifierLong:
+      SetLocalVariable(localVariableIndex, boost::dynamic_pointer_cast<JavaLong>(paramArray[paramIndex]));
+      //--localVariableIndex;
+      ++localVariableIndex;
+      break;
 
-      case c_JavaTypeSpecifierArray:
-        if ( paramArray[ paramIndex ]->IsNull() )
-        {
-          SetLocalVariable( localVariableIndex, boost::intrusive_ptr<ObjectReference>( new ObjectReference( nullptr ) ) );
-        }
-        else
-        {
-          SetLocalVariable( localVariableIndex, boost::dynamic_pointer_cast<ObjectReference>( paramArray[ paramIndex ] ) );
-        }
-        break;
+    case c_JavaTypeSpecifierArray:
+      if (paramArray[paramIndex]->IsNull())
+      {
+        SetLocalVariable(localVariableIndex, boost::intrusive_ptr<ObjectReference>(new ObjectReference(nullptr)));
+      }
+      else
+      {
+        SetLocalVariable(localVariableIndex, boost::dynamic_pointer_cast<ObjectReference>(paramArray[paramIndex]));
+      }
+      break;
 
-      case c_JavaTypeSpecifierReference:
-        {
-          SetupLocalVariableTypeReference( paramArray, paramIndex, localVariableIndex );
-        }
-        break;
+    case c_JavaTypeSpecifierReference:
+    {
+      SetupLocalVariableTypeReference(paramArray, paramIndex, localVariableIndex);
+    }
+    break;
 
-      default:
-        throw UnsupportedTypeException( __FUNCTION__ " - Unknown type found." );
-        break;
+    default:
+      throw UnsupportedTypeException(__FUNCTION__ " - Unknown type found.");
+      break;
     }
 
     ++localVariableIndex;
     ++paramIndex;
   }
 
-  if ( !pMethodInfo->IsStatic() )
+  if (!pMethodInfo->IsStatic())
   {
-    SetLocalVariable( 0, pObject );
+    SetLocalVariable(0, pObject);
   }
 
 #if 0
@@ -1037,14 +1037,14 @@ void BasicVirtualMachineState::SetupLocalVariables( std::shared_ptr<MethodInfo> 
   return;
 }
 
-std::shared_ptr<CodeAttributeLocalVariableTable> BasicVirtualMachineState::GetLocalVariableTable( std::shared_ptr<MethodInfo> pMethodInfo )
+std::shared_ptr<CodeAttributeLocalVariableTable> BasicVirtualMachineState::GetLocalVariableTable(std::shared_ptr<MethodInfo> pMethodInfo)
 {
-  const CodeAttributeList &alist = pMethodInfo->GetCodeInfo()->GetAttributeList();
-  for ( auto it = alist.begin(); it != alist.end(); ++ it )
+  const CodeAttributeList& alist = pMethodInfo->GetCodeInfo()->GetAttributeList();
+  for (auto it = alist.begin(); it != alist.end(); ++it)
   {
-    if ( e_JavaAttributeTypeLocalVariableTable == ( *it )->GetType() )
+    if (e_JavaAttributeTypeLocalVariableTable == (*it)->GetType())
     {
-      return std::dynamic_pointer_cast<CodeAttributeLocalVariableTable>( *it );
+      return std::dynamic_pointer_cast<CodeAttributeLocalVariableTable>(*it);
     }
   }
 
@@ -1053,115 +1053,129 @@ std::shared_ptr<CodeAttributeLocalVariableTable> BasicVirtualMachineState::GetLo
 
 std::shared_ptr<IVirtualMachineState> BasicVirtualMachineState::CreateNewState()
 {
-  return std::make_shared<BasicVirtualMachineState>( m_pVM, m_hasUserCodeStarted );
+  return std::make_shared<BasicVirtualMachineState>(m_pVM, m_hasUserCodeStarted);
 }
 
-void BasicVirtualMachineState::SetupLocalVariableTypeReference( const std::vector<boost::intrusive_ptr<IJavaVariableType> > &paramArray, size_t paramIndex, uint16_t localVariableIndex )
+void BasicVirtualMachineState::SetupLocalVariableTypeReference(const std::vector<boost::intrusive_ptr<IJavaVariableType> >& paramArray, size_t paramIndex, uint16_t localVariableIndex)
 {
-  auto pOperand = paramArray[ paramIndex ];
-  if ( pOperand->IsNull() )
+  auto pOperand = paramArray[paramIndex];
+  if (pOperand->IsNull())
   {
-    SetLocalVariable( localVariableIndex, boost::intrusive_ptr<ObjectReference> ( new ObjectReference( nullptr ) ) );
+    SetLocalVariable(localVariableIndex, boost::intrusive_ptr<ObjectReference>(new ObjectReference(nullptr)));
   }
   else
   {
     // TODO: More options here.
 
-    if ( e_JavaVariableTypes::Object ==  pOperand->GetVariableType() )
+    if (e_JavaVariableTypes::Object == pOperand->GetVariableType())
     {
-      auto pObjectParam = boost::dynamic_pointer_cast<ObjectReference>( pOperand );
-      SetLocalVariable( localVariableIndex, pObjectParam );
+      auto pObjectParam = boost::dynamic_pointer_cast<ObjectReference>(pOperand);
+      SetLocalVariable(localVariableIndex, pObjectParam);
     }
-    else if ( e_JavaVariableTypes::Array == pOperand->GetVariableType() )
+    else if (e_JavaVariableTypes::Array == pOperand->GetVariableType())
     {
-      auto pArray = boost::dynamic_pointer_cast<ObjectReference>( pOperand );
-      SetLocalVariable( localVariableIndex, pArray );
+      auto pArray = boost::dynamic_pointer_cast<ObjectReference>(pOperand);
+      SetLocalVariable(localVariableIndex, pArray);
     }
-    else if ( e_JavaVariableTypes::ClassReference == pOperand->GetVariableType() )
+    else if (e_JavaVariableTypes::ClassReference == pOperand->GetVariableType())
     {
-      auto pClassRef = boost::dynamic_pointer_cast<JavaClassReference>( pOperand );
-      auto pJavaLangClass = CreateJavaLangClassFromClassName( pClassRef->GetClassFile()->GetName() );
-      SetLocalVariable( localVariableIndex, pJavaLangClass );
+      auto pClassRef = boost::dynamic_pointer_cast<JavaClassReference>(pOperand);
+      auto pJavaLangClass = CreateJavaLangClassFromClassName(pClassRef->GetClassFile()->GetName());
+      SetLocalVariable(localVariableIndex, pJavaLangClass);
 
       //SetLocalVariable( localVariableIndex, pClassRef );
     }
     else
     {
-      throw NotImplementedException( __FUNCTION__ " - Not yet implemented" );
+      throw NotImplementedException(__FUNCTION__ " - Not yet implemented");
     }
   }
 }
 
-void BasicVirtualMachineState::SetLocalVariable( uint16_t localVariableIndex, boost::intrusive_ptr<IJavaVariableType> pValue )
+void BasicVirtualMachineState::SetLocalVariable(uint16_t localVariableIndex, boost::intrusive_ptr<IJavaVariableType> pValue)
 {
-  if ( nullptr == pValue )
+  if (nullptr == pValue)
   {
-    throw NullPointerException( __FUNCTION__ " - Value argument was NULL." );
+    throw NullPointerException(__FUNCTION__ " - Value argument was NULL.");
   }
 
-  m_LocalVariableStack[ m_LocalVariableStackFramePointer + localVariableIndex ].m_pValue = pValue;
+  m_LocalVariableStack[m_LocalVariableStackFramePointer + localVariableIndex].m_pValue = pValue;
 }
 
-void BasicVirtualMachineState::NameLocalVariable( uint16_t localVariableIndex, boost::intrusive_ptr<JavaString> pName )
+void BasicVirtualMachineState::NameLocalVariable(uint16_t localVariableIndex, boost::intrusive_ptr<JavaString> pName)
 {
-  if ( nullptr == pName )
+  if (nullptr == pName)
   {
-    throw NullPointerException( __FUNCTION__ " - Value argument was NULL." );
+    throw NullPointerException(__FUNCTION__ " - Value argument was NULL.");
   }
 
-  m_LocalVariableStack[ m_LocalVariableStackFramePointer + localVariableIndex ].m_pName = pName;
+  m_LocalVariableStack[m_LocalVariableStackFramePointer + localVariableIndex].m_pName = pName;
 }
 
-boost::intrusive_ptr<IJavaVariableType> BasicVirtualMachineState::GetLocalVariable( uint16_t localVariableIndex )
+boost::intrusive_ptr<IJavaVariableType> BasicVirtualMachineState::GetLocalVariable(uint16_t localVariableIndex)
 {
-  return m_LocalVariableStack.at( m_LocalVariableStackFramePointer + localVariableIndex ).m_pValue;
+  return m_LocalVariableStack.at(m_LocalVariableStackFramePointer + localVariableIndex).m_pValue;
 }
 
-const boost::intrusive_ptr<JavaString> &BasicVirtualMachineState::GetLocalVariableName( uint16_t localVariableIndex )
+const boost::intrusive_ptr<JavaString>& BasicVirtualMachineState::GetLocalVariableName(uint16_t localVariableIndex)
 {
-  return m_LocalVariableStack.at( m_LocalVariableStackFramePointer + localVariableIndex ).m_pName;
+  return m_LocalVariableStack.at(m_LocalVariableStackFramePointer + localVariableIndex).m_pName;
 }
 
-std::shared_ptr<JavaClass> BasicVirtualMachineState::LoadClass( const JavaString &className, const JavaString &path )
+
+std::shared_ptr<JavaClass> BasicVirtualMachineState::LoadClass(const DataBuffer& classData)
+{
+  DefaultClassLoader loader;
+  auto pClass = loader.LoadClass(BigEndianStream::FromDataBuffer(classData));
+
+  if (nullptr != pClass)
+  {
+    GetClassLibrary()->AddClass(pClass);
+  }
+
+  return pClass;
+}
+
+std::shared_ptr<JavaClass> BasicVirtualMachineState::LoadClass(const JavaString& className, const JavaString& path)
 {
   DefaultClassLoader loader;
 
-  std::shared_ptr<JavaClass> pClass = GetClassLibrary()->FindClass( className );
-  if ( nullptr != pClass )
+  std::shared_ptr<JavaClass> pClass = GetClassLibrary()->FindClass(className);
+  if (nullptr != pClass)
   {
     return pClass;
   }
 
   try
   {
-   
+
     //auto pEnv = m_pJNI.lock()->GetEnvironment();
     //pEnv->
 
     if (!path.IsEmpty())
     {
-        loader.AddSearchPath(path.ToCharacterArray());
+      loader.AddSearchPath(path.ToCharacterArray());
     }
 
-    JavaString finalClassName = className.Append( JVMX_T( ".class" ) );
-    pClass = loader.LoadClass( finalClassName.ToUtf16String().c_str() );
+    JavaString finalClassName = className.Append(JVMX_T(".class"));
+    pClass = loader.LoadClass(finalClassName.ToUtf16String().c_str());
   }
-  catch ( FileInvalidException & )
+  catch (FileInvalidException&)
   {
     // TODO: Fix this.
     pClass = nullptr;
     throw;
   }
-  catch ( FileDoesNotExistException & )
+  catch (FileDoesNotExistException&)
   {
     //ThrowJavaException( "ClassNotFoundException" );
     pClass = nullptr;
     throw;
   }
 
-  if ( nullptr != pClass )
+  if (nullptr != pClass)
   {
-    GetClassLibrary()->AddClass( pClass );
+    GetClassLibrary()->AddClass(pClass);
   }
 
   return pClass;
@@ -1169,7 +1183,7 @@ std::shared_ptr<JavaClass> BasicVirtualMachineState::LoadClass( const JavaString
 
 boost::intrusive_ptr<IJavaVariableType> BasicVirtualMachineState::PeekOperand()
 {
-  if ( 0 == m_OperandStack.size() )
+  if (0 == m_OperandStack.size())
   {
     return nullptr;
   }
@@ -1177,7 +1191,7 @@ boost::intrusive_ptr<IJavaVariableType> BasicVirtualMachineState::PeekOperand()
   return m_OperandStack.back().pOperand;
 }
 
-void BasicVirtualMachineState::InitialiseLocalVariables( size_t numberofLocalVariables, std::shared_ptr<CodeAttributeLocalVariableTable> pLocalVariableTable, std::shared_ptr<ConstantPool> pConstantPool )
+void BasicVirtualMachineState::InitialiseLocalVariables(size_t numberofLocalVariables, std::shared_ptr<CodeAttributeLocalVariableTable> pLocalVariableTable, std::shared_ptr<ConstantPool> pConstantPool)
 {
 #ifdef _DEBUG
   const size_t debugNumberOfVariables = numberofLocalVariables;
@@ -1185,33 +1199,33 @@ void BasicVirtualMachineState::InitialiseLocalVariables( size_t numberofLocalVar
 #endif // _DEBUG
 
   m_LocalVariableStackFramePointer = m_LocalVariableStack.size();
-  m_LocalVariableStack.resize( m_LocalVariableStack.size() + numberofLocalVariables );
+  m_LocalVariableStack.resize(m_LocalVariableStack.size() + numberofLocalVariables);
 
 #ifdef _DEBUG
-  JVMX_ASSERT( m_LocalVariableStack.size() == debugStackSize + debugNumberOfVariables );
+  JVMX_ASSERT(m_LocalVariableStack.size() == debugStackSize + debugNumberOfVariables);
 #endif // _DEBUG
 
-  for ( size_t index = 0; index < numberofLocalVariables; ++ index )
+  for (size_t index = 0; index < numberofLocalVariables; ++index)
   {
-    SetLocalVariable( static_cast<uint16_t>( index ), boost::intrusive_ptr<ObjectReference> ( new ObjectReference( nullptr ) ) );
+    SetLocalVariable(static_cast<uint16_t>(index), boost::intrusive_ptr<ObjectReference>(new ObjectReference(nullptr)));
   }
 
 #ifdef _DEBUG
-  JVMX_ASSERT( m_LocalVariableStack.size() == debugStackSize + debugNumberOfVariables );
-  JVMX_ASSERT( debugNumberOfVariables == numberofLocalVariables );
+  JVMX_ASSERT(m_LocalVariableStack.size() == debugStackSize + debugNumberOfVariables);
+  JVMX_ASSERT(debugNumberOfVariables == numberofLocalVariables);
 #endif // _DEBUG
 
 
-  if ( nullptr != pLocalVariableTable )
+  if (nullptr != pLocalVariableTable)
   {
-    for ( size_t i = 0; i < pLocalVariableTable->GetNumberOfLocalVariables(); ++ i )
+    for (size_t i = 0; i < pLocalVariableTable->GetNumberOfLocalVariables(); ++i)
     {
-      ConstantPoolIndex index = pLocalVariableTable->GetIndexAt( i );
-      ConstantPoolIndex descriptorIndex = pLocalVariableTable->GetDescriptorIndexAt( i );
+      ConstantPoolIndex index = pLocalVariableTable->GetIndexAt(i);
+      ConstantPoolIndex descriptorIndex = pLocalVariableTable->GetDescriptorIndexAt(i);
 
-      std::shared_ptr<ConstantPoolEntry> pConstant = pConstantPool->GetConstant( descriptorIndex );
-      SetLocalVariable( index, TypeParser::GetDefaultValue( *pConstant->AsString() ) );
-      NameLocalVariable( index, pLocalVariableTable->GetNameReferenceAt( i )->GetStringValue() );
+      std::shared_ptr<ConstantPoolEntry> pConstant = pConstantPool->GetConstant(descriptorIndex);
+      SetLocalVariable(index, TypeParser::GetDefaultValue(*pConstant->AsString()));
+      NameLocalVariable(index, pLocalVariableTable->GetNameReferenceAt(i)->GetStringValue());
     }
 
     // Note: There might be an issue here if we need to reset the variables during the execution of a function.
@@ -1222,17 +1236,17 @@ void BasicVirtualMachineState::InitialiseLocalVariables( size_t numberofLocalVar
   }
 }
 
-void BasicVirtualMachineState::UpdateCurrentClassName( boost::intrusive_ptr<JavaString> pNewName )
+void BasicVirtualMachineState::UpdateCurrentClassName(boost::intrusive_ptr<JavaString> pNewName)
 {
-  if ( m_CurrentDisplayCallStackEntry.m_ClassName.IsEmpty() )
+  if (m_CurrentDisplayCallStackEntry.m_ClassName.IsEmpty())
   {
-    throw InvalidStateException( __FUNCTION__ " - Tried to update the current class name when it already exists." );
+    throw InvalidStateException(__FUNCTION__ " - Tried to update the current class name when it already exists.");
   }
 
-  UpdateCurrentClassName( *pNewName );
+  UpdateCurrentClassName(*pNewName);
 }
 
-void BasicVirtualMachineState::UpdateCurrentClassName( JavaString newName )
+void BasicVirtualMachineState::UpdateCurrentClassName(JavaString newName)
 {
   m_CurrentDisplayCallStackEntry.m_ClassName = newName;
 
@@ -1248,7 +1262,7 @@ std::shared_ptr<MethodInfo> BasicVirtualMachineState::GetCurrentMethodInfo()
 {
   AssertValid();
 
-  if ( m_MethodInfoStack.empty() )
+  if (m_MethodInfoStack.empty())
   {
     return nullptr;
   }
@@ -1256,89 +1270,89 @@ std::shared_ptr<MethodInfo> BasicVirtualMachineState::GetCurrentMethodInfo()
   return m_MethodInfoStack.back();
 }
 
-boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateObject( std::shared_ptr<JavaClass> pClass )
+boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateObject(std::shared_ptr<JavaClass> pClass)
 {
-  if ( !pClass->IsInitialsed() )
+  if (!pClass->IsInitialsed())
   {
-    InitialiseClass( *pClass->GetName() );
+    InitialiseClass(*pClass->GetName());
   }
 
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (HasUserCodeStarted())
   {
-      GetLogger()->LogDebug("Creating instance of class: %s", pClass->GetName()->ToUtf8String().c_str());
+    GetLogger()->LogDebug("Creating instance of class: %s", pClass->GetName()->ToUtf8String().c_str());
   }
 #endif // _DEBUG
 
   boost::intrusive_ptr<JavaString> pSuperClassName = pClass->GetSuperClassName();
-  while ( !pSuperClassName->IsEmpty() )
+  while (!pSuperClassName->IsEmpty())
   {
-    std::shared_ptr<JavaClass> pSuperClass = LoadClass( *pSuperClassName );
+    std::shared_ptr<JavaClass> pSuperClass = LoadClass(*pSuperClassName);
 
-    if ( !pSuperClass->IsInitialsed() )
+    if (!pSuperClass->IsInitialsed())
     {
-      InitialiseClass( *pSuperClassName );
+      InitialiseClass(*pSuperClassName);
     }
 
     pSuperClassName = pSuperClass->GetSuperClassName();
   }
 
-  std::shared_ptr<IGarbageCollector> pGC = GlobalCatalog::GetInstance().Get( "GarbageCollector" );
+  std::shared_ptr<IGarbageCollector> pGC = GlobalCatalog::GetInstance().Get("GarbageCollector");
 
-  JavaObject *pObjectMemory =  reinterpret_cast<JavaObject *>( pGC->AllocateObject( sizeof( JavaObject ) + pClass->CalculateInstanceSizeInBytes() ) );
-  JavaObject *pObject = new ( pObjectMemory ) JavaObject( pClass );
+  JavaObject* pObjectMemory = reinterpret_cast<JavaObject*>(pGC->AllocateObject(sizeof(JavaObject) + pClass->CalculateInstanceSizeInBytes()));
+  JavaObject* pObject = new (pObjectMemory) JavaObject(pClass);
 
-  std::shared_ptr<IObjectRegistry> pObjectRegistry = GlobalCatalog::GetInstance().Get( "ObjectRegistry" );
-  boost::intrusive_ptr<ObjectReference> ref = new ObjectReference( pObjectRegistry->AddObject( pObject ) );
-  pGC->AddRecentAllocation( ref );
+  std::shared_ptr<IObjectRegistry> pObjectRegistry = GlobalCatalog::GetInstance().Get("ObjectRegistry");
+  boost::intrusive_ptr<ObjectReference> ref = new ObjectReference(pObjectRegistry->AddObject(pObject));
+  pGC->AddRecentAllocation(ref);
 
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (HasUserCodeStarted())
   {
-      GetLogger()->LogDebug("Completed creation of instance of class: %s", pClass->GetName()->ToUtf8String().c_str());
+    GetLogger()->LogDebug("Completed creation of instance of class: %s", pClass->GetName()->ToUtf8String().c_str());
   }
 #endif // _DEBUG
 
   return ref;
 }
 
-boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateStringObject( const char *bytes )
+boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateStringObject(const char* bytes)
 {
-  return CreateStringObject( JavaString::FromUtf8ByteArray( strlen( bytes ), reinterpret_cast<const uint8_t *>( bytes ) ) );
+  return CreateStringObject(JavaString::FromUtf8ByteArray(strlen(bytes), reinterpret_cast<const uint8_t*>(bytes)));
 }
 
-boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateStringObject( const JavaString &string )
+boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateStringObject(const JavaString& string)
 {
-  static const JavaString c_StringClassName = JavaString::FromCString( JVMX_T( "java/lang/String" ) );
-  boost::intrusive_ptr<ObjectReference> pStringObject = CreateObject( GetClassLibrary()->FindClass( c_StringClassName ) );
+  static const JavaString c_StringClassName = JavaString::FromCString(JVMX_T("java/lang/String"));
+  boost::intrusive_ptr<ObjectReference> pStringObject = CreateObject(GetClassLibrary()->FindClass(c_StringClassName));
 
 #ifdef _DEBUG
   const size_t debugSize = GetOperandStackSize();
 #endif // _DEBUG
 
-  boost::intrusive_ptr<ObjectReference> pContents = CreateArray( e_JavaArrayTypes::Char, string.GetLengthInCodePoints() );
-  HelperTypes::ConvertJavaStringToArray( pContents, string );
+  boost::intrusive_ptr<ObjectReference> pContents = CreateArray(e_JavaArrayTypes::Char, string.GetLengthInCodePoints());
+  HelperTypes::ConvertJavaStringToArray(pContents, string);
 
 
-  if ( 0 != string.GetLengthInCodePoints() )
+  if (0 != string.GetLengthInCodePoints())
   {
-    PushOperand( pStringObject );
-    PushOperand( pContents ); //[C
-    PushOperand( boost::intrusive_ptr<JavaInteger>( new JavaInteger( JavaInteger::FromHostInt32( 0 ) ) ) ); // I
-    PushOperand( boost::intrusive_ptr<JavaInteger>( new JavaInteger( JavaInteger::FromHostInt32( pContents->GetContainedArray()->GetNumberOfElements() ) ) ) ); // I
-    PushOperand( boost::intrusive_ptr<JavaBool>( new JavaBool( JavaBool::FromBool( true ) ) ) ); // Z
+    PushOperand(pStringObject);
+    PushOperand(pContents); //[C
+    PushOperand(boost::intrusive_ptr<JavaInteger>(new JavaInteger(JavaInteger::FromHostInt32(0)))); // I
+    PushOperand(boost::intrusive_ptr<JavaInteger>(new JavaInteger(JavaInteger::FromHostInt32(pContents->GetContainedArray()->GetNumberOfElements())))); // I
+    PushOperand(boost::intrusive_ptr<JavaBool>(new JavaBool(JavaBool::FromBool(true)))); // Z
 
-    Execute( c_StringClassName, c_InstanceInitialisationMethodName, c_StringInitialisationMethodTypeWithArrayIntIntBool );
+    Execute(c_StringClassName, c_InstanceInitialisationMethodName, c_StringInitialisationMethodTypeWithArrayIntIntBool);
   }
   else
   {
-    PushOperand( pStringObject );
-    PushOperand( pContents );
-    Execute( c_StringClassName, c_InstanceInitialisationMethodName, c_StringInitialisationMethodTypeWithArrayOnly );
+    PushOperand(pStringObject);
+    PushOperand(pContents);
+    Execute(c_StringClassName, c_InstanceInitialisationMethodName, c_StringInitialisationMethodTypeWithArrayOnly);
   }
 
 #ifdef _DEBUG
-  JVMX_ASSERT( GetOperandStackSize() == debugSize );
+  JVMX_ASSERT(GetOperandStackSize() == debugSize);
 #endif // _DEBUG
 
   return pStringObject;
@@ -1349,19 +1363,19 @@ std::shared_ptr<IClassLibrary> BasicVirtualMachineState::GetRuntimeConstantPool(
   return GetClassLibrary();
 }
 
-std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethod( JavaClass *pClassFile, const JavaString &methodName, const JavaString &methodSignature )
+std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethod(JavaClass* pClassFile, const JavaString& methodName, const JavaString& methodSignature)
 {
-  if ( pClassFile->IsInterface() )
+  if (pClassFile->IsInterface())
   {
-    std::shared_ptr<IExecutionEngine> pEngine = GlobalCatalog::GetInstance().Get( "Engine" );
-    pEngine->ThrowJavaException( shared_from_this(), c_JavaIncompatibleClassChangeErrorException );
+    std::shared_ptr<IExecutionEngine> pEngine = GlobalCatalog::GetInstance().Get("Engine");
+    pEngine->ThrowJavaException(shared_from_this(), c_JavaIncompatibleClassChangeErrorException);
     return nullptr;
   }
 
-  std::shared_ptr<MethodInfo> pMethodInfo = pClassFile->GetMethodByNameAndType( methodName, methodSignature );
-  if ( nullptr == pMethodInfo )
+  std::shared_ptr<MethodInfo> pMethodInfo = pClassFile->GetMethodByNameAndType(methodName, methodSignature);
+  if (nullptr == pMethodInfo)
   {
-    if ( nullptr == pClassFile->GetSuperClass() )
+    if (nullptr == pClassFile->GetSuperClass())
     {
       return nullptr;
     }
@@ -1369,58 +1383,58 @@ std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethod( JavaClass *
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
     if (HasUserCodeStarted())
     {
-        GetLogger()->LogDebug(__FUNCTION__ " - Method %s with type %s *not* found on class %s. Trying Super class %s ", methodName.ToUtf8String().c_str(), methodSignature.ToUtf8String().c_str(), pClassFile->GetName()->ToUtf8String().c_str(), pClassFile->GetSuperClassName()->ToUtf8String().c_str());
+      GetLogger()->LogDebug(__FUNCTION__ " - Method %s with type %s *not* found on class %s. Trying Super class %s ", methodName.ToUtf8String().c_str(), methodSignature.ToUtf8String().c_str(), pClassFile->GetName()->ToUtf8String().c_str(), pClassFile->GetSuperClassName()->ToUtf8String().c_str());
     }
 #endif // _DEBUG
 
-    JavaClass *pSuperClass = pClassFile->GetSuperClass().get();
-    if ( nullptr == pSuperClass )
+    JavaClass* pSuperClass = pClassFile->GetSuperClass().get();
+    if (nullptr == pSuperClass)
     {
       pSuperClass = pClassFile->GetSuperClass().get();
-      if ( nullptr == pSuperClass )
+      if (nullptr == pSuperClass)
       {
-        GetLogger()->LogError( __FUNCTION__ " - %s Could not load class file %s", GetCurrentClassAndMethodName(), pClassFile->GetSuperClass()->GetName()->ToUtf8String().c_str() );
+        GetLogger()->LogError(__FUNCTION__ " - %s Could not load class file %s", GetCurrentClassAndMethodName(), pClassFile->GetSuperClass()->GetName()->ToUtf8String().c_str());
 
         // Assume Java Exception already thrown.
         return nullptr;
       }
     }
 
-    pMethodInfo = ResolveMethod( pSuperClass, methodName, methodSignature );
+    pMethodInfo = ResolveMethod(pSuperClass, methodName, methodSignature);
   }
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (HasUserCodeStarted())
   {
-      if (nullptr != pMethodInfo)
-      {
-          GetLogger()->LogDebug(__FUNCTION__ " - Method %s with type %s  found on class %s. ", methodName.ToUtf8String().c_str(), methodSignature.ToUtf8String().c_str(), pMethodInfo->GetClass()->GetName()->ToUtf8String().c_str());
-      }
+    if (nullptr != pMethodInfo)
+    {
+      GetLogger()->LogDebug(__FUNCTION__ " - Method %s with type %s  found on class %s. ", methodName.ToUtf8String().c_str(), methodSignature.ToUtf8String().c_str(), pMethodInfo->GetClass()->GetName()->ToUtf8String().c_str());
+    }
   }
 #endif // _DEBUG
 
   return pMethodInfo;
 }
 
-std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethodOnClass( boost::intrusive_ptr<JavaString> pClassName, const ConstantPoolMethodReference *pMethodRef )
+std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethodOnClass(boost::intrusive_ptr<JavaString> pClassName, const ConstantPoolMethodReference* pMethodRef)
 {
-  std::shared_ptr<JavaClass> pClassFile = GetClassLibrary()->FindClass( *pClassName );
-  if ( nullptr == pClassFile )
+  std::shared_ptr<JavaClass> pClassFile = GetClassLibrary()->FindClass(*pClassName);
+  if (nullptr == pClassFile)
   {
-    pClassFile = LoadClass( *pClassName );
-    if ( nullptr == pClassFile )
+    pClassFile = LoadClass(*pClassName);
+    if (nullptr == pClassFile)
     {
-      GetLogger()->LogError( __FUNCTION__ " - %s Could not load class file %s", GetCurrentClassAndMethodName(), pClassName->ToUtf8String().c_str() );
+      GetLogger()->LogError(__FUNCTION__ " - %s Could not load class file %s", GetCurrentClassAndMethodName(), pClassName->ToUtf8String().c_str());
 
       // Assume Java Exception already thrown.
       return nullptr;
     }
   }
 
-  std::shared_ptr<MethodInfo> pMethodInfo = pClassFile->GetMethodByNameAndType( *pMethodRef->GetName(), *pMethodRef->GetType() );
-  if ( nullptr == pMethodInfo )
+  std::shared_ptr<MethodInfo> pMethodInfo = pClassFile->GetMethodByNameAndType(*pMethodRef->GetName(), *pMethodRef->GetType());
+  if (nullptr == pMethodInfo)
   {
-    if ( nullptr == pClassFile->GetSuperClass() )
+    if (nullptr == pClassFile->GetSuperClass())
     {
       return nullptr;
     }
@@ -1428,16 +1442,16 @@ std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethodOnClass( boos
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
     if (HasUserCodeStarted())
     {
-        GetLogger()->LogDebug(__FUNCTION__ " - Method %s with type %s *not* found on class %s. Trying Super class %s ", pMethodRef->GetName()->ToUtf8String().c_str(), pMethodRef->GetType()->ToUtf8String().c_str(), pClassName->ToUtf8String().c_str(), pClassFile->GetSuperClassName()->ToUtf8String().c_str());
+      GetLogger()->LogDebug(__FUNCTION__ " - Method %s with type %s *not* found on class %s. Trying Super class %s ", pMethodRef->GetName()->ToUtf8String().c_str(), pMethodRef->GetType()->ToUtf8String().c_str(), pClassName->ToUtf8String().c_str(), pClassFile->GetSuperClassName()->ToUtf8String().c_str());
     }
 #endif // _DEBUG
-    pMethodInfo = ResolveMethodOnClass( pClassFile->GetSuperClass()->GetName(), pMethodRef );
+    pMethodInfo = ResolveMethodOnClass(pClassFile->GetSuperClass()->GetName(), pMethodRef);
   }
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (HasUserCodeStarted())
   {
-      GetLogger()->LogDebug(__FUNCTION__ " - Method %s with type %s  found on class %s. ", pMethodRef->GetName()->ToUtf8String().c_str(), pMethodRef->GetType()->ToUtf8String().c_str(), pMethodInfo->GetClass()->GetName()->ToUtf8String().c_str());
+    GetLogger()->LogDebug(__FUNCTION__ " - Method %s with type %s  found on class %s. ", pMethodRef->GetName()->ToUtf8String().c_str(), pMethodRef->GetType()->ToUtf8String().c_str(), pMethodInfo->GetClass()->GetName()->ToUtf8String().c_str());
   }
 #endif // _DEBUG
 
@@ -1453,77 +1467,84 @@ void BasicVirtualMachineState::LogLocalVariables()
 {
   AssertValid();
 
-  GetLogger()->LogDebug( "Dumping Local Variables (%d):", m_LocalVariableStackFramePointer );
+  GetLogger()->LogDebug("Dumping Local Variables (%d):", m_LocalVariableStackFramePointer);
 
-  for ( uint16_t i = 0; i < m_LocalVariableStack.size() - m_LocalVariableStackFramePointer; ++ i )
+  for (uint16_t i = 0; i < m_LocalVariableStack.size() - m_LocalVariableStackFramePointer; ++i)
   {
-    auto pLocalVariable = GetLocalVariable( i );
+    auto pLocalVariable = GetLocalVariable(i);
 
-    if ( nullptr == pLocalVariable )
+    if (nullptr == pLocalVariable)
     {
-      GetLogger()->LogDebug( "NULL Local variable found. Bailing" );
+      GetLogger()->LogDebug("NULL Local variable found. Bailing");
       return;
     }
 
-    boost::intrusive_ptr<JavaString> pName = GetLocalVariableName( i );
-    if ( nullptr == pName )
+    boost::intrusive_ptr<JavaString> pName = GetLocalVariableName(i);
+    if (nullptr == pName)
     {
-      GetLogger()->LogDebug( "\t [%d] : %s", i, pLocalVariable->ToString().ToUtf8String().c_str() );
+      GetLogger()->LogDebug("\t [%d] : %s", i, pLocalVariable->ToString().ToUtf8String().c_str());
     }
     else
     {
-      GetLogger()->LogDebug( "\t [%d][%s] : %s", i, pName->ToString().ToUtf8String().c_str(), pLocalVariable->ToString().ToUtf8String().c_str() );
+      GetLogger()->LogDebug("\t [%d][%s] : %s", i, pName->ToString().ToUtf8String().c_str(), pLocalVariable->ToString().ToUtf8String().c_str());
     }
   }
 }
 
-void BasicVirtualMachineState::InitialiseClass( const JavaString &className )
+void BasicVirtualMachineState::InitialiseClass(const JavaString& className)
 {
-  std::shared_ptr<JavaClass> pClassFile = GetClassLibrary()->FindClass( className );
-  if ( nullptr == pClassFile )
+  std::shared_ptr<JavaClass> pClassFile = GetClassLibrary()->FindClass(className);
+
+  if (nullptr == pClassFile)
   {
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-      if (HasUserCodeStarted())
-      {
-          GetLogger()->LogDebug(__FUNCTION__ " - Class %s not loaded. Loading now.", className.ToUtf8String().c_str());
-      }
+    if (HasUserCodeStarted())
+    {
+      GetLogger()->LogDebug(__FUNCTION__ " - Class %s not loaded. Loading now.", className.ToUtf8String().c_str());
+    }
 #endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
 
-    pClassFile = LoadClass( className );
-    if ( nullptr == pClassFile )
+    pClassFile = LoadClass(className);
+    if (nullptr == pClassFile)
     {
 #ifdef _DEBUG
-      GetLogger()->LogDebug( __FUNCTION__ " - Returning because of load failure. Assume JavaException has been thrown." );
+      GetLogger()->LogDebug(__FUNCTION__ " - Returning because of load failure. Assume JavaException has been thrown.");
 #endif // _DEBUG
       // We'd already have thrown a Java Exception.
       return;
     }
   }
 
-  std::lock_guard<std::recursive_mutex> pLock( pClassFile->GetInitialisationMutex() );
+  InitialiseClass(pClassFile);
+}
 
-  if ( pClassFile->IsInitialsed() )
+void BasicVirtualMachineState::InitialiseClass(std::shared_ptr<JavaClass> pClassFile)
+{
+  std::lock_guard<std::recursive_mutex> pLock(pClassFile->GetInitialisationMutex());
+
+  if (pClassFile->IsInitialsed())
   {
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-      if (HasUserCodeStarted())
-      {
-          GetLogger()->LogDebug(__FUNCTION__ " - Class %s already initialized.", className.ToUtf8String().c_str());
-      }
+    if (HasUserCodeStarted())
+    {
+      GetLogger()->LogDebug(__FUNCTION__ " - Class %s already initialized.", (* pClassFile->GetName().get()).ToUtf8String().c_str());
+    }
 #endif // _DEBUG
     return;
   }
 
   // Recursively Load + Initialise Super Classes
   auto pSuperClass = pClassFile->GetSuperClass();
-  if ( nullptr != pSuperClass )
+  if (nullptr != pSuperClass)
   {
-    InitialiseClass( *pSuperClass->GetName() );
+    InitialiseClass(*pSuperClass->GetName());
   }
 
   pClassFile->SetInitialising();
+  pClassFile->GetName();
 
   // Execute() will call PushState() and PopState()!!
-  Execute( className, c_ClassInitialisationMethodName, c_ClassInitialisationMethodType );
+  Execute(*pClassFile->GetName().get(), c_ClassInitialisationMethodName, c_ClassInitialisationMethodType);
 
   pClassFile->SetInitialised();
 
@@ -1534,49 +1555,49 @@ void BasicVirtualMachineState::LogCallStack()
 {
   AssertValid();
 
-  GetLogger()->LogDebug( "Current Call Stack:" );
-  for ( auto callStackEntry : m_DisplayCallStack )
+  GetLogger()->LogDebug("Current Call Stack:");
+  for (auto callStackEntry : m_DisplayCallStack)
   {
-    GetLogger()->LogDebug( "\t%s::%s%s - %lld", callStackEntry.m_ClassName.ToUtf8String().c_str(), callStackEntry.m_MethodName.ToUtf8String().c_str(), callStackEntry.m_MethodType.ToUtf8String().c_str(), callStackEntry.m_ProgramCounter );
+    GetLogger()->LogDebug("\t%s::%s%s - %lld", callStackEntry.m_ClassName.ToUtf8String().c_str(), callStackEntry.m_MethodName.ToUtf8String().c_str(), callStackEntry.m_MethodType.ToUtf8String().c_str(), callStackEntry.m_ProgramCounter);
   }
 
-  GetLogger()->LogDebug( "\t%s::%s%s - %lld", m_CurrentDisplayCallStackEntry.m_ClassName.ToUtf8String().c_str(), m_CurrentDisplayCallStackEntry.m_MethodName.ToUtf8String().c_str(), m_CurrentDisplayCallStackEntry.m_MethodType.ToUtf8String().c_str(), ( int64_t )m_CurrentRegisters.m_ProgramCounter );
+  GetLogger()->LogDebug("\t%s::%s%s - %lld", m_CurrentDisplayCallStackEntry.m_ClassName.ToUtf8String().c_str(), m_CurrentDisplayCallStackEntry.m_MethodName.ToUtf8String().c_str(), m_CurrentDisplayCallStackEntry.m_MethodType.ToUtf8String().c_str(), (int64_t)m_CurrentRegisters.m_ProgramCounter);
 }
 
 void BasicVirtualMachineState::LogOperandStack()
 {
   AssertValid();
 
-  GetLogger()->LogDebug( "Current Operand Stack:" );
-  for ( auto entry : m_OperandStack )
+  GetLogger()->LogDebug("Current Operand Stack:");
+  for (auto entry : m_OperandStack)
   {
     auto pOperand = entry.pOperand;
-    std::string variableType = TypeParser::ConvertTypeToString( pOperand->GetVariableType() ).ToUtf8String();
+    std::string variableType = TypeParser::ConvertTypeToString(pOperand->GetVariableType()).ToUtf8String();
     std::string operandAsString = pOperand->ToString().ToUtf8String();
 
-    GetLogger()->LogDebug( "\t%s = %s", variableType.c_str(), operandAsString.c_str() );
+    GetLogger()->LogDebug("\t%s = %s", variableType.c_str(), operandAsString.c_str());
   }
 }
 
-boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateAndInitialiseObject( std::shared_ptr<JavaClass> pClass )
+boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateAndInitialiseObject(std::shared_ptr<JavaClass> pClass)
 {
-  boost::intrusive_ptr<ObjectReference> pObject = CreateObject( pClass );
+  boost::intrusive_ptr<ObjectReference> pObject = CreateObject(pClass);
 
-  std::shared_ptr<MethodInfo> pMethodInfo = pClass->GetMethodByNameAndType( c_InstanceInitialisationMethodName, c_InstanceInitialisationMethodType );
-  if ( nullptr == pMethodInfo )
+  std::shared_ptr<MethodInfo> pMethodInfo = pClass->GetMethodByNameAndType(c_InstanceInitialisationMethodName, c_InstanceInitialisationMethodType);
+  if (nullptr == pMethodInfo)
   {
     std::shared_ptr<JavaClass> pSuperClass = pClass;
     pSuperClass = pSuperClass->GetSuperClass();
-    while ( nullptr != pSuperClass )
+    while (nullptr != pSuperClass)
     {
-      pMethodInfo = pSuperClass->GetMethodByNameAndType( c_InstanceInitialisationMethodName, c_InstanceInitialisationMethodType );
-      if ( nullptr != pMethodInfo )
+      pMethodInfo = pSuperClass->GetMethodByNameAndType(c_InstanceInitialisationMethodName, c_InstanceInitialisationMethodType);
+      if (nullptr != pMethodInfo)
       {
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-          if (HasUserCodeStarted())
-          {
-              GetLogger()->LogDebug("Method found on Superclass of %s : Found method %s with type %s on superclass %s.", pClass->GetName()->ToUtf8String().c_str(), pMethodInfo->GetName()->ToUtf8String().c_str(), pMethodInfo->GetType()->ToUtf8String().c_str(), pMethodInfo->GetClass()->GetName()->ToUtf8String().c_str());
-          }
+        if (HasUserCodeStarted())
+        {
+          GetLogger()->LogDebug("Method found on Superclass of %s : Found method %s with type %s on superclass %s.", pClass->GetName()->ToUtf8String().c_str(), pMethodInfo->GetName()->ToUtf8String().c_str(), pMethodInfo->GetType()->ToUtf8String().c_str(), pMethodInfo->GetClass()->GetName()->ToUtf8String().c_str());
+        }
 #endif // _DEBUG
         break;
       }
@@ -1585,15 +1606,15 @@ boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateAndInitial
     }
   }
 
-  if ( nullptr == pMethodInfo )
+  if (nullptr == pMethodInfo)
   {
-    throw InvalidStateException( __FUNCTION__ " - Default constructor not found." );
+    throw InvalidStateException(__FUNCTION__ " - Default constructor not found.");
   }
 
   std::vector<boost::intrusive_ptr<IJavaVariableType> > paramArray;
-  PushState( *( pClass->GetName() ), c_InstanceInitialisationMethodName, c_InstanceInitialisationMethodType, pMethodInfo );
-  SetupLocalVariables( pMethodInfo, pObject, paramArray );
-  Execute( *pMethodInfo );
+  PushState(*(pClass->GetName()), c_InstanceInitialisationMethodName, c_InstanceInitialisationMethodType, pMethodInfo);
+  SetupLocalVariables(pMethodInfo, pObject, paramArray);
+  Execute(*pMethodInfo);
 
   //   ReleaseLocalVariables();
   //   PopState();
@@ -1601,51 +1622,51 @@ boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateAndInitial
   return pObject;
 }
 
-boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateArray( e_JavaArrayTypes type, size_t size )
+boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateArray(e_JavaArrayTypes type, size_t size)
 {
-  return HelperTypes::CreateArray( type, size );
+  return HelperTypes::CreateArray(type, size);
 }
 
 BasicVirtualMachineState::DisplayCallStackEntry::DisplayCallStackEntry()
-  : m_ClassName( JavaString::EmptyString() )
-  , m_MethodName( JavaString::EmptyString() )
-  , m_MethodType( JavaString::EmptyString() )
+  : m_ClassName(JavaString::EmptyString())
+  , m_MethodName(JavaString::EmptyString())
+  , m_MethodType(JavaString::EmptyString())
 {}
 
-std::vector<boost::intrusive_ptr<IJavaVariableType> > BasicVirtualMachineState::PopulateParameterArrayFromOperandStack( std::shared_ptr<MethodInfo> pMethodInfo )
+std::vector<boost::intrusive_ptr<IJavaVariableType> > BasicVirtualMachineState::PopulateParameterArrayFromOperandStack(std::shared_ptr<MethodInfo> pMethodInfo)
 {
-  TypeParser::ParsedMethodType parsedType = TypeParser::ParseMethodType( *( pMethodInfo->GetType() ) );
+  TypeParser::ParsedMethodType parsedType = TypeParser::ParseMethodType(*(pMethodInfo->GetType()));
 
-  if ( !pMethodInfo->IsStatic() )
+  if (!pMethodInfo->IsStatic())
   {
     size_t arrayLength = parsedType.parameters.size();
-    std::vector<boost::intrusive_ptr<IJavaVariableType> > paramArray( arrayLength + 1 );
+    std::vector<boost::intrusive_ptr<IJavaVariableType> > paramArray(arrayLength + 1);
 
-    for ( size_t i = 0; i <= arrayLength; ++ i )
+    for (size_t i = 0; i <= arrayLength; ++i)
     {
-      paramArray[ arrayLength - i ] = PopOperand();
+      paramArray[arrayLength - i] = PopOperand();
     }
     return paramArray;
   }
   else
   {
     size_t arrayLength = parsedType.parameters.size();
-    std::vector<boost::intrusive_ptr<IJavaVariableType> > paramArray( arrayLength );
+    std::vector<boost::intrusive_ptr<IJavaVariableType> > paramArray(arrayLength);
 
-    for ( size_t i = 0; i < arrayLength; ++ i )
+    for (size_t i = 0; i < arrayLength; ++i)
     {
-      paramArray[( arrayLength - 1 ) - i ] = PopOperand();
+      paramArray[(arrayLength - 1) - i] = PopOperand();
     }
     return paramArray;
   }
 }
 
-boost::intrusive_ptr<IJavaVariableType> BasicVirtualMachineState::PeekOperandFromBack( uint8_t count )
+boost::intrusive_ptr<IJavaVariableType> BasicVirtualMachineState::PeekOperandFromBack(uint8_t count)
 {
   uint8_t index = 1;
-  for ( auto it = m_OperandStack.rbegin(); it != m_OperandStack.rend(); ++ it )
+  for (auto it = m_OperandStack.rbegin(); it != m_OperandStack.rend(); ++it)
   {
-    if ( index == count )
+    if (index == count)
     {
       return it->pOperand;
     }
@@ -1656,51 +1677,51 @@ boost::intrusive_ptr<IJavaVariableType> BasicVirtualMachineState::PeekOperandFro
   return nullptr;
 }
 
-boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateJavaLangClassFromClassName( const boost::intrusive_ptr<JavaString> &pClassName )
+boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateJavaLangClassFromClassName(const boost::intrusive_ptr<JavaString>& pClassName)
 {
-  return CreateJavaLangClassFromClassName( *pClassName );
+  return CreateJavaLangClassFromClassName(*pClassName);
 }
 
-boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateJavaLangClassFromClassName( const JavaString &className )
+boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateJavaLangClassFromClassName(const JavaString& className)
 {
-  std::shared_ptr<IJavaLangClassList> pClassList = GlobalCatalog::GetInstance().Get( "JavaLangClassList" );
+  std::shared_ptr<IJavaLangClassList> pClassList = GlobalCatalog::GetInstance().Get("JavaLangClassList");
 
-  boost::intrusive_ptr<ObjectReference> pResult = pClassList->Find( className );
-  if ( nullptr != pResult )
+  boost::intrusive_ptr<ObjectReference> pResult = pClassList->Find(className);
+  if (nullptr != pResult)
   {
     return pResult;
   }
 
-  std::shared_ptr<JavaClass> pClassClass = GetClassLibrary()->FindClass( c_JavaLangClassName );
-  if ( nullptr == pClassClass )
+  std::shared_ptr<JavaClass> pClassClass = GetClassLibrary()->FindClass(c_JavaLangClassName);
+  if (nullptr == pClassClass)
   {
-    throw InvalidStateException( __FUNCTION__ " - Expected to find class: java.lang.Class" );
+    throw InvalidStateException(__FUNCTION__ " - Expected to find class: java.lang.Class");
   }
 
-  if ( !pClassClass->IsInitialsed() )
+  if (!pClassClass->IsInitialsed())
   {
-    InitialiseClass( *pClassClass->GetName() );
+    InitialiseClass(*pClassClass->GetName());
   }
 
   //pResult = CreateAndInitialiseObject( pClassClass );
-  pResult = CreateObject( pClassClass );
-  if ( nullptr == pResult )
+  pResult = CreateObject(pClassClass);
+  if (nullptr == pResult)
   {
-    throw InvalidStateException( __FUNCTION__ " - Expected to create an instance of: java.lang.Class" );
+    throw InvalidStateException(__FUNCTION__ " - Expected to create an instance of: java.lang.Class");
   }
 
-  pResult->GetContainedObject()->SetJVMXField( c_SyntheticField_ClassName, boost::intrusive_ptr<JavaString>( new JavaString( className ) ) );
-  pClassList->Add( className, pResult );
+  pResult->GetContainedObject()->SetJVMXField(c_SyntheticField_ClassName, boost::intrusive_ptr<JavaString>(new JavaString(className)));
+  pClassList->Add(className, pResult);
 
-  std::shared_ptr<MethodInfo> pMethodInfo = pResult->GetContainedObject()->GetClass()->GetMethodByNameAndType( c_InstanceInitialisationMethodName, c_JavaLangClassInitialisationMethodType );
+  std::shared_ptr<MethodInfo> pMethodInfo = pResult->GetContainedObject()->GetClass()->GetMethodByNameAndType(c_InstanceInitialisationMethodName, c_JavaLangClassInitialisationMethodType);
 
   // Put result on the stack (This pointer for <init>)
-  PushOperand( pResult );
+  PushOperand(pResult);
 
   // Push null parameter
-  PushOperand( boost::intrusive_ptr<ObjectReference>( new ObjectReference( nullptr ) ) );
+  PushOperand(boost::intrusive_ptr<ObjectReference>(new ObjectReference(nullptr)));
 
-  ExecuteMethod( c_JavaLangClassName, c_InstanceInitialisationMethodName, c_JavaLangClassInitialisationMethodType, pMethodInfo );
+  ExecuteMethod(c_JavaLangClassName, c_InstanceInitialisationMethodName, c_JavaLangClassInitialisationMethodType, pMethodInfo);
 
   //pClassList->Add( *pClassName, pResult );
 
@@ -1710,39 +1731,39 @@ boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateJavaLangCl
 void BasicVirtualMachineState::AssertValid() const
 {
 #ifdef _DEBUG
-  JVMX_ASSERT( IsInitialRun() || !m_CurrentDisplayCallStackEntry.m_ClassName.IsEmpty() );
+  JVMX_ASSERT(IsInitialRun() || !m_CurrentDisplayCallStackEntry.m_ClassName.IsEmpty());
 #endif // _DEBUG
 }
 
-bool BasicVirtualMachineState::IsCurrentMethod( JavaString className, JavaString methodName, JavaString methodType ) const
+bool BasicVirtualMachineState::IsCurrentMethod(JavaString className, JavaString methodName, JavaString methodType) const
 {
   return className == GetCurrentClassName() && methodName == GetCurrentMethodName() && methodType == GetCurrentMethodType();
 }
 
-boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::FindJavaLangClass( const JavaString &className ) const
+boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::FindJavaLangClass(const JavaString& className) const
 {
   AssertValid();
-  std::shared_ptr<IJavaLangClassList> pClassList = GlobalCatalog::GetInstance().Get( "JavaLangClassList" );
-  return pClassList->Find( className );
+  std::shared_ptr<IJavaLangClassList> pClassList = GlobalCatalog::GetInstance().Get("JavaLangClassList");
+  return pClassList->Find(className);
 }
 
-void BasicVirtualMachineState::ExecuteMethod( const JavaString &className, const JavaString &methodName, const JavaString &methodType, std::shared_ptr<MethodInfo> pInitialMethod )
+void BasicVirtualMachineState::ExecuteMethod(const JavaString& className, const JavaString& methodName, const JavaString& methodType, std::shared_ptr<MethodInfo> pInitialMethod)
 {
   // #ifdef _DEBUG
   //   uint32_t displayStackDepth = m_DisplayCallStack.size();
   // #endif // _DEBUG
 
-  PushState( className, methodName, methodType, pInitialMethod );
+  PushState(className, methodName, methodType, pInitialMethod);
 
-  DoSynchronisation( pInitialMethod );
+  DoSynchronisation(pInitialMethod);
 
-  SetupLocalVariables( pInitialMethod );
+  SetupLocalVariables(pInitialMethod);
 
 #ifdef _DEBUG
   AssertValid();
 #endif // _DEBUG
 
-  Execute( *pInitialMethod );
+  Execute(*pInitialMethod);
 
   // #ifdef _DEBUG
   //   AssertValid();
@@ -1750,53 +1771,53 @@ void BasicVirtualMachineState::ExecuteMethod( const JavaString &className, const
   // #endif // _DEBUG
 }
 
-void BasicVirtualMachineState::DoSynchronisation( std::shared_ptr<MethodInfo> pInitialMethod )
+void BasicVirtualMachineState::DoSynchronisation(std::shared_ptr<MethodInfo> pInitialMethod)
 {
-  if ( pInitialMethod->IsSynchronised() )
+  if (pInitialMethod->IsSynchronised())
   {
-    if ( pInitialMethod->IsStatic() )
+    if (pInitialMethod->IsStatic())
     {
-      PushMonitor( pInitialMethod->GetClass()->MonitorEnter( GetCurrentClassAndMethodName().ToUtf8String().c_str() ) );
+      PushMonitor(pInitialMethod->GetClass()->MonitorEnter(GetCurrentClassAndMethodName().ToUtf8String().c_str()));
     }
     else
     {
       boost::intrusive_ptr<IJavaVariableType> pTopOperand = PeekOperand();
-      if ( e_JavaVariableTypes::Object == pTopOperand->GetVariableType() )
+      if (e_JavaVariableTypes::Object == pTopOperand->GetVariableType())
       {
-        boost::intrusive_ptr<ObjectReference> pObject = boost::dynamic_pointer_cast<ObjectReference>( pTopOperand );
-        PushMonitor( pObject->GetContainedObject()->MonitorEnter( GetCurrentClassAndMethodName().ToUtf8String().c_str() ) );
+        boost::intrusive_ptr<ObjectReference> pObject = boost::dynamic_pointer_cast<ObjectReference>(pTopOperand);
+        PushMonitor(pObject->GetContainedObject()->MonitorEnter(GetCurrentClassAndMethodName().ToUtf8String().c_str()));
       }
-      else if ( e_JavaVariableTypes::Array == pTopOperand->GetVariableType() )
+      else if (e_JavaVariableTypes::Array == pTopOperand->GetVariableType())
       {
-        boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>( pTopOperand );
-        PushMonitor( pArray->GetContainedArray()->MonitorEnter( GetCurrentClassAndMethodName().ToUtf8String().c_str() ) );
+        boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>(pTopOperand);
+        PushMonitor(pArray->GetContainedArray()->MonitorEnter(GetCurrentClassAndMethodName().ToUtf8String().c_str()));
       }
       else
       {
-        throw InvalidStateException( __FUNCTION__ " - Expected an array or an object on top of the operand stack." );
+        throw InvalidStateException(__FUNCTION__ " - Expected an array or an object on top of the operand stack.");
       }
     }
   }
 }
 
-size_t BasicVirtualMachineState::CalculateNumberOfStackItemsToClear( size_t exceptionRegionStart ) const
+size_t BasicVirtualMachineState::CalculateNumberOfStackItemsToClear(size_t exceptionRegionStart) const
 {
   size_t numberOfItemsToClear = 0;
 
-  for ( auto it = m_OperandStack.crbegin(); it != m_OperandStack.crend(); ++ it )
+  for (auto it = m_OperandStack.crbegin(); it != m_OperandStack.crend(); ++it)
   {
     bool isOperandInExceptionScope = it->allocatedProgramCount >= exceptionRegionStart;
 
     // This implementation does *not* guard against recursive methods that throw exceptions. It will most probably
     // do the wrong thing in that case.
     // if ( !IsCurrentMethod( JavaString::FromCString( (const char16_t *)it->m_pClassName ), JavaString::FromCString( (const char16_t *)it->m_MethodName), JavaString::FromCString( (const char16_t *)it->m_MethodType) )it->m_MethodType ) )
-    if ( !IsCurrentMethod( it->m_pClassName, it->m_MethodName, it->m_MethodType )
-         || !isOperandInExceptionScope )
+    if (!IsCurrentMethod(it->m_pClassName, it->m_MethodName, it->m_MethodType)
+      || !isOperandInExceptionScope)
     {
       break;
     }
 
-    ++ numberOfItemsToClear;
+    ++numberOfItemsToClear;
   }
 
   return numberOfItemsToClear;
@@ -1804,34 +1825,34 @@ size_t BasicVirtualMachineState::CalculateNumberOfStackItemsToClear( size_t exce
 
 void BasicVirtualMachineState::DoGarbageCollection()
 {
-  std::shared_ptr<IGarbageCollector> pGC = GlobalCatalog::GetInstance().Get( "GarbageCollector" );
-  pGC->Collect( /* e_ForceGarbageCollection::No, shared_from_this() */ );
+  std::shared_ptr<IGarbageCollector> pGC = GlobalCatalog::GetInstance().Get("GarbageCollector");
+  pGC->Collect( /* e_ForceGarbageCollection::No, shared_from_this() */);
 }
 
-void BasicVirtualMachineState::StartShutdown( int exitCode )
+void BasicVirtualMachineState::StartShutdown(int exitCode)
 {
-  if ( IsShuttingDown() )
+  if (IsShuttingDown())
   {
     return;
   }
 
   m_isShuttingDown = true;
 
-  PushOperand( boost::intrusive_ptr<JavaInteger>( new JavaInteger( JavaInteger::FromHostInt32( exitCode ) ) ) );
-  Execute( JavaString::FromCString( "java/lang/System" ), JavaString::FromCString( "exit" ), JavaString::FromCString( "(I)V" ) );
+  PushOperand(boost::intrusive_ptr<JavaInteger>(new JavaInteger(JavaInteger::FromHostInt32(exitCode))));
+  Execute(JavaString::FromCString("java/lang/System"), JavaString::FromCString("exit"), JavaString::FromCString("(I)V"));
 }
 
-void BasicVirtualMachineState::Halt( int exitCode )
+void BasicVirtualMachineState::Halt(int exitCode)
 {
-  std::shared_ptr<IExecutionEngine> pEngine = GlobalCatalog::GetInstance().Get( "ExecutionEngine" );
+  std::shared_ptr<IExecutionEngine> pEngine = GlobalCatalog::GetInstance().Get("ExecutionEngine");
   pEngine->Halt();
   m_ExitCode = exitCode;
 }
 
-boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::GetClassLoaderForClassObject( boost::intrusive_ptr<ObjectReference> pObject )
+boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::GetClassLoaderForClassObject(boost::intrusive_ptr<ObjectReference> pObject)
 {
-  boost::intrusive_ptr<JavaString> pClassName = boost::dynamic_pointer_cast<JavaString>( pObject->GetContainedObject()->GetJVMXFieldByName( c_SyntheticField_ClassName ) );
-  std::shared_ptr<JavaClass> pClass = LoadClass( *pClassName );
+  boost::intrusive_ptr<JavaString> pClassName = boost::dynamic_pointer_cast<JavaString>(pObject->GetContainedObject()->GetJVMXFieldByName(c_SyntheticField_ClassName));
+  std::shared_ptr<JavaClass> pClass = LoadClass(*pClassName);
 
   return pClass->GetClassLoader();
 }
@@ -1840,48 +1861,48 @@ std::vector<boost::intrusive_ptr<IJavaVariableType>> BasicVirtualMachineState::G
 {
   std::vector<boost::intrusive_ptr<IJavaVariableType>> roots;
 
-  for ( auto entry : m_OperandStack )
+  for (auto entry : m_OperandStack)
   {
-    if ( e_JavaVariableTypes::Object == entry.pOperand->GetVariableType() ||
-         e_JavaVariableTypes::Array == entry.pOperand->GetVariableType() )
+    if (e_JavaVariableTypes::Object == entry.pOperand->GetVariableType() ||
+      e_JavaVariableTypes::Array == entry.pOperand->GetVariableType())
     {
-      roots.push_back( entry.pOperand );
+      roots.push_back(entry.pOperand);
     }
   }
 
-  for ( auto entry : m_LocalVariableStack )
+  for (auto entry : m_LocalVariableStack)
   {
-    if ( e_JavaVariableTypes::Object == entry.m_pValue->GetVariableType() ||
-         e_JavaVariableTypes::Array == entry.m_pValue->GetVariableType() )
+    if (e_JavaVariableTypes::Object == entry.m_pValue->GetVariableType() ||
+      e_JavaVariableTypes::Array == entry.m_pValue->GetVariableType())
     {
-      roots.push_back( entry.m_pValue );
+      roots.push_back(entry.m_pValue);
     }
   }
 
-  for ( auto entry : m_GlobalReferences )
+  for (auto entry : m_GlobalReferences)
   {
-    if ( e_JavaVariableTypes::Object == entry->GetVariableType() ||
-         e_JavaVariableTypes::Array == entry->GetVariableType() )
+    if (e_JavaVariableTypes::Object == entry->GetVariableType() ||
+      e_JavaVariableTypes::Array == entry->GetVariableType())
     {
-      roots.push_back( entry );
+      roots.push_back(entry);
     }
   }
 
-  for ( auto frame : m_LocalReferenceFrames )
+  for (auto frame : m_LocalReferenceFrames)
   {
-    for ( auto entry : frame )
+    for (auto entry : frame)
     {
-      if ( e_JavaVariableTypes::Object == entry->GetVariableType() ||
-           e_JavaVariableTypes::Array == entry->GetVariableType() )
+      if (e_JavaVariableTypes::Object == entry->GetVariableType() ||
+        e_JavaVariableTypes::Array == entry->GetVariableType())
       {
-        roots.push_back( entry );
+        roots.push_back(entry);
       }
     }
   }
 
-  if ( m_ExceptionOccurred )
+  if (m_ExceptionOccurred)
   {
-    roots.push_back( m_pException );
+    roots.push_back(m_pException);
   }
 
   return roots;
@@ -1895,9 +1916,9 @@ std::vector<boost::intrusive_ptr<IJavaVariableType>> BasicVirtualMachineState::G
 
 void BasicVirtualMachineState::Pause()
 {
-  JVMX_ASSERT( !m_isPaused && !m_isPausing );
+  JVMX_ASSERT(!m_isPaused && !m_isPausing);
   m_isPausing = true;
-  if ( m_NativeExecutionCount )
+  if (m_NativeExecutionCount)
   {
     m_isPaused = true;
   }
@@ -1926,7 +1947,7 @@ void BasicVirtualMachineState::ConfirmPaused()
   m_isPausing = false;
 }
 
-std::atomic_int64_t &BasicVirtualMachineState::GetStackLevel()
+std::atomic_int64_t& BasicVirtualMachineState::GetStackLevel()
 {
   return m_StackLevel;
 }
@@ -1941,61 +1962,61 @@ void BasicVirtualMachineState::Interrupt()
   m_isInterrupted = true;
 }
 
-void BasicVirtualMachineState::AddGlobalReference( boost::intrusive_ptr<ObjectReference> pObject )
+void BasicVirtualMachineState::AddGlobalReference(boost::intrusive_ptr<ObjectReference> pObject)
 {
-  m_GlobalReferences.push_back( pObject );
+  m_GlobalReferences.push_back(pObject);
 }
 
-void BasicVirtualMachineState::DeleteGlobalReference( boost::intrusive_ptr<ObjectReference> pObject )
+void BasicVirtualMachineState::DeleteGlobalReference(boost::intrusive_ptr<ObjectReference> pObject)
 {
-  m_GlobalReferences.remove( pObject );
+  m_GlobalReferences.remove(pObject);
 }
 
-void BasicVirtualMachineState::AddLocalReference( boost::intrusive_ptr<ObjectReference> pObject )
+void BasicVirtualMachineState::AddLocalReference(boost::intrusive_ptr<ObjectReference> pObject)
 {
-  JVMX_ASSERT( !m_LocalReferenceFrames.empty() );
-  m_LocalReferenceFrames.back().push_back( pObject );
+  JVMX_ASSERT(!m_LocalReferenceFrames.empty());
+  m_LocalReferenceFrames.back().push_back(pObject);
 }
 
-void BasicVirtualMachineState::DeleteLocalReference( boost::intrusive_ptr<ObjectReference> pObject )
+void BasicVirtualMachineState::DeleteLocalReference(boost::intrusive_ptr<ObjectReference> pObject)
 {
-  JVMX_ASSERT( !m_LocalReferenceFrames.empty() );
+  JVMX_ASSERT(!m_LocalReferenceFrames.empty());
 
   auto list = m_LocalReferenceFrames.back();
 
-  for ( auto i = list.begin(); i != list.end(); ++ i )
+  for (auto i = list.begin(); i != list.end(); ++i)
   {
-    if ( ( *i )->GetIndex() == pObject->GetIndex() )
+    if ((*i)->GetIndex() == pObject->GetIndex())
     {
-      list.erase( i );
+      list.erase(i);
       return;
     }
   }
 
-  JVMX_ASSERT( false );
+  JVMX_ASSERT(false);
 }
 
 void BasicVirtualMachineState::AddLocalReferenceFrame()
 {
-  m_LocalReferenceFrames.push_back( std::list<boost::intrusive_ptr<ObjectReference>>() );
+  m_LocalReferenceFrames.push_back(std::list<boost::intrusive_ptr<ObjectReference>>());
 }
 
 void BasicVirtualMachineState::DeleteLocalReferenceFrame()
 {
-  JVMX_ASSERT( !m_LocalReferenceFrames.empty() );
+  JVMX_ASSERT(!m_LocalReferenceFrames.empty());
   m_LocalReferenceFrames.pop_back();
 }
 
 void BasicVirtualMachineState::SetExecutingNative()
 {
-  JVMX_ASSERT( m_NativeExecutionCount >= 0 );
-  ++ m_NativeExecutionCount;
+  JVMX_ASSERT(m_NativeExecutionCount >= 0);
+  ++m_NativeExecutionCount;
 }
 
 void BasicVirtualMachineState::SetExecutingHosted()
 {
-  -- m_NativeExecutionCount;
-  JVMX_ASSERT( m_NativeExecutionCount >= 0 );
+  --m_NativeExecutionCount;
+  JVMX_ASSERT(m_NativeExecutionCount >= 0);
 }
 
 bool BasicVirtualMachineState::IsExecutingNative() const
@@ -2005,12 +2026,12 @@ bool BasicVirtualMachineState::IsExecutingNative() const
 
 void BasicVirtualMachineState::SetUserCodeStarted()
 {
-    m_hasUserCodeStarted = true;
+  m_hasUserCodeStarted = true;
 }
 
 bool BasicVirtualMachineState::HasUserCodeStarted() const
 {
-    return m_hasUserCodeStarted;
+  return m_hasUserCodeStarted;
 }
 
 #ifdef _DEBUG

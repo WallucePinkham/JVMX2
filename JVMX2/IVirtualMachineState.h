@@ -83,6 +83,7 @@ public:
   virtual void SetLocalVariable( uint16_t localVariableIndex, boost::intrusive_ptr<IJavaVariableType> pValue ) JVMX_PURE;
 
   virtual std::shared_ptr<JavaClass> LoadClass( const JavaString &className, const JavaString &path = JavaString::EmptyString() ) JVMX_PURE;
+  virtual std::shared_ptr<JavaClass> LoadClass(const DataBuffer& classData) JVMX_PURE;
 
   virtual void UpdateCurrentClassName( boost::intrusive_ptr<JavaString> pNewName ) JVMX_PURE;
 
@@ -110,6 +111,7 @@ public:
   virtual void LogOperandStack() JVMX_PURE;
 
   virtual void InitialiseClass( const JavaString &className ) JVMX_PURE;
+  virtual void InitialiseClass(std::shared_ptr<JavaClass> pClass) JVMX_PURE;
 
   virtual std::vector<boost::intrusive_ptr<IJavaVariableType> > PopulateParameterArrayFromOperandStack( std::shared_ptr<MethodInfo> pMethodInfo ) JVMX_PURE;
 

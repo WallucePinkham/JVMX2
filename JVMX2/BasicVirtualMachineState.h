@@ -88,6 +88,8 @@ public:
   virtual void UpdateCurrentClassName( JavaString pNewName );
 
   virtual std::shared_ptr<JavaClass> LoadClass( const JavaString &className, const JavaString &path = JavaString::EmptyString() ) JVMX_OVERRIDE;
+  virtual std::shared_ptr<JavaClass> LoadClass(const DataBuffer& classData) JVMX_OVERRIDE;
+
 
   virtual void ReleaseLocalVariables() JVMX_OVERRIDE;
 
@@ -102,6 +104,7 @@ public:
   virtual boost::intrusive_ptr<ObjectReference> CreateArray( e_JavaArrayTypes type, size_t size ) JVMX_OVERRIDE;
 
   virtual void InitialiseClass( const JavaString &className ) JVMX_OVERRIDE;
+  virtual void InitialiseClass(std::shared_ptr<JavaClass> pClass) JVMX_OVERRIDE;
 
   virtual std::shared_ptr<IClassLibrary> GetRuntimeConstantPool() JVMX_OVERRIDE;
   virtual std::shared_ptr<JavaNativeInterface> GetJavaNativeInterface() JVMX_OVERRIDE;

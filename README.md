@@ -1,6 +1,16 @@
 # JVMX2
 
-Java 7 Virtual Machine for Learning Puroposes. It is written in C++11. It uses [GNU Classpath](https://www.gnu.org/software/classpath/home.html), [Boost](https://www.boost.org/) v1.67.0 and [wallaroo](https://wallaroolib.sourceforge.net/index.html) v0.7.0
+Java 7 Virtual Machine for Learning Puroposes. It is written in C++11. 
+
+## Attribution
+
+JVMX2 was written by me, Walluce Pinkham.
+
+It uses [GNU Classpath](https://www.gnu.org/software/classpath/home.html), [Boost](https://www.boost.org/) v1.67.0 and [wallaroo](https://wallaroolib.sourceforge.net/index.html) v0.7.0.
+
+Additionally it uses code from [zlib](zlib.net) and [minizip](http://www.winimage.com/zLibDll/minizip.html) for handling .jar files and .zip files. Thanks to [Dmytro Kurovskyi](https://choruscode.blogspot.com/2012/05/uncompressing-pkzip-files-with-zlib-and.html) for the Blogspot article.
+
+I am including the zlib sources to make it easier to compile, but I did not include all the contributions. For comprehensive source code and the latest version, you should go to [zlib](zlib.net).
 
 ## Why Another JVM?
 

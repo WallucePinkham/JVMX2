@@ -13,6 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Zip">
+      <UniqueIdentifier>{6945865a-4e69-40f8-8ffe-36150682b189}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Zip">
+      <UniqueIdentifier>{8c967caf-bf9c-4276-8971-2b4f9b2cee07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ConstantPool">
+      <UniqueIdentifier>{8cbaa4eb-4e7e-44fd-abad-e77466e58349}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ConstantPool">
+      <UniqueIdentifier>{1e17cabe-7de0-4620-8f49-471bb0e72bf3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AgregateLogger.cpp">
@@ -115,24 +127,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ConstantPool.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ConstantPoolClassReference.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ConstantPoolDualReference.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ConstantPoolEntry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ConstantPoolNameAndTypeDescriptor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ConstantPoolNullEntry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ConstantPoolStringReference.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DataBuffer.cpp">
@@ -372,6 +366,42 @@
     <ClCompile Include="FileSearchPathCollection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CommandLineProcessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Zip\ioapi.cpp">
+      <Filter>Source Files\Zip</Filter>
+    </ClCompile>
+    <ClCompile Include="Zip\unzip.cpp">
+      <Filter>Source Files\Zip</Filter>
+    </ClCompile>
+    <ClCompile Include="ZipFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ConstantPoolClassReference.cpp">
+      <Filter>Source Files\ConstantPool</Filter>
+    </ClCompile>
+    <ClCompile Include="ConstantPoolDualReference.cpp">
+      <Filter>Source Files\ConstantPool</Filter>
+    </ClCompile>
+    <ClCompile Include="ConstantPoolEntry.cpp">
+      <Filter>Source Files\ConstantPool</Filter>
+    </ClCompile>
+    <ClCompile Include="ConstantPoolNameAndTypeDescriptor.cpp">
+      <Filter>Source Files\ConstantPool</Filter>
+    </ClCompile>
+    <ClCompile Include="ConstantPoolNullEntry.cpp">
+      <Filter>Source Files\ConstantPool</Filter>
+    </ClCompile>
+    <ClCompile Include="ConstantPoolStringReference.cpp">
+      <Filter>Source Files\ConstantPool</Filter>
+    </ClCompile>
+    <ClCompile Include="ConstantPoolInvokeDynamic.cpp">
+      <Filter>Source Files\ConstantPool</Filter>
+    </ClCompile>
+    <ClCompile Include="ConstantPoolMethodHandle.cpp">
+      <Filter>Source Files\ConstantPool</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AgregateLogger.h">
@@ -486,33 +516,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ConstantPool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ConstantPoolClassReference.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ConstantPoolDualReference.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ConstantPoolEntry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ConstantPoolFieldReference.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ConstantPoolInterfaceMethodReference.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ConstantPoolMethodReference.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ConstantPoolNameAndTypeDescriptor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ConstantPoolNullEntry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ConstantPoolStringReference.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DataBuffer.h">
@@ -910,6 +913,57 @@
     </ClInclude>
     <ClInclude Include="FileSearchPathCollection.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandLineProcessor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ZipFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Zip\ioapi.h">
+      <Filter>Header Files\Zip</Filter>
+    </ClInclude>
+    <ClInclude Include="Zip\unzip.h">
+      <Filter>Header Files\Zip</Filter>
+    </ClInclude>
+    <ClInclude Include="Zip\zconf.h">
+      <Filter>Header Files\Zip</Filter>
+    </ClInclude>
+    <ClInclude Include="Zip\zlib.h">
+      <Filter>Header Files\Zip</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantPoolClassReference.h">
+      <Filter>Header Files\ConstantPool</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantPoolDualReference.h">
+      <Filter>Header Files\ConstantPool</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantPoolEntry.h">
+      <Filter>Header Files\ConstantPool</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantPoolFieldReference.h">
+      <Filter>Header Files\ConstantPool</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantPoolInterfaceMethodReference.h">
+      <Filter>Header Files\ConstantPool</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantPoolMethodReference.h">
+      <Filter>Header Files\ConstantPool</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantPoolNameAndTypeDescriptor.h">
+      <Filter>Header Files\ConstantPool</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantPoolNullEntry.h">
+      <Filter>Header Files\ConstantPool</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantPoolStringReference.h">
+      <Filter>Header Files\ConstantPool</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantPoolInvokeDynamic.h">
+      <Filter>Header Files\ConstantPool</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantPoolMethodHandle.h">
+      <Filter>Header Files\ConstantPool</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

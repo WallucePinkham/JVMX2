@@ -22,11 +22,11 @@ public:
   typedef std::vector<BootstrapMethodsListEntry> BootstrapMethodList;
 
 private:
-  ClassAttributeBootstrapMethods( const JavaString &name, BootstrapMethodList list );
+  ClassAttributeBootstrapMethods( const JavaString &name, BootstrapMethodList list ) JVMX_NOEXCEPT;
 
 public:
-  ClassAttributeBootstrapMethods( const ClassAttributeBootstrapMethods &other );
-  ClassAttributeBootstrapMethods( ClassAttributeBootstrapMethods &&other );
+  ClassAttributeBootstrapMethods( const ClassAttributeBootstrapMethods &other ) JVMX_NOEXCEPT;
+  ClassAttributeBootstrapMethods( ClassAttributeBootstrapMethods &&other ) JVMX_NOEXCEPT;
 
   virtual bool Equals( const JavaCodeAttribute &other ) const JVMX_OVERRIDE;
   bool Equals( const ClassAttributeBootstrapMethods &other ) const JVMX_NOEXCEPT;
