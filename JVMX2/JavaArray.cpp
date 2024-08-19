@@ -244,6 +244,16 @@ void JavaArray::SetAt( const JavaInteger &index, const JavaChar &value )
   DebugAssert();
 }
 
+void JavaArray::SetAt(const JavaInteger& index, const JavaByte& value)
+{
+  DebugAssert();
+
+  SetAt(index.ToHostInt32(), value);
+
+  DebugAssert();
+}
+
+
 void JavaArray::SetAt( const JavaInteger &index, const IJavaVariableType *pValue )
 {
   DebugAssert();
@@ -302,6 +312,26 @@ void JavaArray::SetAt( const uint32_t &index, const JavaChar &value )
   }
 
   InternalSetValue( index, &value );
+}
+
+void JavaArray::SetAt(const uint32_t& index, const JavaByte& value)
+{
+  if (m_ContainedType != e_JavaArrayTypes::Byte)
+  {
+    throw InvalidArgumentException(__FUNCTION__ " - Trying to add byte to an array that does not contain bytes.");
+  }
+
+  if (index < 0)
+  {
+    throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in. Less than zero.");
+  }
+
+  if (index > m_Size)
+  {
+    throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in.");
+  }
+
+  InternalSetValue(index, &value);
 }
 
 void JavaArray::SetAt( const uint32_t &index, const IJavaVariableType *pValue )
@@ -808,6 +838,7 @@ boost::intrusive_ptr<IJavaVariableType> JavaArray::ConvertIntegerTypeForArraySto
 
   return pFinalValue;
 }
+// 
 
 boost::intrusive_ptr<ObjectReference> JavaArray::CreateFromCArray( /*std::shared_ptr<IMemoryManager> pMemoryManager,*/ const char *pBuffer )
 {
@@ -818,7 +849,21 @@ boost::intrusive_ptr<ObjectReference> JavaArray::CreateFromCArray( /*std::shared
   //boost::intrusive_ptr<ObjectReference> pResult = new JavaArray( /*pMemoryManager, */e_JavaArrayTypes::Char, length );
   for ( size_t i = 0; i < length; ++ i )
   {
-    pResult->GetContainedArray()->SetAt( JavaInteger::FromHostInt32( static_cast<uint32_t>( i ) ), JavaChar::FromCChar( pBuffer[ i ] ) );
+    pResult->GetContainedArray()->SetAt( static_cast<uint32_t>( i ), JavaChar::FromCChar( pBuffer[ i ] ) );
+  }
+
+  return pResult;
+}
+
+boost::intrusive_ptr<ObjectReference> JavaArray::CreateFromCArray(const uint8_t* pBuffer, size_t length)
+{
+  std::shared_ptr<IThreadManager> pThreadManager = GlobalCatalog::GetInstance().Get("ThreadManager");
+
+  boost::intrusive_ptr<ObjectReference> pResult = pThreadManager->GetCurrentThreadState()->CreateArray(e_JavaArrayTypes::Byte, length);
+  //boost::intrusive_ptr<ObjectReference> pResult = new JavaArray( /*pMemoryManager, */e_JavaArrayTypes::Char, length );
+  for (size_t i = 0; i < length; ++i)
+  {
+    pResult->GetContainedArray()->SetAt(static_cast<uint32_t>(i), JavaByte::FromHostInt8(pBuffer[i]));
   }
 
   return pResult;

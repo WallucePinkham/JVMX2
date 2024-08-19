@@ -11,8 +11,10 @@
 #include "ObjectReference.h"
 #include "OsFunctions.h"
 #include "GlobalCatalog.h"
+#include "NotImplementedException.h"
 
 #include "HelperVMThread.h"
+
 
 static void NewThreadFunction( const std::shared_ptr<IVirtualMachineState> &pVMState, boost::intrusive_ptr<ObjectReference> pObject )
 {

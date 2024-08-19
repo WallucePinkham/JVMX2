@@ -205,3 +205,39 @@ std::string OperatingSystemWindows::GetHostName()
 
   return std::string(pBuffer);
 }
+
+const char* OperatingSystemWindows::GetPathSeparator()
+{
+  return ";";
+}
+
+const char* OperatingSystemWindows::GetLineSeparator()
+{
+  return "\r\n";
+}
+
+const char* OperatingSystemWindows::GetFileSeparator()
+{
+  return "\\";
+}
+
+std::u16string OperatingSystemWindows::GetCanonicalFormUtf16(const JVMX_WIDE_CHAR_TYPE *pRelativePath)
+{
+  // On Windows, we can assume that wchar_t and char16_t are the same size.
+  wchar_t absolutePath[MAX_PATH];
+
+  // Java can send through the string with a leading slash because of how file:\\ type URLs are handled internally 
+  if (pRelativePath[0] == u'\\')
+  {
+    ++pRelativePath;
+  }
+
+  DWORD result = GetFullPathName(reinterpret_cast<const wchar_t *>(pRelativePath), MAX_PATH, absolutePath, NULL);
+  
+  if (0 == result)
+  {
+    throw InternalErrorException(__FUNCTION__ " - Could not get absolute path from relative path. ");
+  }
+
+  return std::u16string(reinterpret_cast<const char16_t*>(absolutePath));
+}

@@ -14,6 +14,7 @@
 
 class JavaInteger;
 class JavaChar;
+class JavaByte;
 class ObjectReference;
 
 class JavaArray : protected IJavaVariableType
@@ -21,7 +22,7 @@ class JavaArray : protected IJavaVariableType
   friend class BasicVirtualMachineState;
 
 private:
-  JavaArray() {};
+  JavaArray() JVMX_NOEXCEPT {};
 
 public:
   explicit JavaArray( e_JavaArrayTypes type, size_t size );
@@ -53,6 +54,7 @@ public:
   static e_JavaArrayTypes ConvertTypeFromChar( char16_t charType );
 
   static boost::intrusive_ptr<ObjectReference> CreateFromCArray( /*std::shared_ptr<IMemoryManager> pMemoryManager,*/ const char *pBuffer );
+  static boost::intrusive_ptr<ObjectReference> CreateFromCArray( /*std::shared_ptr<IMemoryManager> pMemoryManager,*/ const uint8_t* pBuffer, size_t length);
 
   virtual IJavaVariableType *At( size_t index );
   virtual const IJavaVariableType *At( size_t index ) const;
@@ -61,10 +63,12 @@ public:
   void SetAt( const JavaInteger &index, const JavaInteger &value );
   void SetAt( const JavaInteger &index, const JavaChar &value );
   void SetAt( const JavaInteger &index, const IJavaVariableType *pValue );
+  void SetAt(const JavaInteger& index, const JavaByte& pValue);
 
   void SetAt( const uint32_t &index, const JavaInteger &value );
   void SetAt( const uint32_t &index, const JavaChar &value );
   void SetAt( const uint32_t &index, const IJavaVariableType *pValue );
+  void SetAt(const uint32_t& index, const JavaByte& value);
 
   JavaString ConvertCharArrayToString() const;
   DataBuffer ConvertByteArrayToBuffer() const;

@@ -72,6 +72,7 @@ protected:
   virtual std::shared_ptr<ConstantPoolNameAndTypeDescriptor> ReadNameAndTypeDescriptor();
   virtual std::shared_ptr<ConstantPoolInvokeDynamic> ReadInvokeDynamic();
   virtual std::shared_ptr<ConstantPoolMethodHandle> ReadMethodHandle();
+  virtual std::shared_ptr<ConstantPoolMethodType> ReadMethodType();
 
   virtual ConstantPoolIndex ReadIndex();
 

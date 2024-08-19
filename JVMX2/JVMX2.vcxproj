@@ -59,6 +59,7 @@
     <ClCompile Include="ConstantPoolEntry.cpp" />
     <ClCompile Include="ConstantPoolInvokeDynamic.cpp" />
     <ClCompile Include="ConstantPoolMethodHandle.cpp" />
+    <ClCompile Include="ConstantPoolMethodType.cpp" />
     <ClCompile Include="ConstantPoolNameAndTypeDescriptor.cpp" />
     <ClCompile Include="ConstantPoolNullEntry.cpp" />
     <ClCompile Include="ConstantPoolStringReference.cpp" />
@@ -78,6 +79,7 @@
     <ClCompile Include="HelperVMChannel.cpp" />
     <ClCompile Include="HelperVMClass.cpp" />
     <ClCompile Include="HelperVMDouble.cpp" />
+    <ClCompile Include="HelperVMFile.cpp" />
     <ClCompile Include="HelperVMRuntime.cpp" />
     <ClCompile Include="HelperVMSystem.cpp" />
     <ClCompile Include="HelperVMThread.cpp" />
@@ -193,6 +195,7 @@
     <ClInclude Include="ConstantPoolInvokeDynamic.h" />
     <ClInclude Include="ConstantPoolMethodHandle.h" />
     <ClInclude Include="ConstantPoolMethodReference.h" />
+    <ClInclude Include="ConstantPoolMethodType.h" />
     <ClInclude Include="ConstantPoolNameAndTypeDescriptor.h" />
     <ClInclude Include="ConstantPoolNullEntry.h" />
     <ClInclude Include="ConstantPoolStringReference.h" />
@@ -218,6 +221,7 @@
     <ClInclude Include="HelperVMChannel.h" />
     <ClInclude Include="HelperVMClass.h" />
     <ClInclude Include="HelperVMDouble.h" />
+    <ClInclude Include="HelperVMFile.h" />
     <ClInclude Include="HelperVMRuntime.h" />
     <ClInclude Include="HelperVMSystem.h" />
     <ClInclude Include="HelperVMThread.h" />

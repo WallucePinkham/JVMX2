@@ -1,6 +1,6 @@
 # JVMX2
 
-Java 7 Virtual Machine for Learning Puroposes. It is written in C++11. 
+Java 7 Virtual Machine for Learning Purposes. It is written in C++11.
 
 ## Attribution
 
@@ -43,4 +43,3 @@ This project requires the [GNU Classpath](https://www.gnu.org/software/classpath
 ## Getting Started
 
 You can run `JVMX2 Tests/TestThreads.class`, for example, to test the JVM.
-

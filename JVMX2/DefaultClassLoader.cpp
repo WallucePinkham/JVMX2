@@ -155,6 +155,10 @@ std::shared_ptr<ConstantPool> DefaultClassLoader::ReadConstantPoolTable( size_t 
         pPool->AddConstant(std::make_shared<ConstantPoolEntry>(ReadMethodHandle()));
         break;
 
+      case e_ConstantPoolEntryTypeMethodType:
+        pPool->AddConstant(std::make_shared<ConstantPoolEntry>(ReadMethodType()));
+        break;
+
       default:
         throw UnsupportedTypeException( __FUNCTION__ " - Unsupported tag type read from constant pool." );
         break;
@@ -268,12 +272,18 @@ std::shared_ptr<ConstantPoolInvokeDynamic> DefaultClassLoader::ReadInvokeDynamic
 
 std::shared_ptr<ConstantPoolMethodHandle> DefaultClassLoader::ReadMethodHandle()
 {
-  ConstantPoolIndex referenceKind = m_fileStream.ReadUint8();
+  uint8_t referenceKind = m_fileStream.ReadUint8();
   ConstantPoolIndex referenceIndex = ReadIndex();
 
   return std::make_shared<ConstantPoolMethodHandle>(referenceKind, referenceIndex);
 }
 
+std::shared_ptr<ConstantPoolMethodType> DefaultClassLoader::ReadMethodType()
+{
+  ConstantPoolIndex descriptorIndex = ReadIndex();
+
+  return std::make_shared<ConstantPoolMethodType>(descriptorIndex);
+}
 
 ConstantPoolIndex DefaultClassLoader::ReadIndex()
 {

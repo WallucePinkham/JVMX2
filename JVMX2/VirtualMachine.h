@@ -43,6 +43,7 @@ public:
 
   void Initialise(const std::string& startingClassfile, const std::shared_ptr<IVirtualMachineState> &pInitialState );
   void Run( const JavaString &fileName, const std::shared_ptr<IVirtualMachineState> &pInitialState, bool userCode = true );
+  void RunClassName(const JavaString& className, const std::shared_ptr<IVirtualMachineState>& pInitialState, bool userCode = true);
   void Stop( const std::shared_ptr<IVirtualMachineState> &pInitialState );
 
   std::shared_ptr<JavaNativeInterface> GetNativeInterface() const;
@@ -74,10 +75,11 @@ private:
 
   void InitialiseClass( const JVMX_CHAR_TYPE *pClassName, const std::shared_ptr<IVirtualMachineState> &pInitialState );
 
-  int GetMainClassFromJarFile(const JavaString& fileName, DataBuffer& mainClassOuput);
+  int GetMainClassFromJarFile(const JavaString& fileName, JavaString& mainClassName, DataBuffer& mainClassOuput);
 
 private:
   static jobject JNICALL java_lang_VMClassLoader_getPrimitiveClass( JNIEnv *pEnv, jobject obj, jchar typeAsChar );
+  static jobject JNICALL java_lang_VMClassLoader_defineClass(JNIEnv* pEnv, jobject obj, jobject classLoaderObj, jobject name, jarray data, jint offset, jint len, jobject pd);
 
   static jobject JNICALL java_lang_VMSecurityManager_currentClassLoader( JNIEnv *pEnv, jobject obj );
 
@@ -94,8 +96,6 @@ private:
   static jarray JNICALL java_lang_reflect_VMConstructor_getParameterTypes( JNIEnv *pEnv, jobject obj );
   static jint JNICALL java_lang_reflect_VMConstructor_getModifiersInternal( JNIEnv *pEnv, jobject obj );
 
-  static jboolean JNICALL java_io_VMFile_isDirectory( JNIEnv *pEnv, jobject obj, jstring path );
-  static jboolean JNICALL java_io_VMFile_exists( JNIEnv *pEnv, jobject obj, jstring path );
 
 
   static jarray JNICALL gnu_classpath_VMStackWalker_getClassContext( JNIEnv *pEnv, jobject obj );

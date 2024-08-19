@@ -1085,6 +1085,16 @@ void BasicVirtualMachineState::SetupLocalVariableTypeReference(const std::vector
 
       //SetLocalVariable( localVariableIndex, pClassRef );
     }
+    else if (e_JavaVariableTypes::Integer == pOperand->GetVariableType())
+    {
+      auto pInt = boost::dynamic_pointer_cast<JavaInteger>(pOperand);
+      SetLocalVariable(localVariableIndex, pInt);
+    }
+    else if (e_JavaVariableTypes::String == pOperand->GetVariableType())
+    {
+      auto pString = boost::dynamic_pointer_cast<JavaString>(pOperand);
+      SetLocalVariable(localVariableIndex, pString);
+    }
     else
     {
       throw NotImplementedException(__FUNCTION__ " - Not yet implemented");

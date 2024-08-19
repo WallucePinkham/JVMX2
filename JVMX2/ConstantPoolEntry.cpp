@@ -111,6 +111,13 @@ ConstantPoolEntry::ConstantPoolEntry(std::shared_ptr<ConstantPoolMethodHandle> p
   m_pValue = pRef;
 }
 
+ConstantPoolEntry::ConstantPoolEntry(std::shared_ptr<ConstantPoolMethodType> pRef)
+{
+  m_Type = e_ConstantPoolEntryTypeMethodType;
+  m_pValue = pRef;
+}
+
+
 ConstantPoolEntry::ConstantPoolEntry( ConstantPoolNullEntry entry )
 {
   m_Type = e_ConstantPoolEntryTypeNullEntry;

@@ -51,7 +51,15 @@ int main(int argc, char* argv[])
     //pJVM->Run(JVMX_T("..\\Tests\\TestThreads.class"), pInitialState, false);
 
     JavaString fileNameJs = JavaString::FromCString(fileName.c_str());
-    pJVM->Run(fileNameJs, pInitialState, false);
+    if (fileNameJs.EndsWith(u".class"))
+    {
+      pJVM->Run(fileNameJs, pInitialState, false);
+    }
+    else
+    {
+      pJVM->RunClassName(fileNameJs, pInitialState, false);
+    }
+    
 
     //pJVM->Run( JVMX_T( "TestThreads.class" ), pInitialState );
     //pJVM->Run( JVMX_T( "TestFontNames.class" ), pInitialState );
@@ -65,6 +73,8 @@ int main(int argc, char* argv[])
     //pJVM->Run( JVMX_T( "TestThreads2.class" ), pInitialState );
     //pJVM->Run( JVMX_T( "TestProperties.class" ), pInitialState );
     //pJVM->Run( JVMX_T( "TestNullPointerException.class" ), pInitialState );
+
+    // Handle JVM Exceptions
 
     pJVM->Stop(pInitialState);
 

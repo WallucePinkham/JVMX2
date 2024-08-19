@@ -10,6 +10,7 @@
 
 #include "Endian.h"
 #include "GlobalCatalog.h"
+#include "OsFunctions.h"
 
 #include "HelperVMSystem.h"
 
@@ -89,21 +90,24 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
   jstring strValue = pEnv->NewStringUTF( pEnv, "8859_1" );
 
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
-  ObjectReference refKey( strKey );
-  pLogger->LogDebug( "*** Key=%s\n", reinterpret_cast<const char *>( refKey.GetContainedObject()->ToString().ToUtf8String().c_str() ) );
-  ObjectReference refValue( strValue );
-  pLogger->LogDebug( "*** Value=%s\n", reinterpret_cast<const char *>( refValue.GetContainedObject()->ToString().ToUtf8String().c_str() ) );
+  if (pVirtualMachineState->HasUserCodeStarted())
+  {
+    ObjectReference refKey(strKey);
+    pLogger->LogDebug("*** Key=%s\n", reinterpret_cast<const char*>(refKey.GetContainedObject()->ToString().ToUtf8String().c_str()));
+    ObjectReference refValue(strValue);
+    pLogger->LogDebug("*** Value=%s\n", reinterpret_cast<const char*>(refValue.GetContainedObject()->ToString().ToUtf8String().c_str()));
+  }
 #endif // _DEBUG
 
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
   strKey = pEnv->NewStringUTF( pEnv, "java.vm.name" );
-  strValue = pEnv->NewStringUTF( pEnv, "JVMX" );
+  strValue = pEnv->NewStringUTF( pEnv, "JVMX2" );
 
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
   strKey = pEnv->NewStringUTF( pEnv, "gnu.classpath.vm.shortname" );
-  strValue = pEnv->NewStringUTF( pEnv, "JVMX" );
+  strValue = pEnv->NewStringUTF( pEnv, "JVMX2" );
 
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
@@ -113,7 +117,7 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
   strKey = pEnv->NewStringUTF( pEnv, "java.vendor.url" );
-  strValue = pEnv->NewStringUTF( pEnv, "http://www.walluce.com" );
+  strValue = pEnv->NewStringUTF( pEnv, "https://github.com/WallucePinkham/JVMX2" );
 
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
@@ -134,17 +138,18 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
   strKey = pEnv->NewStringUTF( pEnv, "path.separator" );
-  strValue = pEnv->NewStringUTF( pEnv, ";" );
+  strValue = pEnv->NewStringUTF( pEnv, OsFunctions::GetInstance().GetPathSeparator());
+  
 
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
   strKey = pEnv->NewStringUTF( pEnv, "file.separator" );
-  strValue = pEnv->NewStringUTF( pEnv, "\\" );
+  strValue = pEnv->NewStringUTF( pEnv, OsFunctions::GetInstance().GetFileSeparator());
 
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
   strKey = pEnv->NewStringUTF( pEnv, "line.separator" );
-  strValue = pEnv->NewStringUTF( pEnv, "\r\n" );
+  strValue = pEnv->NewStringUTF( pEnv, OsFunctions::GetInstance().GetLineSeparator());
 
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
@@ -153,8 +158,9 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
   //
   //   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
-  strKey = pEnv->NewStringUTF( pEnv, "gnu.java.net.nocache_protocol_handlers" );
-  strValue = pEnv->NewStringUTF( pEnv, "" );
+  // The mere presense of this setting seems to break URLs, regarding of the value.
+  // strKey = pEnv->NewStringUTF( pEnv, "gnu.java.net.nocache_protocol_handlers" );
+  // strValue = pEnv->NewStringUTF( pEnv, "false" );
 
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
@@ -185,7 +191,7 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
   strKey = pEnv->NewStringUTF( pEnv, "gnu.classpath.home.url" );
-  strValue = pEnv->NewStringUTF( pEnv, "file:\\C:\\dev" );
+  strValue = pEnv->NewStringUTF( pEnv, "file:\\\\C:\\dev" );
 
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
@@ -195,7 +201,7 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
   strKey = pEnv->NewStringUTF( pEnv, "java.class.path" );
-  strValue = pEnv->NewStringUTF( pEnv, "C:\\dev\\JVMX2\\classpath-0.99\\lib" ); // TODO: This needs to be fixed up
+  strValue = pEnv->NewStringUTF( pEnv, "C:\\dev\\JVMX2\\classpath-0.99\\lib\\" ); // TODO: This needs to be fixed up
 
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 

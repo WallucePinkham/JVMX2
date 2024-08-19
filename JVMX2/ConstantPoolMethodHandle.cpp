@@ -2,7 +2,7 @@
 #include "ConstantPoolMethodHandle.h"
 
 ConstantPoolMethodHandle::ConstantPoolMethodHandle(uint8_t referenceKind,
-  ConstantPoolIndex referenceIndex) JVMX_NOEXCEPT
+                                                   ConstantPoolIndex referenceIndex) JVMX_NOEXCEPT
   : m_ReferenceKind(referenceKind), m_ReferenceIndex(referenceIndex)
 {
 }

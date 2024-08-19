@@ -102,3 +102,24 @@ void OsFunctions::ResumeThread( std::thread::native_handle_type threadHandle )
   m_pDelegate->ResumeThread( threadHandle );
 }
 
+const char* OsFunctions::GetPathSeparator()
+{
+  return m_pDelegate->GetPathSeparator();
+}
+
+const char* OsFunctions::GetLineSeparator()
+{
+  return m_pDelegate->GetLineSeparator();
+}
+
+const char* OsFunctions::GetFileSeparator()
+{
+  return m_pDelegate->GetFileSeparator();
+}
+
+std::u16string OsFunctions::GetCanonicalFormUtf16(const JVMX_WIDE_CHAR_TYPE* pRelativePath)
+{
+  return m_pDelegate->GetCanonicalFormUtf16(pRelativePath);
+}
+
+

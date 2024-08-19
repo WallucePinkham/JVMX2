@@ -25,6 +25,57 @@
     <Filter Include="Source Files\ConstantPool">
       <UniqueIdentifier>{1e17cabe-7de0-4620-8f49-471bb0e72bf3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Helpers">
+      <UniqueIdentifier>{ee2a9795-1250-4cfb-8be7-f3405787c93e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Helpers">
+      <UniqueIdentifier>{bde94f26-4962-468e-b5f4-2b83160aba3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ClassAttributes">
+      <UniqueIdentifier>{8b6f061e-cbfb-493b-98c2-dc2cb74bb30b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ClassAttributes">
+      <UniqueIdentifier>{d6541a3a-6f6e-47e4-9868-6d472a9a74e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\CodeAttributes">
+      <UniqueIdentifier>{7fee9567-522f-4f08-821f-283ca9677852}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\CodeAttributes">
+      <UniqueIdentifier>{8fdf0c9e-2b49-45f8-8927-260248a694ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VerificationTypeInfo">
+      <UniqueIdentifier>{e322df86-aafc-444e-a987-c0ab31a885ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\VerificationTypeInfo">
+      <UniqueIdentifier>{9d8aea8c-be3b-4f8f-b26d-ecf725ae618b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Exceptions">
+      <UniqueIdentifier>{8b07effd-cf69-44d1-aa92-31c91a594a3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\StackFrames">
+      <UniqueIdentifier>{636af9a4-f132-485a-be2b-542857074461}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\StackFrames">
+      <UniqueIdentifier>{00c36d10-4337-408d-adb3-a338e9fae228}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Types">
+      <UniqueIdentifier>{d1cb2abc-ca09-4657-bb88-fc7194f1bd2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Types">
+      <UniqueIdentifier>{0ae211c2-ded9-43b2-bfb0-b4163618dfe7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Memory">
+      <UniqueIdentifier>{63f09e32-0aa6-40b3-a80e-b4b5cfa246dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OperatingSystem">
+      <UniqueIdentifier>{f7cda504-6724-4674-921a-03c0f7acf598}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Memory">
+      <UniqueIdentifier>{bdc727fc-baa5-48db-a911-4185b4c7355b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OperatingSystem">
+      <UniqueIdentifier>{5907c4c5-e298-4615-9cb6-5272f29486df}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AgregateLogger.cpp">
@@ -54,72 +105,6 @@
     <ClCompile Include="BigEndianStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CheneyGarbageCollector.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ClassAttributeBootstrapMethods.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ClassAttributeCode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ClassAttributeEnclosingMethod.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ClassAttributeInnerClasses.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ClassAttributeSourceDebugExtension.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ClassAttributeSourceFile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ClassAttributeSynthetic.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CodeAttributeAnnotationDefault.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CodeAttributeDeprecated.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CodeAttributeExceptions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CodeAttributeFactory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CodeAttributeLineNumberTable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CodeAttributeLocalVariableTable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CodeAttributeLocalVariableTypeTable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CodeAttributeRuntimeInvisibleAnnotations.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CodeAttributeRuntimeInvisibleParameterAnnotations.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CodeAttributeRuntimeVisibleAnnotations.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CodeAttributeRuntimeVisibleParameterAnnotations.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CodeAttributeSignature.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CodeAttributeStackMapTable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CodeAttributeUknown.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CodeSegmentDataBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -133,9 +118,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DefaultClassLoader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DefaultGarbageCollector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DefaultJavaLangClassList.cpp">
@@ -159,30 +141,6 @@
     <ClCompile Include="GlobalCatalog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HelperConversion.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HelperTypes.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HelperVMChannel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HelperVMClass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HelperVMDouble.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HelperVMRuntime.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HelperVMSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HelperVMThread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="IFloatingPointBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -195,58 +153,10 @@
     <ClCompile Include="IVirtualMachineState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="JavaArray.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="JavaAttributeUnknown.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="JavaBool.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JavaByte.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JavaChar.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JavaClass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JavaClassReference.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JavaCodeAttribute.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JavaDouble.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JavaFloat.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JavaInteger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JavaLong.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="JavaNativeInterface.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JavaNullReference.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JavaObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JavaReturnAddress.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JavaShort.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JavaString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="JavaVariableTypeIntrusiveRefCounter.cpp">
@@ -282,58 +192,13 @@
     <ClCompile Include="ObjectFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ObjectReference.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ObjectRegistryLocalMachine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ObjectRegistryRedis.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OperatingSystemWindows.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OsFunctions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OsFunctionsSingletonFactory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ParameterAnnotationsEntry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RedisGarbageCollector.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SimpleGreedyMemoryManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StackFrame.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StackFrameAppendFrame.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StackFrameChop.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StackFrameFactory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StackFrameFullFrame.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StackFrameSame.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StackFrameSameFrameExtended.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StackFrameSameLocals1StackItem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StackFrameSameLocals1StackItemFrameExtended.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Stream.cpp">
@@ -346,18 +211,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TypeParser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VerificationTypeInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VerificationTypeInfoConstant.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VerificationTypeInfoFactory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VerificationTypeInfoUninitialised.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VirtualMachine.cpp">
@@ -402,6 +255,210 @@
     <ClCompile Include="ConstantPoolMethodHandle.cpp">
       <Filter>Source Files\ConstantPool</Filter>
     </ClCompile>
+    <ClCompile Include="ConstantPoolMethodType.cpp">
+      <Filter>Source Files\ConstantPool</Filter>
+    </ClCompile>
+    <ClCompile Include="HelperConversion.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="HelperTypes.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="HelperVMChannel.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="HelperVMClass.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="HelperVMDouble.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="HelperVMRuntime.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="HelperVMSystem.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="HelperVMThread.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="ClassAttributeBootstrapMethods.cpp">
+      <Filter>Source Files\ClassAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="ClassAttributeCode.cpp">
+      <Filter>Source Files\ClassAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="ClassAttributeEnclosingMethod.cpp">
+      <Filter>Source Files\ClassAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="ClassAttributeInnerClasses.cpp">
+      <Filter>Source Files\ClassAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="ClassAttributeSourceDebugExtension.cpp">
+      <Filter>Source Files\ClassAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="ClassAttributeSourceFile.cpp">
+      <Filter>Source Files\ClassAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="ClassAttributeSynthetic.cpp">
+      <Filter>Source Files\ClassAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeAttributeAnnotationDefault.cpp">
+      <Filter>Source Files\CodeAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeAttributeDeprecated.cpp">
+      <Filter>Source Files\CodeAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeAttributeExceptions.cpp">
+      <Filter>Source Files\CodeAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeAttributeFactory.cpp">
+      <Filter>Source Files\CodeAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeAttributeLineNumberTable.cpp">
+      <Filter>Source Files\CodeAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeAttributeLocalVariableTable.cpp">
+      <Filter>Source Files\CodeAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeAttributeLocalVariableTypeTable.cpp">
+      <Filter>Source Files\CodeAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeAttributeRuntimeInvisibleAnnotations.cpp">
+      <Filter>Source Files\CodeAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeAttributeRuntimeInvisibleParameterAnnotations.cpp">
+      <Filter>Source Files\CodeAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeAttributeRuntimeVisibleAnnotations.cpp">
+      <Filter>Source Files\CodeAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeAttributeRuntimeVisibleParameterAnnotations.cpp">
+      <Filter>Source Files\CodeAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeAttributeSignature.cpp">
+      <Filter>Source Files\CodeAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeAttributeStackMapTable.cpp">
+      <Filter>Source Files\CodeAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeAttributeUknown.cpp">
+      <Filter>Source Files\CodeAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="VerificationTypeInfo.cpp">
+      <Filter>Source Files\VerificationTypeInfo</Filter>
+    </ClCompile>
+    <ClCompile Include="VerificationTypeInfoConstant.cpp">
+      <Filter>Source Files\VerificationTypeInfo</Filter>
+    </ClCompile>
+    <ClCompile Include="VerificationTypeInfoFactory.cpp">
+      <Filter>Source Files\VerificationTypeInfo</Filter>
+    </ClCompile>
+    <ClCompile Include="VerificationTypeInfoUninitialised.cpp">
+      <Filter>Source Files\VerificationTypeInfo</Filter>
+    </ClCompile>
+    <ClCompile Include="StackFrame.cpp">
+      <Filter>Source Files\StackFrames</Filter>
+    </ClCompile>
+    <ClCompile Include="StackFrameAppendFrame.cpp">
+      <Filter>Source Files\StackFrames</Filter>
+    </ClCompile>
+    <ClCompile Include="StackFrameChop.cpp">
+      <Filter>Source Files\StackFrames</Filter>
+    </ClCompile>
+    <ClCompile Include="StackFrameFactory.cpp">
+      <Filter>Source Files\StackFrames</Filter>
+    </ClCompile>
+    <ClCompile Include="StackFrameFullFrame.cpp">
+      <Filter>Source Files\StackFrames</Filter>
+    </ClCompile>
+    <ClCompile Include="StackFrameSame.cpp">
+      <Filter>Source Files\StackFrames</Filter>
+    </ClCompile>
+    <ClCompile Include="StackFrameSameFrameExtended.cpp">
+      <Filter>Source Files\StackFrames</Filter>
+    </ClCompile>
+    <ClCompile Include="StackFrameSameLocals1StackItem.cpp">
+      <Filter>Source Files\StackFrames</Filter>
+    </ClCompile>
+    <ClCompile Include="StackFrameSameLocals1StackItemFrameExtended.cpp">
+      <Filter>Source Files\StackFrames</Filter>
+    </ClCompile>
+    <ClCompile Include="JavaArray.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="JavaBool.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="JavaByte.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="JavaChar.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="JavaClass.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="JavaClassReference.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="JavaDouble.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="JavaFloat.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="JavaInteger.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="JavaLong.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="JavaNullReference.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="JavaObject.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="JavaShort.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="JavaString.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="JavaReturnAddress.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="CheneyGarbageCollector.cpp">
+      <Filter>Source Files\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="DefaultGarbageCollector.cpp">
+      <Filter>Source Files\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="RedisGarbageCollector.cpp">
+      <Filter>Source Files\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="SimpleGreedyMemoryManager.cpp">
+      <Filter>Source Files\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="JavaCodeAttribute.cpp">
+      <Filter>Source Files\CodeAttributes</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectReference.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="OperatingSystemWindows.cpp">
+      <Filter>Source Files\OperatingSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="OsFunctions.cpp">
+      <Filter>Source Files\OperatingSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="OsFunctionsSingletonFactory.cpp">
+      <Filter>Source Files\OperatingSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="HelperVMFile.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AgregateLogger.h">
@@ -411,9 +468,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AnnotationsEntry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AssertionFailedException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AttributeConstantValue.h">
@@ -434,79 +488,7 @@
     <ClInclude Include="BigEndianStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CharacterCoversionFailedException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CheneyGarbageCollector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ClassAttributeBootstrapMethods.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ClassAttributeCode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ClassAttributeEnclosingMethod.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ClassAttributeInnerClasses.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ClassAttributeSourceDebugExtension.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ClassAttributeSourceFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ClassAttributeSynthetic.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ClassAttributeUnknown.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ClassFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CodeAttributeAnnotationDefault.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CodeAttributeDeprecated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CodeAttributeExceptions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CodeAttributeFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CodeAttributeLineNumberTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CodeAttributeLocalVariableTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CodeAttributeLocalVariableTypeTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CodeAttributeRuntimeInvisibleAnnotations.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CodeAttributeRuntimeInvisibleParameterAnnotations.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CodeAttributeRuntimeVisibleAnnotations.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CodeAttributeRuntimeVisibleParameterAnnotations.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CodeAttributeSignature.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CodeAttributeStackMapTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CodeAttributeUnknown.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CodeSegmentDataBuffer.h">
@@ -524,9 +506,6 @@
     <ClInclude Include="DefaultClassLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DefaultGarbageCollector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DefaultJavaLangClassList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -539,19 +518,10 @@
     <ClInclude Include="FieldInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileDoesNotExistException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FileInvalidException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FileLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FileLogger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ForceGarbageCollection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GenericIterator.h">
@@ -564,30 +534,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GlobalFileOperations.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HelperConversion.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HelperTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HelperVMChannel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HelperVMClass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HelperVMDouble.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HelperVMRuntime.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HelperVMSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HelperVMThread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IClassLibrary.h">
@@ -605,9 +551,6 @@
     <ClInclude Include="IFloatingPointBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IGarbageCollector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="IIterator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -620,34 +563,16 @@
     <ClInclude Include="ILogger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IMemoryManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ImmediateReturnRequired.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IncreaseCallStackDepth.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IndexOutOfBoundsException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="InterfaceInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="InternalErrorException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="InvalidArgumentException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="InvalidStateException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="IObjectRegistry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IOperatingSystemDelegate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IStackManager.h">
@@ -659,49 +584,10 @@
     <ClInclude Include="IVirtualMachineState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="JavaArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaArrayTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="JavaAttributeUnknown.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="JavaBool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaByte.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaChar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaClass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="JavaClassConstants.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaClassReference.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaCodeAttribute.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaDouble.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaExceptionConstants.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaFloat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaInteger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaLong.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="JavaNativeInterface.h">
@@ -710,25 +596,7 @@
     <ClInclude Include="JavaNativeInterfaceLibrary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="JavaNullReference.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="JavaOpCodes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaReturnAddress.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaShort.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaString.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="JavaVariableTypeIntrusiveRefCounter.h">
@@ -738,9 +606,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="JVMRegisters.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JVMXException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LineNumberTableEntry.h">
@@ -755,31 +620,13 @@
     <ClInclude Include="Lockable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MallocFreeMemoryManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MemoryAllocator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MethodAlreadyIdentified.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MethodInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NativeLibraryContainer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NotImplementedException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NullPointerException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ObjectFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectReference.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ObjectRegistryLocalMachine.h">
@@ -788,64 +635,10 @@
     <ClInclude Include="ObjectRegistryRedis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="OperatingSystemWindows.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OsFunctions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OsFunctionsSingletonFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OutOfMemoryException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ParameterAnnotationsEntry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RedisGarbageCollector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SimpleGreedyMemoryManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StackFrame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StackFrameAppendFrame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StackFrameChop.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StackFrameFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StackFrameFullFrame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StackFrameSame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StackFrameSameFrameExtended.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StackFrameSameLocals1StackItem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StackFrameSameLocals1StackItemFrameExtended.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StackOverflowException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StackUnderrunException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Stream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SynchronizationException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
@@ -857,55 +650,10 @@
     <ClInclude Include="ThreadManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TypeMismatchException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TypeParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UnsupportedOperationException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="UnsupportedPlatformException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="UnsupportedTypeException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VariableComparison.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VerificationTypeInfo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VerificationTypeInfoConstant.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VerificationTypeInfoDouble.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VerificationTypeInfoFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VerificationTypeInfoFloat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VerificationTypeInfoInteger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VerificationTypeInfoLong.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VerificationTypeInfoNull.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VerificationTypeInfoTop.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VerificationTypeInfoUninitialised.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VerificationTypeInfoUninitialisedThis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VirtualMachine.h">
@@ -964,6 +712,321 @@
     </ClInclude>
     <ClInclude Include="ConstantPoolMethodHandle.h">
       <Filter>Header Files\ConstantPool</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantPoolMethodType.h">
+      <Filter>Header Files\ConstantPool</Filter>
+    </ClInclude>
+    <ClInclude Include="HelperTypes.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="HelperVMChannel.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="HelperVMClass.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="HelperVMDouble.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="HelperVMRuntime.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="HelperVMSystem.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="HelperVMThread.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="HelperConversion.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassAttributeBootstrapMethods.h">
+      <Filter>Header Files\ClassAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassAttributeCode.h">
+      <Filter>Header Files\ClassAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassAttributeEnclosingMethod.h">
+      <Filter>Header Files\ClassAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassAttributeInnerClasses.h">
+      <Filter>Header Files\ClassAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassAttributeSourceDebugExtension.h">
+      <Filter>Header Files\ClassAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassAttributeSourceFile.h">
+      <Filter>Header Files\ClassAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassAttributeSynthetic.h">
+      <Filter>Header Files\ClassAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassAttributeUnknown.h">
+      <Filter>Header Files\ClassAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeAttributeAnnotationDefault.h">
+      <Filter>Header Files\CodeAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeAttributeDeprecated.h">
+      <Filter>Header Files\CodeAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeAttributeExceptions.h">
+      <Filter>Header Files\CodeAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeAttributeFactory.h">
+      <Filter>Header Files\CodeAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeAttributeLineNumberTable.h">
+      <Filter>Header Files\CodeAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeAttributeLocalVariableTable.h">
+      <Filter>Header Files\CodeAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeAttributeLocalVariableTypeTable.h">
+      <Filter>Header Files\CodeAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeAttributeRuntimeInvisibleAnnotations.h">
+      <Filter>Header Files\CodeAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeAttributeRuntimeInvisibleParameterAnnotations.h">
+      <Filter>Header Files\CodeAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeAttributeRuntimeVisibleAnnotations.h">
+      <Filter>Header Files\CodeAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeAttributeRuntimeVisibleParameterAnnotations.h">
+      <Filter>Header Files\CodeAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeAttributeSignature.h">
+      <Filter>Header Files\CodeAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeAttributeStackMapTable.h">
+      <Filter>Header Files\CodeAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeAttributeUnknown.h">
+      <Filter>Header Files\CodeAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="VerificationTypeInfoUninitialisedThis.h">
+      <Filter>Header Files\VerificationTypeInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="VerificationTypeInfo.h">
+      <Filter>Header Files\VerificationTypeInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="VerificationTypeInfoConstant.h">
+      <Filter>Header Files\VerificationTypeInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="VerificationTypeInfoDouble.h">
+      <Filter>Header Files\VerificationTypeInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="VerificationTypeInfoFactory.h">
+      <Filter>Header Files\VerificationTypeInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="VerificationTypeInfoFloat.h">
+      <Filter>Header Files\VerificationTypeInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="VerificationTypeInfoInteger.h">
+      <Filter>Header Files\VerificationTypeInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="VerificationTypeInfoLong.h">
+      <Filter>Header Files\VerificationTypeInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="VerificationTypeInfoNull.h">
+      <Filter>Header Files\VerificationTypeInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="VerificationTypeInfoTop.h">
+      <Filter>Header Files\VerificationTypeInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="VerificationTypeInfoUninitialised.h">
+      <Filter>Header Files\VerificationTypeInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="CharacterCoversionFailedException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="FileDoesNotExistException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="FileInvalidException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="IndexOutOfBoundsException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="InternalErrorException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="InvalidArgumentException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="InvalidStateException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="NullPointerException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="NotImplementedException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="StackUnderrunException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="StackOverflowException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeMismatchException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="UnsupportedOperationException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="UnsupportedPlatformException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="UnsupportedTypeException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="StackFrame.h">
+      <Filter>Header Files\StackFrames</Filter>
+    </ClInclude>
+    <ClInclude Include="StackFrameAppendFrame.h">
+      <Filter>Header Files\StackFrames</Filter>
+    </ClInclude>
+    <ClInclude Include="StackFrameChop.h">
+      <Filter>Header Files\StackFrames</Filter>
+    </ClInclude>
+    <ClInclude Include="StackFrameFactory.h">
+      <Filter>Header Files\StackFrames</Filter>
+    </ClInclude>
+    <ClInclude Include="StackFrameFullFrame.h">
+      <Filter>Header Files\StackFrames</Filter>
+    </ClInclude>
+    <ClInclude Include="StackFrameSame.h">
+      <Filter>Header Files\StackFrames</Filter>
+    </ClInclude>
+    <ClInclude Include="StackFrameSameFrameExtended.h">
+      <Filter>Header Files\StackFrames</Filter>
+    </ClInclude>
+    <ClInclude Include="StackFrameSameLocals1StackItem.h">
+      <Filter>Header Files\StackFrames</Filter>
+    </ClInclude>
+    <ClInclude Include="StackFrameSameLocals1StackItemFrameExtended.h">
+      <Filter>Header Files\StackFrames</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaArray.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaBool.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaByte.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaChar.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaArrayTypes.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaClass.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaDouble.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaFloat.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaInteger.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaLong.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaNullReference.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaObject.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaShort.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaString.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaTypes.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaClassReference.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaReturnAddress.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaExceptionConstants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssertionFailedException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="JVMXException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="CheneyGarbageCollector.h">
+      <Filter>Header Files\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="DefaultGarbageCollector.h">
+      <Filter>Header Files\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="IGarbageCollector.h">
+      <Filter>Header Files\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="MallocFreeMemoryManager.h">
+      <Filter>Header Files\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleGreedyMemoryManager.h">
+      <Filter>Header Files\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="IMemoryManager.h">
+      <Filter>Header Files\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="MethodAlreadyIdentified.h">
+      <Filter>Header Files\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryAllocator.h">
+      <Filter>Header Files\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectReference.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="OutOfMemoryException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="RedisGarbageCollector.h">
+      <Filter>Header Files\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="SynchronizationException.h">
+      <Filter>Header Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="OsFunctions.h">
+      <Filter>Header Files\OperatingSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="OsFunctionsSingletonFactory.h">
+      <Filter>Header Files\OperatingSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="OperatingSystemWindows.h">
+      <Filter>Header Files\OperatingSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ForceGarbageCollection.h">
+      <Filter>Header Files\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaCodeAttribute.h">
+      <Filter>Header Files\CodeAttributes</Filter>
+    </ClInclude>
+    <ClInclude Include="IOperatingSystemDelegate.h">
+      <Filter>Header Files\OperatingSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="HelperVMFile.h">
+      <Filter>Header Files\Helpers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
