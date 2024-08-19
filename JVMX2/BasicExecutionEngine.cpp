@@ -44,6 +44,9 @@ extern const JavaString c_InstanceInitialisationMethodName;
 const JavaString c_MethodTypeClassName = JavaString::FromCString( JVMX_T( "java/lang/invoke/MethodType" ) );
 const JavaString c_ThrowableClassName = JavaString::FromCString( JVMX_T( "java/lang/Throwable" ) );
 
+const JavaString c_UncaughtExceptionMethodName = JavaString::FromCString(JVMX_T("uncaughtException"));
+const JavaString c_UncaughtExceptionMethodType = JavaString::FromCString(JVMX_T("(Ljava/lang/Thread;Ljava/lang/Throwable;)V"));
+
 class StackLevelIncrementer
 {
 public:
@@ -126,6 +129,7 @@ void BasicExecutionEngine::Run( const std::shared_ptr<IVirtualMachineState> &pVi
         if ( 0 == pVirtualMachineState->GetCallStackDepth() )
         {
           pVirtualMachineState->PopCallStackDepth();
+          HandleUnhandledException(pVirtualMachineState);
           return;
         }
         else
@@ -3221,7 +3225,10 @@ void BasicExecutionEngine::ExecuteOpCodeGetField( const std::shared_ptr<IVirtual
   auto pFieldValue = pObject->GetContainedObject()->GetFieldByName( *pFieldInfo->GetName() );
   if ( nullptr == pFieldValue )
   {
+#ifdef _DEBUG
     __asm int 3;
+#endif
+    throw InvalidStateException(__FUNCTION__ " - Could not find expected field on object.");
   }
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -6423,4 +6430,83 @@ void BasicExecutionEngine::ExecuteOpCodeDuplicateTopOperandx2( const std::shared
       pVirtualMachineState->LogOperandStack();
   }
 #endif // _DEBUG
+}
+
+void BasicExecutionEngine::HandleUnhandledException(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
+{
+  JVMX_ASSERT(pVirtualMachineState->HasExceptionOccurred());
+
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  if (pVirtualMachineState->HasUserCodeStarted())
+  {
+    GetLogger()->LogDebug("Unhandled Exception");
+  }
+#endif // _DEBUG
+
+  auto exception = pVirtualMachineState->GetException();
+  auto threadInfo = pVirtualMachineState->ReturnCurrentThreadInfo();
+
+  //"getUncaughtExceptionHandler"
+
+  auto pField = threadInfo.m_pThreadObject->GetContainedObject()->GetFieldByName(JavaString::FromCString(u"group"));
+  if (nullptr == pField)
+  {
+    GetLogger()->LogError("Error trying to handle uncaught Java exception. Could not find field 'group' on thread.");
+    return;
+  }
+
+  if (e_JavaVariableTypes::Object != pField->GetVariableType())
+  {
+    GetLogger()->LogError("Error trying to handle uncaught Java exception. Field 'group' was expected to be an object.");
+    return;
+  }
+
+  boost::intrusive_ptr<ObjectReference> pFieldObject = new ObjectReference(*dynamic_cast<const ObjectReference*>(pField.get()));
+  if (nullptr == pFieldObject)
+  {
+    GetLogger()->LogError("Error trying to handle uncaught Java exception. Could not cast field value to object.");
+    return;
+  }
+
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  if (pVirtualMachineState->HasUserCodeStarted())
+  {
+    pVirtualMachineState->LogOperandStack();
+  }
+#endif // _DEBUG
+
+  auto threadGroupClassName = pFieldObject->GetContainedObject()->GetClass()->GetName();
+
+  pVirtualMachineState->PushOperand(pField);
+  pVirtualMachineState->PushOperand(threadInfo.m_pThreadObject);
+  pVirtualMachineState->PushOperand(pVirtualMachineState->GetException());
+
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  if (pVirtualMachineState->HasUserCodeStarted())
+  {
+    GetLogger()->LogDebug("Operand stack before resetting exception.");
+    pVirtualMachineState->LogOperandStack();
+  }
+#endif // _DEBUG
+
+  pVirtualMachineState->ResetException();
+
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  if (pVirtualMachineState->HasUserCodeStarted())
+  {
+    pVirtualMachineState->LogOperandStack();
+  }
+#endif // _DEBUG
+
+  pVirtualMachineState->Execute(*threadGroupClassName.get(), c_UncaughtExceptionMethodName, c_UncaughtExceptionMethodType);
+
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  if (pVirtualMachineState->HasUserCodeStarted())
+  {
+    GetLogger()->LogDebug("Unhandled Exception was handled by threadgroup.");
+  }
+#endif // _DEBUG
+
+  // TODO: We may have to do some more stuff here to kill the thread!
+  // I think we are safe, because in theory only the main thread will ever get here and all that is left is cleanup.
 }

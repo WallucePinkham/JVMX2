@@ -266,24 +266,13 @@ void VirtualMachine::RunClassName(const JavaString& className,
       throw InvalidStateException(__FUNCTION__ " - Could not resolve class for java/lang/ClassLoader.");
     }
 
-//#if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-//    if (pInitialState->HasUserCodeStarted())
-//    {
-//      m_pLogger->LogDebug("Creating object of type: %s", pApplicationClassLoaderClass->GetName()->ToUtf8String().c_str());
-//    }
-//#endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-    
     if (!pApplicationClassLoaderClass->IsInitialsed())
     {
       pInitialState->InitialiseClass(pApplicationClassLoaderClass);
     }
 
-    //pInitialState->SetUserCodeStarted(); // Temporary for Debugging. Delete this ASAP.
     pInitialState->Execute(*pApplicationClassLoaderClass->GetName().get(), c_GetClassLoaderMethodName, c_GetClassLoaderMethodType);
      
-
-    // pInitialState->PushOperand(pInitialState->CreateObject(pApplicationClassLoaderClass));
-//
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
     if (pInitialState->HasUserCodeStarted())
     {

@@ -74,8 +74,6 @@ int main(int argc, char* argv[])
     //pJVM->Run( JVMX_T( "TestProperties.class" ), pInitialState );
     //pJVM->Run( JVMX_T( "TestNullPointerException.class" ), pInitialState );
 
-    // Handle JVM Exceptions
-
     pJVM->Stop(pInitialState);
 
     /*pGarbageCollector->Collect( e_ForceGarbageCollection::Yes );*/

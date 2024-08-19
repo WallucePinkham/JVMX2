@@ -119,6 +119,8 @@ private:
 
   void InitialiseDimention( const std::vector<int32_t> &dimentionSizes, const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState, boost::intrusive_ptr<ObjectReference> pFirstDimention, uint8_t dimentionCount, int32_t currentDimention, e_JavaArrayTypes finalDimentionType );
 
+  void HandleUnhandledException(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState);
+
   // Op Codes
 private:
   void ExecuteOpCodeGetStatic( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
