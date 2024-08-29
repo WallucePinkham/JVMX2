@@ -1,4 +1,7 @@
+
+#include "OsFunctions.h"
 #include "CommandLineProcessor.h"
+
 
 inline void CommandLineProcessor::Usage(std::ostream& stream)
 {
@@ -12,7 +15,9 @@ inline void CommandLineProcessor::Usage(std::ostream& stream)
     stream << "\n";
     stream << "Options:\n";
     stream << "  -cp, --class-path <class search path of directories>\n";
-    stream << "\t\tA ; separated list of directories to search for class files.\n";
+    stream << "\t\tA " << OsFunctions::GetInstance().GetPathSeparator() << " separated list of directories to search for class files.\n";
+    stream << "  -D<name>=<value>";
+    stream << "\t\t Set a system property";
     stream << "  -h, --help\t\tPrint this message\n";
     stream << "  -v, --version\t\tPrints version information\n";
 }
@@ -103,9 +108,26 @@ int CommandLineProcessor::ProcessCommandLine(int argc, char* argv[], CommandLine
         return 1;
       }
 
-      std::string classPathString = argv[i + 1];
-      cmdLine.classPath = Split(classPathString, ';');
+      cmdLine.classPath = argv[i + 1];
       ++i;
+      continue;
+    }
+
+    if (arg.length() >= 2 && (arg.substr(0, 2) == "-D"))
+    {
+      std::string val = arg.substr(2);
+      if (val.empty())
+      {
+        continue;
+      }
+
+      auto arr = Split(val, '=');
+      if (arr.empty() || arr[0].empty())
+      {
+        continue;
+      }
+
+      cmdLine.properties.push_back(Property(arr[0], arr.size() > 1 ? arr[1] : ""));
       continue;
     }
 

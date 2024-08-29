@@ -5,7 +5,9 @@
 #include "TypeMismatchException.h"
 #include "IndexOutOfBoundsException.h"
 #include "InvalidStateException.h"
+#include "NotImplementedException.h"
 #include "HelperTypes.h"
+#include "DefaultClassLoader.h"
 
 #include "ObjectReference.h"
 
@@ -48,7 +50,7 @@ JavaClass::JavaClass( uint16_t minorVersion, uint16_t majorVersion, std::shared_
   SetupClassName();
   SetupSuperClassName();
   SetupMethods();
-  SetupSuperClass();
+  //SetupSuperClass();
 }
 
 JavaClass::JavaClass( const JavaClass &other )
@@ -317,6 +319,11 @@ void JavaClass::SetupSuperClass() const
   {
     std::shared_ptr<IClassLibrary> pLibrary = GlobalCatalog::GetInstance().Get( "ClassLibrary" );
     m_pSuperClass = pLibrary->FindClass( *m_pSuperClassName );
+
+    if (nullptr == m_pSuperClass)
+    {
+      throw NotImplementedException("Not implemented yet");
+    }
   }
 }
 

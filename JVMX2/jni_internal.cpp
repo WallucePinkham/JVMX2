@@ -503,12 +503,12 @@ extern "C"
     }
     catch ( InvalidArgumentException &ex )
     {
-      auto pClass = pVirtualMachineState->LoadClass( JavaString::FromCString( c_JavaIllegalAccessErrorException ) );
+      auto pClass = pVirtualMachineState->InitialiseClass( JavaString::FromCString( c_JavaIllegalAccessErrorException ) );
 
-      if ( pClass->IsInitialsed() )
-      {
-        pVirtualMachineState->InitialiseClass( JavaString::FromCString( c_JavaIllegalAccessErrorException ) );
-      }
+      //if ( pClass->IsInitialsed() )
+      //{
+      //  pVirtualMachineState->InitialiseClass( JavaString::FromCString( c_JavaIllegalAccessErrorException ) );
+      //}
 
       pEnv->ThrowNew( pEnv, FindClass( pEnv, c_JavaIllegalAccessErrorException ), ex.what() );
     }
@@ -1071,7 +1071,7 @@ extern "C"
     IVirtualMachineState *pVirtualMachineState = reinterpret_cast<IVirtualMachineState *>( pInternal->m_pInternal );
 
     auto pClassName = boost::dynamic_pointer_cast<JavaString>( pJavaLangClass->GetContainedObject()->GetJVMXFieldByName( c_SyntheticField_ClassName ) );
-    std::shared_ptr<JavaClass> pObjectClass = pVirtualMachineState->LoadClass( *pClassName );
+    std::shared_ptr<JavaClass> pObjectClass = pVirtualMachineState->InitialiseClass( *pClassName );
 
     std::shared_ptr<MethodInfo> pMethodInfo = pVirtualMachineState->ResolveMethod( pObjectClass.get(), JavaString::FromCString( name ), JavaString::FromCString( sig ) );
 
@@ -1146,7 +1146,7 @@ extern "C"
       throw InvalidStateException( "Expected class name to be valid string." );
     }
 
-    std::shared_ptr<JavaClass> pClass = pVirtualMachineState->LoadClass( *pClassName );
+    std::shared_ptr<JavaClass> pClass = pVirtualMachineState->InitialiseClass( *pClassName );
     boost::intrusive_ptr<ObjectReference> pNewObject = pVirtualMachineState->CreateObject( pClass );
 
     if ( nullptr == pNewObject )
@@ -1180,16 +1180,16 @@ extern "C"
     boost::intrusive_ptr<ObjectReference > pJavaLangClass( JNIEnvInternal::ConvertJObjectToObjectPointer( clazz ) );
     boost::intrusive_ptr<JavaString> pClassName = boost::dynamic_pointer_cast<JavaString>( pJavaLangClass->GetContainedObject()->GetJVMXFieldByName( c_SyntheticField_ClassName ) );
 
-    std::shared_ptr<JavaClass> pClass = pVirtualMachineState->LoadClass( *pClassName );
+    std::shared_ptr<JavaClass> pClass = pVirtualMachineState->InitialiseClass( *pClassName );
     if ( nullptr == pClass )
     {
       throw InvalidStateException( __FUNCTION__ " - Java exception class could not be loaded." );
     }
 
-    if ( !pVirtualMachineState->IsClassInitialised( *pClass->GetName() ) )
+  /*  if ( !pVirtualMachineState->IsClassInitialised( *pClass->GetName() ) )
     {
       pVirtualMachineState->InitialiseClass( *pClass->GetName() );
-    }
+    }*/
 
     boost::intrusive_ptr<ObjectReference> pNewObject = pVirtualMachineState->CreateObject( pClass );
     if ( nullptr == pNewObject )
@@ -1301,16 +1301,16 @@ extern "C"
     boost::intrusive_ptr<ObjectReference > pJavaLangClass( JNIEnvInternal::ConvertJObjectToObjectPointer( clazz ) );
     boost::intrusive_ptr<JavaString> pClassName = boost::dynamic_pointer_cast<JavaString>( pJavaLangClass->GetContainedObject()->GetJVMXFieldByName( c_SyntheticField_ClassName ) );
 
-    std::shared_ptr<JavaClass> pClass = pVirtualMachineState->LoadClass( *pClassName );
+    std::shared_ptr<JavaClass> pClass = pVirtualMachineState->InitialiseClass( *pClassName );
     if ( nullptr == pClass )
     {
       throw InvalidStateException( __FUNCTION__ " - Java exception class could not be loaded." );
     }
 
-    if ( !pVirtualMachineState->IsClassInitialised( *pClass->GetName() ) )
-    {
-      pVirtualMachineState->InitialiseClass( *pClass->GetName() );
-    }
+    //if ( !pVirtualMachineState->IsClassInitialised( *pClass->GetName() ) )
+    //{
+    //  pVirtualMachineState->InitialiseClass( *pClass->GetName() );
+    //}
 
     boost::intrusive_ptr<ObjectReference> pNewObject = pVirtualMachineState->CreateObject( pClass );
     if ( nullptr == pNewObject )
@@ -1488,16 +1488,16 @@ extern "C"
     }
 
     boost::intrusive_ptr<JavaString> pClassName = boost::dynamic_pointer_cast<JavaString>( pJavaLangClass->GetContainedObject()->GetJVMXFieldByName( c_SyntheticField_ClassName ) );
-    std::shared_ptr<JavaClass> pClass = pVirtualMachineState->LoadClass( *pClassName );
+    std::shared_ptr<JavaClass> pClass = pVirtualMachineState->InitialiseClass( *pClassName );
     if ( nullptr == pClass )
     {
       throw InvalidStateException( __FUNCTION__ " - Java exception class could not be loaded." );
     }
 
-    if ( !pVirtualMachineState->IsClassInitialised( *pClass->GetName() ) )
-    {
-      pVirtualMachineState->InitialiseClass( *pClass->GetName() );
-    }
+    //if ( !pVirtualMachineState->IsClassInitialised( *pClass->GetName() ) )
+    //{
+    //  pVirtualMachineState->InitialiseClass( *pClass->GetName() );
+    //}
 
     boost::intrusive_ptr<ObjectReference> pMessage = pVirtualMachineState->CreateStringObject( JavaString::FromCString( message ) );
     boost::intrusive_ptr<ObjectReference> pExceptionObject = pVirtualMachineState->CreateObject( pClass );
@@ -1537,16 +1537,16 @@ extern "C"
     boost::intrusive_ptr<ObjectReference> pJavaLangClass = JNIEnvInternal::ConvertJObjectToObjectPointer( cls );
     boost::intrusive_ptr<JavaString> pClassName = boost::dynamic_pointer_cast<JavaString>( pJavaLangClass->GetContainedObject()->GetJVMXFieldByName( c_SyntheticField_ClassName ) );
 
-    std::shared_ptr<JavaClass> pClass = pVirtualMachineState->LoadClass( *pClassName );
+    std::shared_ptr<JavaClass> pClass = pVirtualMachineState->InitialiseClass( *pClassName );
     std::shared_ptr<FieldInfo> pFieldInfo = pClass->GetFieldByName( GetNameFromFieldID( fieldID ) );
 
     // Create VMField Object
 
-    std::shared_ptr<JavaClass> pJavaLangRefectVMFieldClass = pVirtualMachineState->LoadClass( c_JavaLangReflectVMField_ClassName );
-    if ( !pJavaLangRefectVMFieldClass->IsInitialsed() )
-    {
-      pVirtualMachineState->InitialiseClass( c_JavaLangReflectVMField_ClassName );
-    }
+    std::shared_ptr<JavaClass> pJavaLangRefectVMFieldClass = pVirtualMachineState->InitialiseClass( c_JavaLangReflectVMField_ClassName );
+    //if ( !pJavaLangRefectVMFieldClass->IsInitialsed() )
+    //{
+    //  pVirtualMachineState->InitialiseClass( c_JavaLangReflectVMField_ClassName );
+    //}
 
     boost::intrusive_ptr<ObjectReference> pVMFieldObject = pVirtualMachineState->CreateObject( pJavaLangRefectVMFieldClass );
     if ( nullptr == pVMFieldObject )
@@ -1569,11 +1569,11 @@ extern "C"
 
     // Create proper Field Object to return
 
-    std::shared_ptr<JavaClass> pJavaLangRefectFieldClass = pVirtualMachineState->LoadClass( c_JavaLangReflectField_ClassName );
-    if ( !pJavaLangRefectFieldClass->IsInitialsed() )
-    {
-      pVirtualMachineState->InitialiseClass( c_JavaLangReflectField_ClassName );
-    }
+    std::shared_ptr<JavaClass> pJavaLangRefectFieldClass = pVirtualMachineState->InitialiseClass( c_JavaLangReflectField_ClassName );
+    //if ( !pJavaLangRefectFieldClass->IsInitialsed() )
+    //{
+    //  pVirtualMachineState->InitialiseClass( c_JavaLangReflectField_ClassName );
+    //}
 
     boost::intrusive_ptr<ObjectReference> pResultObject = pVirtualMachineState->CreateObject( pJavaLangRefectFieldClass );
     if ( nullptr == pResultObject )
@@ -1608,7 +1608,7 @@ extern "C"
     boost::intrusive_ptr<ObjectReference> pJavaLangClass = JNIEnvInternal::ConvertJObjectToObjectPointer( clazz );
     boost::intrusive_ptr<JavaString> pClassName = boost::dynamic_pointer_cast<JavaString>( pJavaLangClass->GetContainedObject()->GetJVMXFieldByName( c_SyntheticField_ClassName ) );
 
-    std::shared_ptr<JavaClass> pClass = pVirtualMachineState->LoadClass( *pClassName );
+    std::shared_ptr<JavaClass> pClass = pVirtualMachineState->InitialiseClass( *pClassName );
 
     boost::intrusive_ptr<ObjectReference> pSuperClass = pVirtualMachineState->FindJavaLangClass( *pClass->GetSuperClassName() );
     if ( nullptr == pSuperClass )
@@ -1647,17 +1647,17 @@ extern "C"
     std::shared_ptr<JavaClass> pClassFile = pConstantPool->FindClass( *pClassName );
     if ( nullptr == pClassFile )
     {
-      pClassFile = pVirtualMachineState->LoadClass( *pClassName );
+      pClassFile = pVirtualMachineState->InitialiseClass( *pClassName );
       if ( nullptr == pClassFile )
       {
         throw FileDoesNotExistException( __FUNCTION__ " - Could not load class" );
       }
     }
 
-    if ( !pClassFile->IsInitialsed() )
-    {
-      pVirtualMachineState->InitialiseClass( *pClassName );
-    }
+    //if ( !pClassFile->IsInitialsed() )
+    //{
+    //  pVirtualMachineState->InitialiseClass( *pClassName );
+    //}
 
     boost::intrusive_ptr<ObjectReference> pJavaLangClass = pVirtualMachineState->CreateJavaLangClassFromClassName( pClassName );
 
@@ -1978,10 +1978,26 @@ extern "C"
 
     try
     {
+      auto pDest = pDestination->GetContainedArray();
+      auto pSrc = pSource->GetContainedArray();
       for ( int i = 0; i < length; ++ i )
       {
-        pDestination->GetContainedArray()->SetAt( destOffset + i, pSource->GetContainedArray()->At( srcOffset + i ) );
+        pDest->SetAt( destOffset + i, pSrc->At( srcOffset + i ) );
       }
+
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+      if (pVirtualMachineState->HasUserCodeStarted())
+      {
+        if (pSrc->GetContainedType() == e_JavaArrayTypes::Char && length < 50)
+        {
+          auto pLogger = pVirtualMachineState->GetLogger();
+          pLogger->LogDebug("ArrayCopy: srcOff=%d, dstOff=%d, length=%d", srcOffset, destOffset, length);
+          pLogger->LogDebug("Source: %s", pSrc->ToString().ToUtf8String().c_str());
+          pLogger->LogDebug("Dest: %s", pDest->ToString().ToUtf8String().c_str());
+        }
+      }
+#endif // _DEBUG 
+
     }
     catch ( IndexOutOfBoundsException & )
     {

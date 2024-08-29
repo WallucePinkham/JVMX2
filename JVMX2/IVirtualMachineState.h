@@ -57,7 +57,7 @@ public:
 
   virtual bool IsClassInitialised( const JavaString &className ) JVMX_PURE;
 
-  virtual std::shared_ptr<JavaClass> GetCurrentClass() JVMX_PURE;
+  virtual std::shared_ptr<JavaClass> GetCurrentClass() const JVMX_PURE;
 
   virtual std::shared_ptr<MethodInfo> GetMethodByNameAndType( const JavaString &className, const JavaString &methodName, const JavaString &methodType, std::shared_ptr<IClassLibrary> pConstantPool ) JVMX_PURE;
 
@@ -82,8 +82,8 @@ public:
   virtual boost::intrusive_ptr<IJavaVariableType> GetLocalVariable( uint16_t localVariableIndex ) JVMX_PURE;
   virtual void SetLocalVariable( uint16_t localVariableIndex, boost::intrusive_ptr<IJavaVariableType> pValue ) JVMX_PURE;
 
-  virtual std::shared_ptr<JavaClass> LoadClass( const JavaString &className, const JavaString &path = JavaString::EmptyString() ) JVMX_PURE;
-  virtual std::shared_ptr<JavaClass> LoadClass(const DataBuffer& classData) JVMX_PURE;
+  virtual std::shared_ptr<JavaClass> FindClass(const JavaString& className) const JVMX_PURE;;
+
 
   virtual void UpdateCurrentClassName( boost::intrusive_ptr<JavaString> pNewName ) JVMX_PURE;
 
@@ -110,8 +110,8 @@ public:
   virtual void LogCallStack() JVMX_PURE;
   virtual void LogOperandStack() JVMX_PURE;
 
-  virtual void InitialiseClass( const JavaString &className ) JVMX_PURE;
-  virtual void InitialiseClass(std::shared_ptr<JavaClass> pClass) JVMX_PURE;
+  virtual std::shared_ptr<JavaClass> InitialiseClass( const JavaString &className ) JVMX_PURE;
+  virtual std::shared_ptr<JavaClass> InitialiseClass(std::shared_ptr<JavaClass> pClass) JVMX_PURE;
 
   virtual std::vector<boost::intrusive_ptr<IJavaVariableType> > PopulateParameterArrayFromOperandStack( std::shared_ptr<MethodInfo> pMethodInfo ) JVMX_PURE;
 
@@ -197,6 +197,14 @@ public:
 #ifdef _DEBUG
   virtual size_t GetOperandStackSize() JVMX_PURE;
 #endif // _DEBUG
+
+  virtual void SetProperties(const std::string& classPath, const std::vector<Property>& properties) JVMX_PURE;
+  virtual const std::string& GetClassPath() const JVMX_PURE;
+  virtual const std::vector<Property>& GetProperties() const JVMX_PURE;
+
+  // Consider using InitialiseClass or FindClass Instead
+  virtual std::shared_ptr<JavaClass> LoadClass(const JavaString& className, const JavaString& path = JavaString::EmptyString()) JVMX_PURE;
+  virtual std::shared_ptr<JavaClass> LoadClass(const DataBuffer& classData) JVMX_PURE;
 };
 
 #endif // _IVIRTUALMACHINESTATE__H_

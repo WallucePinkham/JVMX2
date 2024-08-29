@@ -3,6 +3,8 @@
 #include <functional>
 #include <codecvt>
 
+#include <boost/algorithm/string.hpp>
+
 #include "IndexOutOfBoundsException.h"
 #include "InvalidArgumentException.h"
 
@@ -213,7 +215,7 @@ JavaString JavaString::Append( int32_t intVal ) const
 return JavaString( dataBuffer.GetByteLength(), dataBuffer.ToByteArray() );
 }*/
 
-std::u16string JavaString::ToUtf16String() const
+const std::u16string &JavaString::ToUtf16String() const
 {
   return m_Data;
 }
@@ -301,6 +303,13 @@ JavaString JavaString::ReplaceAll( char16_t param1, char16_t param2 ) const
   std::u16string result = m_Data;
   std::replace( result.begin(), result.end(), param1, param2 );
   return JavaString( std::u16string( result ) );
+}
+
+JavaString JavaString::TrimRight() const
+{
+  std::u16string result = m_Data;
+  boost::trim_right(result);
+  return JavaString(std::u16string(result));
 }
 
 bool JavaString::IsReferenceType() const

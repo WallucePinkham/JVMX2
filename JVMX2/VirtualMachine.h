@@ -18,6 +18,8 @@
 #include "ThreadManager.h"
 #include "TypeParser.h"
 #include "NativeLibraryContainer.h"
+#include "StringPool.h"
+#include "CommandLineProcessor.h"
 
 // Forward Declarations
 class IMemoryManager;
@@ -41,7 +43,10 @@ protected:
 public:
   static std::shared_ptr<VirtualMachine> Create();
 
-  void Initialise(const std::string& startingClassfile, const std::shared_ptr<IVirtualMachineState> &pInitialState );
+  void Initialise(const std::string& startingClassfile, 
+                  const std::string &classPath,
+                  const std::vector<Property> &properties,
+                  const std::shared_ptr<IVirtualMachineState> &pInitialState );
   void Run( const JavaString &fileName, const std::shared_ptr<IVirtualMachineState> &pInitialState, bool userCode = true );
   void RunClassName(const JavaString& className, const std::shared_ptr<IVirtualMachineState>& pInitialState, bool userCode = true);
   void Stop( const std::shared_ptr<IVirtualMachineState> &pInitialState );
@@ -76,10 +81,9 @@ private:
   void InitialiseClass( const JVMX_CHAR_TYPE *pClassName, const std::shared_ptr<IVirtualMachineState> &pInitialState );
 
   int GetMainClassFromJarFile(const JavaString& fileName, JavaString& mainClassName, DataBuffer& mainClassOuput);
+  void InitialiseAnsiCharset(const std::shared_ptr<IVirtualMachineState>& pInitialState);
 
 private:
-  static jobject JNICALL java_lang_VMClassLoader_getPrimitiveClass( JNIEnv *pEnv, jobject obj, jchar typeAsChar );
-  static jobject JNICALL java_lang_VMClassLoader_defineClass(JNIEnv* pEnv, jobject obj, jobject classLoaderObj, jobject name, jarray data, jint offset, jint len, jobject pd);
 
   static jobject JNICALL java_lang_VMSecurityManager_currentClassLoader( JNIEnv *pEnv, jobject obj );
 
@@ -127,12 +131,13 @@ private:
   std::shared_ptr<IGarbageCollector> m_pGarbageCollector;
   std::shared_ptr<IClassLibrary> m_pRuntimeConstantPool;
   std::shared_ptr<IExecutionEngine> m_pEngine;
-  std::shared_ptr<JavaNativeInterface> m_pJNI;
+  std::shared_ptr<JavaNativeInterface> m_pJNI;  
   std::shared_ptr<IJavaLangClassList> m_pJavaLangClassList;
   std::shared_ptr<IThreadManager> m_pThreadManager;
   std::shared_ptr<NativeLibraryContainer> m_pNativeLibraryContainer;
   std::shared_ptr<IObjectRegistry> m_pObjectRegistry;
   std::shared_ptr<FileSearchPathCollection> m_pFileSearchPathCollection;
+  std::shared_ptr<StringPool> m_pStringPool;
 };
 
 #endif // _VIRTUALMACHINE__H_

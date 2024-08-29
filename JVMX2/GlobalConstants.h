@@ -118,4 +118,6 @@ class JavaDouble;
 typedef uint16_t ConstantPoolIndex;
 typedef uint32_t LocalVariable;
 
+typedef std::pair<std::string, std::string> Property;
+
 #endif // __GLOBALCONSTANTS_H__

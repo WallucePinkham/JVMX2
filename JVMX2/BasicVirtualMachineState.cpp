@@ -28,6 +28,7 @@
 
 #include "HelperTypes.h"
 #include "HelperConversion.h"
+#include "HelperClasses.h"
 
 #include "IMemoryManager.h"
 #include "GlobalCatalog.h"
@@ -400,7 +401,7 @@ std::shared_ptr<ILogger> BasicVirtualMachineState::GetLogger()
   return m_pLogger;
 }
 
-std::shared_ptr<IClassLibrary> BasicVirtualMachineState::GetClassLibrary()
+std::shared_ptr<IClassLibrary> BasicVirtualMachineState::GetClassLibrary() const
 {
   if (nullptr == m_pClassLibrary)
   {
@@ -430,7 +431,11 @@ void BasicVirtualMachineState::Execute(const JavaString& startingClassName, cons
 #endif // (_DEBUG) && defined(JVMX_LOG_VERBOSE)
 
       auto pClass = LoadClass(startingClassName);
-      pClass->SetInitialised();
+      //pClass->SetInitialised();
+      if (!pClass->IsInitialsed() && !pClass->IsInitialsing())
+      {
+        InitialiseClass(pClass);
+      }
 
       return;
     }
@@ -594,7 +599,7 @@ bool BasicVirtualMachineState::IsClassInitialised(const JavaString& className)
   return GetClassLibrary()->IsClassInitalised(className);
 }
 
-std::shared_ptr<JavaClass> BasicVirtualMachineState::GetCurrentClass()
+std::shared_ptr<JavaClass> BasicVirtualMachineState::GetCurrentClass() const
 {
   return GetClassLibrary()->FindClass(m_CurrentDisplayCallStackEntry.m_ClassName);
 }
@@ -1378,7 +1383,7 @@ std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethod(JavaClass* p
   if (pClassFile->IsInterface())
   {
     std::shared_ptr<IExecutionEngine> pEngine = GlobalCatalog::GetInstance().Get("Engine");
-    pEngine->ThrowJavaException(shared_from_this(), c_JavaIncompatibleClassChangeErrorException);
+    HelperClasses::ThrowJavaException(shared_from_this(), c_JavaIncompatibleClassChangeErrorException);
     return nullptr;
   }
 
@@ -1501,7 +1506,7 @@ void BasicVirtualMachineState::LogLocalVariables()
   }
 }
 
-void BasicVirtualMachineState::InitialiseClass(const JavaString& className)
+std::shared_ptr<JavaClass> BasicVirtualMachineState::InitialiseClass(const JavaString& className)
 {
   std::shared_ptr<JavaClass> pClassFile = GetClassLibrary()->FindClass(className);
 
@@ -1521,14 +1526,14 @@ void BasicVirtualMachineState::InitialiseClass(const JavaString& className)
       GetLogger()->LogDebug(__FUNCTION__ " - Returning because of load failure. Assume JavaException has been thrown.");
 #endif // _DEBUG
       // We'd already have thrown a Java Exception.
-      return;
+      return pClassFile;
     }
   }
 
-  InitialiseClass(pClassFile);
+  return InitialiseClass(pClassFile);
 }
 
-void BasicVirtualMachineState::InitialiseClass(std::shared_ptr<JavaClass> pClassFile)
+std::shared_ptr<JavaClass> BasicVirtualMachineState::InitialiseClass(std::shared_ptr<JavaClass> pClassFile)
 {
   std::lock_guard<std::recursive_mutex> pLock(pClassFile->GetInitialisationMutex());
 
@@ -1540,14 +1545,20 @@ void BasicVirtualMachineState::InitialiseClass(std::shared_ptr<JavaClass> pClass
       GetLogger()->LogDebug(__FUNCTION__ " - Class %s already initialized.", (* pClassFile->GetName().get()).ToUtf8String().c_str());
     }
 #endif // _DEBUG
-    return;
+    return pClassFile;
   }
 
   // Recursively Load + Initialise Super Classes
-  auto pSuperClass = pClassFile->GetSuperClass();
-  if (nullptr != pSuperClass)
+  //auto pSuperClass = pClassFile->GetSuperClass();
+  //if (nullptr != pSuperClass)
+  //{
+  //  InitialiseClass(*pSuperClass->GetName());
+  //}
+
+  auto pSuperClassName = pClassFile->GetSuperClassName();
+  if (nullptr != pSuperClassName && pSuperClassName->GetLengthInBytes() > 0)
   {
-    InitialiseClass(*pSuperClass->GetName());
+    InitialiseClass(*pSuperClassName);
   }
 
   pClassFile->SetInitialising();
@@ -1558,7 +1569,7 @@ void BasicVirtualMachineState::InitialiseClass(std::shared_ptr<JavaClass> pClass
 
   pClassFile->SetInitialised();
 
-  return;
+  return pClassFile;
 }
 
 void BasicVirtualMachineState::LogCallStack()
@@ -1862,7 +1873,8 @@ void BasicVirtualMachineState::Halt(int exitCode)
 boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::GetClassLoaderForClassObject(boost::intrusive_ptr<ObjectReference> pObject)
 {
   boost::intrusive_ptr<JavaString> pClassName = boost::dynamic_pointer_cast<JavaString>(pObject->GetContainedObject()->GetJVMXFieldByName(c_SyntheticField_ClassName));
-  std::shared_ptr<JavaClass> pClass = LoadClass(*pClassName);
+  //std::shared_ptr<JavaClass> pClass = LoadClass(*pClassName);
+  std::shared_ptr<JavaClass> pClass = GetClassLibrary()->FindClass(*pClassName);
 
   return pClass->GetClassLoader();
 }
@@ -2050,3 +2062,31 @@ size_t BasicVirtualMachineState::GetOperandStackSize()
   return m_OperandStack.size();
 }
 #endif // _DEBUG
+
+void BasicVirtualMachineState::SetProperties(const std::string& classPath, const std::vector<Property>& properties)
+{
+  m_ClassPath = classPath;
+  if (classPath.empty())
+  {
+    m_ClassPath = ".";
+  }
+  
+  m_Properties = properties;
+}
+
+const std::string& BasicVirtualMachineState::GetClassPath() const
+{
+  JVMX_ASSERT(!m_ClassPath.empty()); // We should only call this once in the main thread during initialisation of the JVM
+                                     // for other threads / states this will be empty.
+  return m_ClassPath;
+}
+
+const std::vector<Property>& BasicVirtualMachineState::GetProperties() const
+{
+  return m_Properties;
+}
+
+std::shared_ptr<JavaClass> BasicVirtualMachineState::FindClass(const JavaString &className) const
+{
+  return GetClassLibrary()->FindClass(className);
+}

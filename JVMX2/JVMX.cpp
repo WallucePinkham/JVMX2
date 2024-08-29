@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
     std::shared_ptr<VirtualMachine> pJVM = VirtualMachine::Create();
     std::shared_ptr<BasicVirtualMachineState> pInitialState = std::make_shared<BasicVirtualMachineState>(pJVM);
 
-    pJVM->Initialise(cmdLine.mainClass.empty() ? cmdLine.jarFile : cmdLine.mainClass, pInitialState);
+    pJVM->Initialise(cmdLine.mainClass.empty() ? cmdLine.jarFile : cmdLine.mainClass, cmdLine.classPath, cmdLine.properties, pInitialState);
 
     std::string fileName;
     if (!cmdLine.mainClass.empty())

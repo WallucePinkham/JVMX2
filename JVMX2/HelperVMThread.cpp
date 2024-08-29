@@ -4,14 +4,17 @@
 
 #include <boost/intrusive_ptr.hpp>
 
+#include "GlobalCatalog.h"
+#include "NotImplementedException.h"
+
 #include "BasicVirtualMachineState.h"
 #include "JavaNativeInterface.h"
 #include "VirtualMachine.h"
 #include "JavaClass.h"
 #include "ObjectReference.h"
 #include "OsFunctions.h"
-#include "GlobalCatalog.h"
-#include "NotImplementedException.h"
+#include "HelperTypes.h"
+
 
 #include "HelperVMThread.h"
 
@@ -22,10 +25,12 @@ static void NewThreadFunction( const std::shared_ptr<IVirtualMachineState> &pVMS
   boost::intrusive_ptr<ObjectReference> pThreadObject = boost::dynamic_pointer_cast<ObjectReference>( pObject->GetContainedObject()->GetFieldByName( JavaString::FromCString( u"thread" ) ) );
   boost::intrusive_ptr<ObjectReference> pThreadName = boost::dynamic_pointer_cast<ObjectReference>( pThreadObject->GetContainedObject()->GetFieldByName( JavaString::FromCString( u"name" ) ) );
 
-  boost::intrusive_ptr<IJavaVariableType> pNameAsVariableType = pThreadName->GetContainedObject()->GetFieldByName( JavaString::FromCString( u"value" ) );
-  boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>( pNameAsVariableType );
 
-  JavaString threadName = pArray->GetContainedArray()->ConvertCharArrayToString();
+  JavaString threadName = HelperTypes::ExtractValueFromStringObject(pThreadName);
+  //boost::intrusive_ptr<IJavaVariableType> pNameAsVariableType = pThreadName->GetContainedObject()->GetFieldByName( JavaString::FromCString( u"value" ) );
+  //boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>( pNameAsVariableType );
+
+  //JavaString threadName = pArray->GetContainedArray()->ConvertCharArrayToString();
   OsFunctions::GetInstance().SetThreadName( threadName.ToUtf8String().c_str() );
 #endif // _DEBUG
 

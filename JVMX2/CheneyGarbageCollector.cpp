@@ -10,6 +10,7 @@
 
 #include "GlobalCatalog.h"
 #include "IJavaLangClassList.h"
+#include "StringPool.h"
 #include "ILogger.h"
 #include "OutOfMemoryException.h"
 #include "InvalidStateException.h"
@@ -215,6 +216,7 @@ void CheneyGarbageCollector::Collect()
     std::vector<boost::intrusive_ptr<IJavaVariableType>> roots = m_pThreadManager->GetRoots();
 
     GetJavaLangClasses( roots );
+    GetStringPoolRoots(roots);
 
     std::set<boost::intrusive_ptr<IJavaVariableType>> unqiueRoots;
     for ( auto it = roots.begin(); it != roots.end(); ++ it )
@@ -300,6 +302,17 @@ void CheneyGarbageCollector::GetJavaLangClasses( std::vector<boost::intrusive_pt
   for ( size_t i = 0; i < pClassList->GetCount(); ++i )
   {
     roots.push_back( pClassList->GetByIndex( i ) );
+  }
+}
+
+void CheneyGarbageCollector::GetStringPoolRoots(std::vector<boost::intrusive_ptr<IJavaVariableType>>& roots)
+{
+  std::shared_ptr<StringPool> pStringPool = GlobalCatalog::GetInstance().Get("StringPool");
+  std::vector<boost::intrusive_ptr<ObjectReference>> strings = pStringPool->GetAll();
+
+  for (auto string : strings)
+  { 
+    roots.push_back(string);
   }
 }
 

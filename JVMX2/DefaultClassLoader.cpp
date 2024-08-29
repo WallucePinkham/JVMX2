@@ -497,7 +497,7 @@ Stream DefaultClassLoader::ReadFileIntoStream( const JVMX_CHAR_TYPE *pFileName )
   return result;
 }
 
-std::shared_ptr<JavaClass> DefaultClassLoader::LoadClass( BigEndianStream stream )
+std::shared_ptr<JavaClass> DefaultClassLoader::LoadClass( BigEndianStream stream, boost::intrusive_ptr<ObjectReference> pClassLoader )
 {
   m_fileStream = stream;
 
@@ -537,7 +537,7 @@ std::shared_ptr<JavaClass> DefaultClassLoader::LoadClass( BigEndianStream stream
   uint16_t attributeCount = ReadAttributeCount();
   CodeAttributeList attributes = ReadAttributes( *pConstantPool, attributeCount );
 
-  return ClassFactory::CreateClassFile( minorVersion, majorVersion, pConstantPool, accessFlags, thisClassIndex, superClassIndex, interfaces, fields, methods, attributes );
+  return ClassFactory::CreateClassFile( minorVersion, majorVersion, pConstantPool, accessFlags, thisClassIndex, superClassIndex, interfaces, fields, methods, attributes, pClassLoader );
 }
 
 //uint64_t DefaultClassLoader::ReadUint64()

@@ -76,6 +76,12 @@
     <Filter Include="Source Files\OperatingSystem">
       <UniqueIdentifier>{5907c4c5-e298-4615-9cb6-5272f29486df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Streams">
+      <UniqueIdentifier>{3f1c5256-ab42-41f9-8490-74b5826345da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\JNI">
+      <UniqueIdentifier>{0bc39aa5-f5e7-4934-827b-e506aa261d08}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AgregateLogger.cpp">
@@ -459,6 +465,18 @@
     <ClCompile Include="HelperVMFile.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="HelperClasses.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="HelperVMClassLoader.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="StringPool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HelperVMString.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AgregateLogger.h">
@@ -483,9 +501,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BasicVirtualMachineState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BigEndianStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ClassFactory.h">
@@ -590,19 +605,10 @@
     <ClInclude Include="JavaClassConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="JavaNativeInterface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaNativeInterfaceLibrary.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="JavaOpCodes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="JavaVariableTypeIntrusiveRefCounter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="jni_internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="JVMRegisters.h">
@@ -636,9 +642,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ParameterAnnotationsEntry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Stream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
@@ -1026,6 +1029,33 @@
       <Filter>Header Files\OperatingSystem</Filter>
     </ClInclude>
     <ClInclude Include="HelperVMFile.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="BigEndianStream.h">
+      <Filter>Header Files\Streams</Filter>
+    </ClInclude>
+    <ClInclude Include="Stream.h">
+      <Filter>Header Files\Streams</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaNativeInterface.h">
+      <Filter>Header Files\JNI</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaNativeInterfaceLibrary.h">
+      <Filter>Header Files\JNI</Filter>
+    </ClInclude>
+    <ClInclude Include="jni_internal.h">
+      <Filter>Header Files\JNI</Filter>
+    </ClInclude>
+    <ClInclude Include="HelperClasses.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="HelperVMClassLoader.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="StringPool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HelperVMString.h">
       <Filter>Header Files\Helpers</Filter>
     </ClInclude>
   </ItemGroup>

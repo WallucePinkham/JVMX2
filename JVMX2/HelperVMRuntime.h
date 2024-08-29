@@ -7,6 +7,9 @@
 
 class HelperVMRuntime
 {
+private:
+  HelperVMRuntime() JVMX_FN_DELETE;
+
 public:
   static void JNICALL java_lang_VMRuntime_insertSystemProperties( JNIEnv *pEnv, jobject obj, jobject properties );
   static jint JNICALL java_lang_VMRuntime_nativeLoad( JNIEnv *pEnv, jobject obj, jstring fileName, jobject classLoader );

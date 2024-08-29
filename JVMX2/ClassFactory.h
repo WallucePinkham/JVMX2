@@ -8,9 +8,9 @@
 class ClassFactory JVMX_ABSTRACT
 {
 public:
-  static std::shared_ptr<JavaClass> CreateClassFile( uint16_t minorVersion, uint16_t majorVersion, std::shared_ptr<ConstantPool> pConstantPool, uint16_t accessFlags, ConstantPoolIndex thisClassIndex, ConstantPoolIndex superIndex, InterfaceInfoList interfaces, FieldInfoList fields, MethodInfoList methods, CodeAttributeList attributes )
+  static std::shared_ptr<JavaClass> CreateClassFile( uint16_t minorVersion, uint16_t majorVersion, std::shared_ptr<ConstantPool> pConstantPool, uint16_t accessFlags, ConstantPoolIndex thisClassIndex, ConstantPoolIndex superIndex, InterfaceInfoList interfaces, FieldInfoList fields, MethodInfoList methods, CodeAttributeList attributes, boost::intrusive_ptr<ObjectReference> pClassLoader )
   {
-    return std::shared_ptr<JavaClass>( new JavaClass( minorVersion, majorVersion, pConstantPool, accessFlags, thisClassIndex, superIndex, std::move( interfaces ), std::move( fields ), std::move( methods ), std::move( attributes ), nullptr ) );
+    return std::shared_ptr<JavaClass>( new JavaClass( minorVersion, majorVersion, pConstantPool, accessFlags, thisClassIndex, superIndex, std::move( interfaces ), std::move( fields ), std::move( methods ), std::move( attributes ), pClassLoader) );
   }
 };
 

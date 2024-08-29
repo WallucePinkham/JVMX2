@@ -164,16 +164,16 @@ bool JavaObject::ThrowJavaExceptionIfInterrupted() const
     return false;
   }
 
-  auto pClass = pCurrentThreadState->LoadClass( JavaString::FromCString( c_JavaInterruptedException ) );
+  auto pClass = pCurrentThreadState->InitialiseClass( JavaString::FromCString( c_JavaInterruptedException ) );
   if ( nullptr == pClass )
   {
     throw InvalidStateException( __FUNCTION__ " - Java exception class could not be loaded." );
   }
 
-  if ( !pCurrentThreadState->IsClassInitialised( *pClass->GetName() ) )
-  {
-    pCurrentThreadState->InitialiseClass( *pClass->GetName() );
-  }
+  //if ( !pCurrentThreadState->IsClassInitialised( *pClass->GetName() ) )
+  //{
+  //  pCurrentThreadState->InitialiseClass( *pClass->GetName() );
+  //}
 
   auto pExceptionObject = pCurrentThreadState->CreateObject( pClass );
   pCurrentThreadState->SetExceptionThrown( pExceptionObject );
@@ -559,8 +559,10 @@ JavaString JavaObject::ToString() const
 
   if ( *m_pClass->GetName() == JavaString::FromCString( JVMX_T( "java/lang/String" ) ) )
   {
-    boost::intrusive_ptr<IJavaVariableType> pFieldValue = GetFieldByNameConst( JavaString::FromCString( JVMX_T( "value" ) ) );
-    return JavaString::FromCString( JVMX_T( "{" ) ).Append( *( m_pClass->GetName() ) ).Append( JVMX_T( "} = {" ) ).Append( pFieldValue->ToString() ).Append( JVMX_T( "}" ) );
+    //boost::intrusive_ptr<IJavaVariableType> pFieldValue = GetFieldByNameConst( JavaString::FromCString( JVMX_T( "value" ) ) );
+    JavaString value = HelperTypes::ExtractValueFromStringObject(this);
+
+    return JavaString::FromCString( JVMX_T( "{" ) ).Append( *( m_pClass->GetName() ) ).Append( JVMX_T( "} = {" ) ).Append( value ).Append( JVMX_T( "}" ) );
   }
 
   if ( *m_pClass->GetName() == JavaString::FromCString( JVMX_T( "java/lang/Class" ) ) )

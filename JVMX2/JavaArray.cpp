@@ -715,20 +715,23 @@ JavaString JavaArray::ToString() const
   char buffer[ 38 ] = { 0 };
   _snprintf( buffer, 37, "(%d)", m_Size );
 
-  JavaString result = JavaString::FromCString( buffer ).Append( JavaString::FromCString( "[" ) );
+  std::basic_stringstream<char16_t> outputStream;
+
+  outputStream << buffer << "[";
+
+  //JavaString result = JavaString::FromCString( buffer ).Append( JavaString::FromCString( JVMX_T("[") ) );
   for ( size_t i = 0; i < m_Size; ++ i )
-    //for ( auto value : m_pValues )
   {
     const IJavaVariableType *pValue = GetValueAtIndex( i );
-    result = result.Append( pValue->ToString() );
+    outputStream << pValue->ToString().ToCharacterArray();
     if ( i != m_Size )
     {
-      result = result.Append( JVMX_T( ", " ) );
+      outputStream << u", ";
     }
 
     if ( count > 20 )
     {
-      result = result.Append( JVMX_T( "..." ) );
+      outputStream << u"...";
       break;
     }
 
@@ -737,7 +740,8 @@ JavaString JavaArray::ToString() const
 
   DebugAssert();
 
-  return result.Append( JVMX_T( "]" ) );
+  outputStream << u"]";
+  return JavaString::FromCString(outputStream.str().c_str());
 }
 
 void JavaArray::DebugAssert() const

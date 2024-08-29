@@ -5,6 +5,8 @@
 #include <vector>
 #include <iostream>
 
+#include "GlobalConstants.h"
+
 static const char* pVersion = "v0.0.1-alpha";
 
 struct CommandLineArguments
@@ -12,9 +14,10 @@ struct CommandLineArguments
 public:
   std::string mainClass;
   std::string jarFile;
-  std::vector<std::string> classPath;
+  std::string classPath;
   std::vector<std::string> classArguments;
   std::string currentExe;
+  std::vector<Property> properties;
 };
 
 class CommandLineProcessor

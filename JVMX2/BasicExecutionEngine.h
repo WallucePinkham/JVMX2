@@ -24,11 +24,6 @@ public:
 
   e_ImmediateReturnRequired ProcessNextOpcode( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState, std::shared_ptr<ILogger> pLogger );
 
-  virtual void ThrowJavaException( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, const JVMX_ANSI_CHAR_TYPE *javaExceptionName ) JVMX_OVERRIDE;
-  virtual void ThrowJavaException( IVirtualMachineState *pVirtualMachineState, const JVMX_ANSI_CHAR_TYPE *javaExceptionName ) JVMX_OVERRIDE;
-
-  virtual void ThrowJavaExceptionInternal( IVirtualMachineState *pVirtualMachineState, boost::intrusive_ptr<ObjectReference> pException );
-
   virtual std::shared_ptr<MethodInfo> IdentifyVirtualMethodToCall( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState, std::shared_ptr<MethodInfo> pMethodInfo, boost::intrusive_ptr<ObjectReference> pObject ) JVMX_OVERRIDE;
 
 private:

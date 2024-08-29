@@ -14,6 +14,8 @@
 
 #include "HelperVMSystem.h"
 
+void SetProperty(bool userCode, const std::string& key, const std::string& value, JNIEnv* pEnv, const jobject& properties, const jmethodID& methodID);
+
 jint JNICALL HelperVMSystem::java_lang_VMSystem_identityHashCode( JNIEnv *pEnv, jobject obj, jobject objToHash )
 {
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -67,17 +69,19 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
   JNIEnvExported *pInternal = reinterpret_cast<JNIEnvExported *>( pEnv );
   IVirtualMachineState *pVirtualMachineState = reinterpret_cast<IVirtualMachineState *>( pInternal->m_pInternal );
 
+//  pVirtualMachineState->SetUserCodeStarted();
+
   static const JavaString c_ClassName = JavaString::FromCString( "java/util/Properties" );
 
   boost::intrusive_ptr<ObjectReference> pJavaLangClass = pVirtualMachineState->FindJavaLangClass( c_ClassName );
   if ( nullptr == pJavaLangClass )
   {
-    auto pClass = pVirtualMachineState->LoadClass( c_ClassName );
+    auto pClass = pVirtualMachineState->InitialiseClass( c_ClassName );
 
-    if ( !pClass->IsInitialsed() )
-    {
-      pVirtualMachineState->InitialiseClass( c_ClassName );
-    }
+    //if ( !pClass->IsInitialsed() )
+    //{
+    //  pVirtualMachineState->InitialiseClass( c_ClassName );
+    //}
 
     pJavaLangClass = pVirtualMachineState->CreateJavaLangClassFromClassName( pClass->GetName() );
   }
@@ -99,17 +103,8 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
   }
 #endif // _DEBUG
 
-  pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
-
-  strKey = pEnv->NewStringUTF( pEnv, "java.vm.name" );
-  strValue = pEnv->NewStringUTF( pEnv, "JVMX2" );
-
-  pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
-
-  strKey = pEnv->NewStringUTF( pEnv, "gnu.classpath.vm.shortname" );
-  strValue = pEnv->NewStringUTF( pEnv, "JVMX2" );
-
-  pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
+  SetProperty(pVirtualMachineState->HasUserCodeStarted(), "java.vm.name", "JVMX2", pEnv, properties, methodID);
+  SetProperty(pVirtualMachineState->HasUserCodeStarted(), "gnu.classpath.vm.shortname", "JVMX2", pEnv, properties, methodID);
 
   strKey = pEnv->NewStringUTF( pEnv, "java.vendor" );
   strValue = pEnv->NewStringUTF( pEnv, "Walluce Pinkham" );
@@ -137,21 +132,9 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
 
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
-  strKey = pEnv->NewStringUTF( pEnv, "path.separator" );
-  strValue = pEnv->NewStringUTF( pEnv, OsFunctions::GetInstance().GetPathSeparator());
-  
-
-  pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
-
-  strKey = pEnv->NewStringUTF( pEnv, "file.separator" );
-  strValue = pEnv->NewStringUTF( pEnv, OsFunctions::GetInstance().GetFileSeparator());
-
-  pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
-
-  strKey = pEnv->NewStringUTF( pEnv, "line.separator" );
-  strValue = pEnv->NewStringUTF( pEnv, OsFunctions::GetInstance().GetLineSeparator());
-
-  pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
+  SetProperty(pVirtualMachineState->HasUserCodeStarted(), "path.separator", OsFunctions::GetInstance().GetPathSeparator(), pEnv, properties, methodID);
+  SetProperty(pVirtualMachineState->HasUserCodeStarted(), "file.separator", OsFunctions::GetInstance().GetFileSeparator(), pEnv, properties, methodID);
+  SetProperty(pVirtualMachineState->HasUserCodeStarted(), "line.separator", OsFunctions::GetInstance().GetLineSeparator(), pEnv, properties, methodID);
 
   //   strKey = pEnv->NewStringUTF( pEnv, "java.security.manager" );
   //   strValue = pEnv->NewStringUTF( pEnv, "" );
@@ -176,7 +159,7 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
 
 
   strKey = pEnv->NewStringUTF( pEnv, "user.country" );
-  strValue = pEnv->NewStringUTF( pEnv, "US" );
+  strValue = pEnv->NewStringUTF( pEnv, "US" ); // TODO: This needs to be fixed
 
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
@@ -201,7 +184,7 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
   strKey = pEnv->NewStringUTF( pEnv, "java.class.path" );
-  strValue = pEnv->NewStringUTF( pEnv, "C:\\dev\\JVMX2\\classpath-0.99\\lib\\" ); // TODO: This needs to be fixed up
+  strValue = pEnv->NewStringUTF( pEnv, pVirtualMachineState->GetClassPath().c_str() );
 
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
@@ -254,4 +237,26 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
   //   pEnv->CallObjectMethod( pEnv, properties, methodID, "user.name", "TODO" );
   //   pEnv->CallObjectMethod( pEnv, properties, methodID, "user.region", "TODO" );
   //   pEnv->CallObjectMethod( pEnv, properties, methodID, "user.timezone", "TODO" );
+
+  auto props = pVirtualMachineState->GetProperties();
+  for (auto property : props)
+  {
+    SetProperty(pVirtualMachineState->HasUserCodeStarted(), property.first, property.second, pEnv, properties, methodID);
+  }
+}
+
+void SetProperty(bool userCode, const std::string &key, const std::string& value, JNIEnv* pEnv, const jobject& properties, const jmethodID& methodID)
+{
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  if (userCode)
+  {
+    std::shared_ptr<ILogger> pLogger = GlobalCatalog::GetInstance().Get("Logger");
+    pLogger->LogDebug("*** Key=[%s] Value=[%s]", key.c_str(), value.c_str());
+  }
+#endif // _DEBUG
+
+  jstring strKey = pEnv->NewStringUTF(pEnv, key.c_str());
+  jstring strValue = pEnv->NewStringUTF(pEnv, value.c_str());
+
+  pEnv->CallObjectMethod(pEnv, properties, methodID, strKey, strValue);
 }

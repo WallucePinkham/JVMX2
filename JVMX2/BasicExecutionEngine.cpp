@@ -15,6 +15,7 @@
 #include "InvalidArgumentException.h"
 #include "NotImplementedException.h"
 #include "AssertionFailedException.h"
+#include "FileDoesNotExistException.h"
 
 #include "JavaExceptionConstants.h"
 
@@ -29,13 +30,15 @@
 
 #include "JavaOpCodes.h"
 #include "GlobalCatalog.h"
+#include "StringPool.h"
 
 #include "ObjectReference.h"
+#include "HelperClasses.h"
 
 #include "BasicExecutionEngine.h"
 
-#if 0
-#define __EXRA_LOGGING
+#if 1
+#define __EXRTA_LOGGING
 #endif
 
 extern const JavaString c_ClassInitialisationMethodName;
@@ -129,7 +132,10 @@ void BasicExecutionEngine::Run( const std::shared_ptr<IVirtualMachineState> &pVi
         if ( 0 == pVirtualMachineState->GetCallStackDepth() )
         {
           pVirtualMachineState->PopCallStackDepth();
-          HandleUnhandledException(pVirtualMachineState);
+          if (pVirtualMachineState->GetStackLevel() == 1)
+          {
+            HandleUnhandledException(pVirtualMachineState);
+          }
           return;
         }
         else
@@ -196,12 +202,12 @@ e_ImmediateReturnRequired BasicExecutionEngine::ProcessNextOpcode( const std::sh
   }
 #endif // _DEBUG
 
-#if defined( _DEBUG ) && defined (__EXRA_LOGGING)
+#if defined( _DEBUG ) && defined (__EXRTA_LOGGING)
   //BreakDebug( pVirtualMachineState->GetCurrentClassAndMethodName().ToUtf16String().c_str(), u"java/awt/color/ICC_Profile::createLinearRGBProfile" );
   static bool extraDebugLogging = false;
   static std::thread::id debugThreadId = std::thread::id();
 
-  if ( pVirtualMachineState->GetCurrentClassAndMethodName().Contains( u"ThreadGroup" ) )
+  if ( pVirtualMachineState->GetCurrentClassAndMethodName().Contains( u"Level" ) )
   {
     extraDebugLogging = true;
     debugThreadId = std::this_thread::get_id();
@@ -215,11 +221,13 @@ e_ImmediateReturnRequired BasicExecutionEngine::ProcessNextOpcode( const std::sh
          //pVirtualMachineState->GetCurrentClassAndMethodName().EndsWith( u"QtImage::createImage" ) ||
          /*( pVirtualMachineState->GetCurrentClassAndMethodName().EndsWith( u"Reference::get" )  && pVirtualMachineState->GetProgramCounter() >= 12 ) ||
          ( pVirtualMachineState->GetCurrentClassAndMethodName().EndsWith( u"AWTKeyStroke::<clinit>" ) && pVirtualMachineState->GetProgramCounter() >= 32 ) || /**/
-         pVirtualMachineState->GetCurrentClassAndMethodName().EndsWith( u"ThreadGroup::removeThread" )
+         pVirtualMachineState->GetCurrentClassAndMethodName().EndsWith( u"parse" )
+         //&& pVirtualMachineState->GetCurrentMethodType().EndsWith(u"m;)V")
        ) )
   {
     //if ( pVirtualMachineState->GetProgramCounter() >= 17 )
     {
+      pVirtualMachineState->SetUserCodeStarted();
       pLogger->LogDebug( "@@Inside suspect method:" );
       pVirtualMachineState->LogLocalVariables();
       pVirtualMachineState->LogOperandStack();
@@ -227,11 +235,13 @@ e_ImmediateReturnRequired BasicExecutionEngine::ProcessNextOpcode( const std::sh
     }
   }
 
+#if 0
   if ( extraDebugLogging && std::this_thread::get_id() == debugThreadId )
   {
     pLogger->LogDebug( "%s(%s) %Id - Read opcode: %hu (%s)\n", pVirtualMachineState->GetCurrentClassAndMethodName().ToUtf8String().c_str(), pVirtualMachineState->GetCurrentMethodType().ToUtf8String().c_str(), pVirtualMachineState->GetProgramCounter() - 1, opCode, TranslateOpCode( opCode ) );
     int i = 0;
   }
+#endif 
 #endif // _DEBUG
 
 
@@ -1051,10 +1061,7 @@ e_ImmediateReturnRequired BasicExecutionEngine::ProcessNextOpcode( const std::sh
   return e_ImmediateReturnRequired::No;
 }
 
-void BasicExecutionEngine::ThrowJavaExceptionInternal( IVirtualMachineState *pVirtualMachineState, boost::intrusive_ptr<ObjectReference> pException )
-{
-  pVirtualMachineState->SetExceptionThrown( pException );
-}
+
 
 uint16_t BasicExecutionEngine::GetNextInstruction( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState )
 {
@@ -1071,7 +1078,7 @@ void BasicExecutionEngine::ExecuteOpCodeGetStatic( const std::shared_ptr<IVirtua
   if ( e_ConstantPoolEntryTypeFieldReference != fieldEntry->GetType() )
   {
     GetLogger()->LogError( __FUNCTION__ " - Could not resolve field reference for opcode: getstatic" );
-    ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
     return;
   }
 
@@ -1083,11 +1090,19 @@ void BasicExecutionEngine::ExecuteOpCodeGetStatic( const std::shared_ptr<IVirtua
 
   JavaString targetClassClassName = *pFieldRef->GetClassName();
 
-  // On successful resolution of the field, the class or interface that declared the resolved field is initialized if that class or
-  // interface has not already been initialized.
-  if ( !pVirtualMachineState->IsClassInitialised( targetClassClassName ) )
+  try
   {
-    pVirtualMachineState->InitialiseClass( targetClassClassName );
+    // On successful resolution of the field, the class or interface that declared the resolved field is initialized if that class or
+    // interface has not already been initialized.
+    if (!pVirtualMachineState->IsClassInitialised(targetClassClassName))
+    {
+      pVirtualMachineState->InitialiseClass(targetClassClassName);
+    }
+  }
+  catch (FileDoesNotExistException &)
+  {
+    HelperClasses::ThrowJavaException(pVirtualMachineState, c_JavaJavaClassNotFoundException);
+    return;
   }
 
   JavaString referencedClassName = *pFieldRef->GetType();
@@ -1097,10 +1112,19 @@ void BasicExecutionEngine::ExecuteOpCodeGetStatic( const std::shared_ptr<IVirtua
     // On successful resolution of the field, the class or interface that declared the resolved field is initialized if that class or
     // interface has not already been initialized.
 
-    if ( !pVirtualMachineState->IsClassInitialised( referencedClassName ) )
+    try
     {
-      pVirtualMachineState->InitialiseClass( referencedClassName );
+      if ( !pVirtualMachineState->IsClassInitialised( referencedClassName ) )
+      {
+        pVirtualMachineState->InitialiseClass( referencedClassName );
+      }
     }
+    catch (FileDoesNotExistException&)
+    {
+      HelperClasses::ThrowJavaException(pVirtualMachineState, c_JavaJavaClassNotFoundException);
+      return;
+    }
+
   }
 
   // The value of the class or interface field is fetched and pushed onto the operand stack.
@@ -1117,7 +1141,7 @@ void BasicExecutionEngine::ExecuteOpCodeGetStatic( const std::shared_ptr<IVirtua
 
   if ( !pField->IsStatic() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
   }
 
   //GetLogger()->LogDebug( "Getting Value of field: %s::%s", className.ToByteArray(), *pFieldRef->GetName( )->ToByteArray( ) );
@@ -1140,32 +1164,7 @@ ConstantPoolIndex BasicExecutionEngine::ReadIndex( const std::shared_ptr<IVirtua
   return ( indexByte1 << 8 ) | indexByte2;
 }
 
-void BasicExecutionEngine::ThrowJavaException( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, const JVMX_ANSI_CHAR_TYPE *javaExceptionName )
-{
-  ThrowJavaException( pVirtualMachineState.get(), javaExceptionName );
-}
 
-void BasicExecutionEngine::ThrowJavaException( IVirtualMachineState *pVirtualMachineState, const JVMX_ANSI_CHAR_TYPE *javaExceptionName )
-{
-  if ( nullptr == javaExceptionName )
-  {
-    throw InvalidArgumentException( __FUNCTION__ " - Java Exception name was NULL" );
-  }
-
-  auto pClass = pVirtualMachineState->LoadClass( JavaString::FromCString( javaExceptionName ) );
-  if ( nullptr == pClass )
-  {
-    throw InvalidStateException( __FUNCTION__ " - Java exception class could not be loaded." );
-  }
-
-  if ( !pVirtualMachineState->IsClassInitialised( *pClass->GetName() ) )
-  {
-    pVirtualMachineState->InitialiseClass( *pClass->GetName() );
-  }
-
-  auto pExceptionObject = pVirtualMachineState->CreateAndInitialiseObject( pClass );
-  ThrowJavaExceptionInternal( pVirtualMachineState, pExceptionObject );
-}
 
 std::shared_ptr<FieldInfo> BasicExecutionEngine::ResolveField( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, const JavaString &className, const JavaString &fieldName )
 {
@@ -1218,30 +1217,7 @@ std::shared_ptr<FieldInfo> BasicExecutionEngine::ResolveField( const std::shared
 
 std::shared_ptr<JavaClass> BasicExecutionEngine::ResolveClass( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, const JavaString &className )
 {
-  std::shared_ptr<JavaClass> pClassFile = GetClassLibrary()->FindClass( className );
-  if ( nullptr == pClassFile )
-  {
-    try
-    {
-      pClassFile = pVirtualMachineState->LoadClass( className );
-    }
-    catch ( JVMXException &ex )
-    {
-      GetLogger()->LogWarning( __FUNCTION__ " - Throwing linkage exception because class could not be loaded: %s", ex.what() );
-      ThrowJavaException( pVirtualMachineState, c_JavaLinkageErrorException );
-    }
-  }
-
-  if ( nullptr != pClassFile )
-  {
-    if ( ( !pClassFile->IsPublic() ) && ( pClassFile->GetPackageName() != pVirtualMachineState->GetCurrentClass()->GetPackageName() ) )
-    {
-      ThrowJavaException( pVirtualMachineState, c_JavaIllegalAccessErrorException );
-      pClassFile = nullptr;
-    }
-  }
-
-  return pClassFile;
+  return HelperClasses::ResolveClass(pVirtualMachineState, className);
 }
 
 void BasicExecutionEngine::ExecuteOpCodeLoadReferenceFromLocalWithSpecifiedIndex( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState )
@@ -1304,7 +1280,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteOpCodeInvokeStatic( const 
     GetLogger()->LogDebug( __FUNCTION__ " - Throwing exception because method is not static or is abstract: %s", pMethodInfo->GetName()->ToUtf8String().c_str() );
 #endif // _DEBUG
 
-    ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
     return e_IncreaseCallStackDepth::No;
   }
 
@@ -1388,7 +1364,7 @@ std::shared_ptr<MethodInfo> BasicExecutionEngine::ResolveMethodReference( const 
   if ( e_ConstantPoolEntryTypeMethodReference != methodEntry->GetType() )
   {
     GetLogger()->LogError( __FUNCTION__ " - Could not resolve method reference: %hu", methodIndex );
-    ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
     return nullptr;
   }
 
@@ -1566,13 +1542,13 @@ void BasicExecutionEngine::ExecuteOpCodeLoadDoubleFromArray( const std::shared_p
 
   if ( pArray->IsNull() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
     return;
   }
 
   if ( pIndex->ToHostInt32() < 0 || pIndex->ToHostInt32() > static_cast<int32_t>( pArray->GetContainedArray()->GetNumberOfElements() ) )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
     return;
   }
 
@@ -1688,12 +1664,12 @@ void BasicExecutionEngine::ExecuteOpCodeStoreIntoDoubleArray( const std::shared_
 
   if ( pArray->IsNull() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
   }
 
   if ( pIndex->ToHostInt32() < 0 || static_cast<size_t>( pIndex->ToHostInt32() ) > pArray->GetContainedArray()->GetNumberOfElements() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
   }
 
   pArray->GetContainedArray()->SetAt( *pIndex, pValue.get() );
@@ -1841,7 +1817,7 @@ void BasicExecutionEngine::ExecuteOpCodePutStatic( const std::shared_ptr<IVirtua
   if ( nullptr == pFieldInfo )
   {
     GetLogger()->LogError( __FUNCTION__ " - Could not resolve field reference for opcode: getstatic" );
-    ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
     return;
   }
 
@@ -1853,12 +1829,12 @@ void BasicExecutionEngine::ExecuteOpCodePutStatic( const std::shared_ptr<IVirtua
   if ( !pFieldInfo->IsStatic() )
   {
     GetLogger()->LogError( __FUNCTION__ " - Throwing Java Exception because field is not static." );
-    ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
   }
 
   if ( pFieldInfo->IsFinal() && !( pVirtualMachineState->GetCurrentMethodName() == c_ClassInitialisationMethodName ) )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaIllegalAccessErrorException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaIllegalAccessErrorException );
   }
 
   boost::intrusive_ptr<IJavaVariableType> pOperand = pVirtualMachineState->PopOperand();
@@ -2591,6 +2567,19 @@ const char *BasicExecutionEngine::TranslateOpCode( uint16_t opcode )
   }
 }
 
+boost::intrusive_ptr<ObjectReference> GetFromStringPool(std::shared_ptr<ConstantPoolStringReference> pStringRef)
+{
+  std::shared_ptr<StringPool> pStringPool = GlobalCatalog::GetInstance().Get("StringPool");
+  auto pObject = pStringPool->Get(*(pStringRef->GetStringValue()));
+  return pObject;
+}
+
+void AddToStringPool(std::shared_ptr<ConstantPoolStringReference> pStringRef, boost::intrusive_ptr<ObjectReference> pObject)
+{
+  std::shared_ptr<StringPool> pStringPool = GlobalCatalog::GetInstance().Get("StringPool");
+  pStringPool->Add(*(pStringRef->GetStringValue()), pObject);
+}
+
 void BasicExecutionEngine::ExecuteOpCodeLoadReferenceFromConstantPool( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState )
 {
   uint8_t indexByte = pVirtualMachineState->GetCodeSegmentStart()[ pVirtualMachineState->GetProgramCounter() ];
@@ -2614,8 +2603,12 @@ void BasicExecutionEngine::ExecuteOpCodeLoadReferenceFromConstantPool( const std
   {
     std::shared_ptr<ConstantPoolStringReference> pStringRefRef = pConstant->AsStringReference();
 
-
-    boost::intrusive_ptr<ObjectReference> pObject = pVirtualMachineState->CreateStringObject( *pStringRefRef->GetStringValue() );
+    boost::intrusive_ptr<ObjectReference> pObject = GetFromStringPool(pStringRefRef);
+    if (nullptr == pObject)
+    {
+      pObject = pVirtualMachineState->CreateStringObject(*pStringRefRef->GetStringValue());
+      AddToStringPool(pStringRefRef, pObject);
+    }
 
     pVirtualMachineState->PushOperand( pObject );
   }
@@ -2683,7 +2676,7 @@ void BasicExecutionEngine::ExecuteOpCodeNewArrayOfReference( const std::shared_p
 
   if ( pCount->ToHostInt32() < 0 )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaNegativeArraySizeExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNegativeArraySizeExceptionException );
     return;
   }
 
@@ -2709,7 +2702,7 @@ void BasicExecutionEngine::ExecuteOpCodeNew( const std::shared_ptr<IVirtualMachi
 
   if ( nullptr == pClass )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaInstantiationErrorException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaInstantiationErrorException );
     throw InvalidStateException( __FUNCTION__ " - Could not resolve class from index." );
   }
 
@@ -2852,7 +2845,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteOpCodeInvokeSpecial( const
 
         if ( nullptr == pFinalMethod )
         {
-          ThrowJavaException( pVirtualMachineState, c_JavaAbstractMethodErrorException );
+          HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaAbstractMethodErrorException );
           return e_IncreaseCallStackDepth::No;
         }
       }
@@ -3081,7 +3074,7 @@ void BasicExecutionEngine::ExecuteOpCodeNewArray( const std::shared_ptr<IVirtual
 
   if ( pCount->ToHostInt32() < 0 )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaNegativeArraySizeExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNegativeArraySizeExceptionException );
     return;
   }
 
@@ -3168,12 +3161,12 @@ void BasicExecutionEngine::ExecuteOpCodeStoreIntoIntArray( const std::shared_ptr
 
   if ( pArray->IsNull() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
   }
 
   if ( pIndex->ToHostInt32() < 0 || static_cast<size_t>( pIndex->ToHostInt32() ) > pArray->GetContainedArray()->GetNumberOfElements() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
   }
 
   pArray->GetContainedArray()->SetAt( *pIndex, *pValue );
@@ -3192,7 +3185,7 @@ void BasicExecutionEngine::ExecuteOpCodeGetField( const std::shared_ptr<IVirtual
 
   if ( pFieldInfo->IsStatic() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
     return;
   }
 
@@ -3208,7 +3201,7 @@ void BasicExecutionEngine::ExecuteOpCodeGetField( const std::shared_ptr<IVirtual
     pVirtualMachineState->LogLocalVariables();
 #endif
 
-    ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
     return;
   }
 
@@ -3328,7 +3321,7 @@ void BasicExecutionEngine::ExecuteOpCodeArrayLength( const std::shared_ptr<IVirt
 
   if ( pOperand->IsNull() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
     return;
   }
 
@@ -3741,13 +3734,13 @@ void BasicExecutionEngine::ExecuteOpCodeLoadReferenceFromArray( const std::share
 
   if ( pArray->IsNull() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
     return;
   }
 
   if ( pIndex->ToHostInt32() < 0 || pIndex->ToHostInt32() > static_cast<int32_t>( pArray->GetContainedArray()->GetNumberOfElements() ) )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
     return;
   }
 
@@ -3787,7 +3780,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadCharacterFromArray( const std::share
 
   if ( pArray->IsNull() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
     return;
   }
 
@@ -3797,7 +3790,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadCharacterFromArray( const std::share
     pVirtualMachineState->LogCallStack();
 #endif // _DEBUG
 
-    ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
     return;
   }
 
@@ -3944,7 +3937,7 @@ void BasicExecutionEngine::ExecuteOpCodePutField( const std::shared_ptr<IVirtual
     pVirtualMachineState->LogLocalVariables();
 #endif // _DEBUG
 
-    ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
     return;
   }
 
@@ -3956,7 +3949,7 @@ void BasicExecutionEngine::ExecuteOpCodePutField( const std::shared_ptr<IVirtual
     pVirtualMachineState->LogLocalVariables();
 #endif // _DEBUG
 
-    ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
     return;
   }
 
@@ -3971,7 +3964,7 @@ void BasicExecutionEngine::ExecuteOpCodePutField( const std::shared_ptr<IVirtual
       pVirtualMachineState->LogLocalVariables();
 #endif // _DEBUG
 
-      ThrowJavaException( pVirtualMachineState, c_JavaIllegalAccessErrorException );
+      HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaIllegalAccessErrorException );
       return;
     }
   }
@@ -4044,31 +4037,7 @@ bool BasicExecutionEngine::AreTypesCompatibile( boost::intrusive_ptr<JavaString>
 
 bool BasicExecutionEngine::IsSuperClassOf( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, boost::intrusive_ptr<JavaString> pPossibleSuperClassName, boost::intrusive_ptr<JavaString> pDerivedClassName ) const
 {
-  auto pDerivedClass = pVirtualMachineState->LoadClass( *pDerivedClassName );
-
-  if ( nullptr == pDerivedClass->GetSuperClass() )
-  {
-    return false;
-  }
-
-  //auto pSuperClass = GetClassLibrary()->FindClass( *(pDerivedClass->GetSuperClassName()) );
-  std::shared_ptr<JavaClass> pSuperClass = pDerivedClass->GetSuperClass();
-  while ( nullptr != pSuperClass )
-  {
-    if ( *pSuperClass->GetName() == *pPossibleSuperClassName )
-    {
-      return true;
-    }
-
-    if ( nullptr == pSuperClass->GetSuperClass() )
-    {
-      return false;
-    }
-
-    pSuperClass = pSuperClass->GetSuperClass();
-  }
-
-  return false;
+  return HelperClasses::IsSuperClassOf(pVirtualMachineState, pPossibleSuperClassName, pDerivedClassName);
 }
 
 void BasicExecutionEngine::ExecuteOpCodeBranchIfNotNull( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState )
@@ -4198,13 +4167,13 @@ void BasicExecutionEngine::ExecuteOpCodeStoreIntoReferenceArray( const std::shar
 
   if ( pArray->IsNull() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
     return;
   }
 
   if ( pIndex->ToHostInt32() < 0 || static_cast<size_t>( pIndex->ToHostInt32() ) > pArray->GetContainedArray()->GetNumberOfElements() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
   }
 
   pArray->GetContainedArray()->SetAt( *pIndex, pValue.get() );
@@ -4719,22 +4688,11 @@ void BasicExecutionEngine::ExecuteOpCodeShiftIntegerRightLogical( const std::sha
 #endif // _DEBUG
 }
 
-bool BasicExecutionEngine::DoesClassImplementInterface( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, std::shared_ptr<JavaClass> pClass, boost::intrusive_ptr<JavaString> nameOfInterface )
+bool BasicExecutionEngine::DoesClassImplementInterface( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, 
+                                                        std::shared_ptr<JavaClass> pClass, 
+                                                        boost::intrusive_ptr<JavaString> nameOfInterface )
 {
-  for ( size_t i = 0; i < pClass->GetInterfacesCount(); ++ i )
-  {
-    if ( pClass->GetInterfaceName( i ) == *nameOfInterface )
-    {
-      return true;
-    }
-  }
-
-  if ( nullptr != pClass->GetSuperClass() )
-  {
-    return DoesClassImplementInterface( pVirtualMachineState, ResolveClass( pVirtualMachineState, *pClass->GetSuperClass()->GetName() ), nameOfInterface );
-  }
-
-  return false;
+  return HelperClasses::DoesClassImplementInterface(pVirtualMachineState, pClass, nameOfInterface);
 }
 
 e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteOpCodeInvokeInterfaceMethod( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState )
@@ -4773,7 +4731,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteOpCodeInvokeInterfaceMetho
     pVirtualMachineState->LogLocalVariables();
 #endif
 
-    ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
     return e_IncreaseCallStackDepth::No;
   }
 
@@ -4788,7 +4746,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteOpCodeInvokeInterfaceMetho
 
     GetLogger()->LogError( "Could not resolve method (%s) on class: (%s).", pMethodInfo->GetName()->ToUtf8String().c_str(), pMethodInfo->GetClass()->GetName()->ToUtf8String().c_str() );
 
-    ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException );
     return e_IncreaseCallStackDepth::No;
   }
 
@@ -4850,7 +4808,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteVirtualMethod( const std::
   }
   else if ( paramArray[ 0 ]->IsNull() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
     return e_IncreaseCallStackDepth::No;
   }
 
@@ -4947,7 +4905,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteVirtualMethodInternal( con
       pMethodInfo = IdentifyVirtualMethodToCall( pVirtualMachineState, pMethodInfo, pObject );
       if ( nullptr == pMethodInfo )
       {
-        ThrowJavaException( pVirtualMachineState, c_JavaAbstractMethodErrorException );
+        HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaAbstractMethodErrorException );
         return e_IncreaseCallStackDepth::No;
       }
     }
@@ -5082,7 +5040,7 @@ void BasicExecutionEngine::CheckCastForObjects( const std::shared_ptr<IVirtualMa
   {
     if ( !IsInstanceOf( pVirtualMachineState, pResolvedClass->GetName(), pOperandAsObject->GetContainedObject()->GetClass()->GetName() ) )
     {
-      ThrowJavaException( pVirtualMachineState, c_JavaClassCastException );
+      HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaClassCastException );
       return;
     }
   }
@@ -5093,7 +5051,7 @@ void BasicExecutionEngine::CheckCastForObjects( const std::shared_ptr<IVirtualMa
       return;
     }
 
-    ThrowJavaException( pVirtualMachineState, c_JavaClassCastException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaClassCastException );
     return;
   }
 }
@@ -5122,7 +5080,7 @@ void BasicExecutionEngine::CheckCastForArrays( const std::shared_ptr<IVirtualMac
     {
       if ( *pResolvedClass->GetName() != JavaString::FromCString( "java/lang/Object" ) )
       {
-        ThrowJavaException( pVirtualMachineState, c_JavaClassCastException );
+        HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaClassCastException );
         return;
       }
     }
@@ -5131,7 +5089,7 @@ void BasicExecutionEngine::CheckCastForArrays( const std::shared_ptr<IVirtualMac
          *pResolvedClass->GetName() != JavaString::FromCString( "java/lang/Cloneable" ) &&
          *pResolvedClass->GetName() != JavaString::FromCString( "java/io/Serializable" ) )
     {
-      ThrowJavaException( pVirtualMachineState, c_JavaClassCastException );
+      HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaClassCastException );
       return;
     }
   }
@@ -5164,7 +5122,7 @@ void BasicExecutionEngine::CheckCastForArrays( const std::shared_ptr<IVirtualMac
         return;
       }
 
-      ThrowJavaException( pVirtualMachineState, c_JavaClassCastException );
+      HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaClassCastException );
     }
   }
 }
@@ -5243,13 +5201,13 @@ void BasicExecutionEngine::ExecuteOpCodeLoadByteOrBooleanFromArray( const std::s
 
   if ( pArray->IsNull() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
     return;
   }
 
   if ( pIndex->ToHostInt32() < 0 || pIndex->ToHostInt32() > static_cast<int32_t>( pArray->GetContainedArray()->GetNumberOfElements() ) )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
     return;
   }
 
@@ -5316,7 +5274,7 @@ void BasicExecutionEngine::ExecuteOpCodeThrowReference( const std::shared_ptr<IV
 
   if ( pOperand->IsNull() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
     return;
   }
 
@@ -5331,7 +5289,7 @@ void BasicExecutionEngine::ExecuteOpCodeThrowReference( const std::shared_ptr<IV
     throw InvalidStateException( __FUNCTION__ " - Expected class to implement Throwable." );
   }
 
-  ThrowJavaExceptionInternal( pVirtualMachineState.get(), pObject );
+  HelperClasses::ThrowJavaExceptionInternal( pVirtualMachineState.get(), pObject );
 }
 
 int16_t BasicExecutionEngine::ReadShort( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState )
@@ -5493,12 +5451,12 @@ void BasicExecutionEngine::StoreIntoArray( const std::shared_ptr<IVirtualMachine
 
   if ( pArray->IsNull() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
   }
 
   if ( pIndex->ToHostInt32() < 0 || static_cast< size_t >( pIndex->ToHostInt32() ) > pArray->GetContainedArray()->GetNumberOfElements() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
   }
 
   pArray->GetContainedArray()->SetAt( *pIndex, *pValue );
@@ -6093,13 +6051,13 @@ void BasicExecutionEngine::ExecuteOpCodeLoadIntegerFromArray( const std::shared_
 
   if ( pArray->IsNull() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
     return;
   }
 
   if ( pIndex->ToHostInt32() < 0 || pIndex->ToHostInt32() > static_cast<int32_t>( pArray->GetContainedArray()->GetNumberOfElements() ) )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
     return;
   }
 
@@ -6312,13 +6270,13 @@ void BasicExecutionEngine::ExecuteOpCodeLoadFloatFromArray( const std::shared_pt
 
   if ( pArray->IsNull() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
     return;
   }
 
   if ( pIndex->ToHostInt32() < 0 || pIndex->ToHostInt32() > static_cast<int32_t>( pArray->GetContainedArray()->GetNumberOfElements() ) )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
     return;
   }
 
@@ -6362,12 +6320,12 @@ void BasicExecutionEngine::ExecuteOpCodeStoreIntoFloatArray( const std::shared_p
 
   if ( pArray->IsNull() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNullPointerExceptionException );
   }
 
   if ( pIndex->ToHostInt32() < 0 || static_cast< size_t >( pIndex->ToHostInt32() ) > pArray->GetContainedArray()->GetNumberOfElements() )
   {
-    ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException );
   }
 
   pArray->GetContainedArray()->SetAt( *pIndex, pValue.get() );

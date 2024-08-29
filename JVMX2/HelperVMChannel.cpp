@@ -11,6 +11,7 @@
 #include "InvalidArgumentException.h"
 #include "GlobalCatalog.h"
 #include "HelperConversion.h"
+#include "HelperTypes.h"
 
 #include "ObjectReference.h"
 
@@ -164,8 +165,10 @@ jint JNICALL HelperVMChannel::gnu_java_nio_VMChannel_open( JNIEnv *pEnv, jobject
     throw InvalidArgumentException( __FUNCTION__ " - Path parameter was invalid." );
   }
 
-  boost::intrusive_ptr<ObjectReference> pValue = boost::dynamic_pointer_cast<ObjectReference>( pPath->GetContainedObject()->GetFieldByName( JavaString::FromCString( u"value" ) ) );
-  JavaString pathAsString = pValue->GetContainedArray()->ConvertCharArrayToString();
+  //boost::intrusive_ptr<ObjectReference> pValue = boost::dynamic_pointer_cast<ObjectReference>( pPath->GetContainedObject()->GetFieldByName( JavaString::FromCString( u"value" ) ) );
+  //JavaString pathAsString = pValue->GetContainedArray()->ConvertCharArrayToString();
+
+  JavaString pathAsString = HelperTypes::ExtractValueFromStringObject(pPath);
 
   int openFlags = 0;
   int openMode = 0;

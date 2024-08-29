@@ -19,7 +19,7 @@ public:
   virtual ~DefaultClassLoader() JVMX_NOEXCEPT;
 
   virtual std::shared_ptr<JavaClass> LoadClass( const JVMX_CHAR_TYPE *pFileName, const JavaString &path = JavaString::EmptyString());
-  virtual std::shared_ptr<JavaClass> LoadClass( BigEndianStream stream );
+  virtual std::shared_ptr<JavaClass> LoadClass( BigEndianStream stream, boost::intrusive_ptr<ObjectReference> pClassLoader = nullptr);
 
   Stream ReadFileIntoStream( const JVMX_CHAR_TYPE * pFileName );
 

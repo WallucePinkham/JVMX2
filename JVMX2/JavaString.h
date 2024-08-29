@@ -80,7 +80,7 @@ public:
 
   bool IsEmpty() const JVMX_NOEXCEPT;
 
-  std::u16string ToUtf16String() const;
+  const std::u16string &ToUtf16String() const;
   std::string ToUtf8String() const;
 
   char16_t At( size_t index ) const;
@@ -95,6 +95,7 @@ public:
   JavaString SubString( size_t offset, size_t numberOfCharacters ) const;
 
   JavaString ReplaceAll( char16_t param1, char16_t param2 ) const;
+  JavaString TrimRight() const;
 
   bool Contains( const char16_t *pString ) const;
   bool Equals( const char16_t *pString ) const;

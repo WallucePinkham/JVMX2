@@ -7,39 +7,68 @@
 
 #include "HelperTypes.h"
 
-JavaString HelperTypes::ExtractValueFromStringObject( boost::intrusive_ptr<ObjectReference> pStringObject )
+JavaString HelperTypes::ExtractValueFromStringObject(const JavaObject* pStringObject)
 {
-  boost::intrusive_ptr<IJavaVariableType> pField = pStringObject->GetContainedObject()->GetFieldByName( JavaString::FromCString( JVMX_T( "value" ) ) );
+  boost::intrusive_ptr<IJavaVariableType> pOffset = pStringObject->GetFieldByNameConst(JavaString::FromCString(JVMX_T("offset")));
 
-  if ( nullptr == pField )
+  int32_t offset = 0;
+  if (nullptr != pOffset)
   {
-    throw InvalidStateException( __FUNCTION__ " - Expected Field (value) to exist." );
+    if (pOffset->GetVariableType() == e_JavaVariableTypes::Integer)
+    {
+      offset = boost::dynamic_pointer_cast<JavaInteger>(pOffset)->ToHostInt32();
+    }
   }
 
-  if ( pField->GetVariableType() != e_JavaVariableTypes::Array )
+  boost::intrusive_ptr<IJavaVariableType> pField = pStringObject->GetFieldByNameConst(JavaString::FromCString(JVMX_T("value")));
+
+  if (nullptr == pField)
   {
-    throw InvalidStateException( __FUNCTION__ " - Expected Field (value) to be an array." );
+    throw InvalidStateException(__FUNCTION__ " - Expected Field (value) to exist.");
   }
 
-  boost::intrusive_ptr<ObjectReference> pStringValue = boost::dynamic_pointer_cast<ObjectReference>( pField );
-  if ( nullptr == pStringValue )
+#ifdef _DEBUG
+  auto debug = pField->GetVariableType();
+#endif // _DEBUG
+
+  if (pField->GetVariableType() == e_JavaVariableTypes::NullReference)
   {
-    throw InvalidStateException( __FUNCTION__ " - Cast failed." );
+    return pField->ToString();
+  }
+  else if (pField->GetVariableType() != e_JavaVariableTypes::Array)
+  {
+    throw InvalidStateException(__FUNCTION__ " - Expected Field (value) to be an array.");
   }
 
-  return pStringValue->GetContainedArray()->ConvertCharArrayToString();
+  boost::intrusive_ptr<ObjectReference> pStringValue = boost::dynamic_pointer_cast<ObjectReference>(pField);
+  if (nullptr == pStringValue)
+  {
+    throw InvalidStateException(__FUNCTION__ " - Cast failed.");
+  }
+
+  return pStringValue->GetContainedArray()->ConvertCharArrayToString().SubString(offset);
 }
 
-JavaString HelperTypes::GetPackageNameFromClassName( const JavaString &className )
+JavaString HelperTypes::ExtractValueFromStringObject(const ObjectReference* pStringObject)
 {
-  size_t slashIndex = className.FindLast( JVMX_T( '/' ) );
+  return ExtractValueFromStringObject(pStringObject->GetContainedObject());
+}
 
-  if ( slashIndex != className.GetLastStringPosition() )
+JavaString HelperTypes::GetPackageNameFromClassName(const JavaString& className)
+{
+  size_t slashIndex = className.FindLast(JVMX_T('/'));
+
+  if (slashIndex != className.GetLastStringPosition())
   {
-    return className.SubString( 0, slashIndex );
+    return className.SubString(0, slashIndex);
   }
 
   return JavaString::EmptyString();
+}
+
+JavaString HelperTypes::ExtractValueFromStringObject( boost::intrusive_ptr<ObjectReference> pStringObject )
+{
+  return HelperTypes::ExtractValueFromStringObject(pStringObject.get());
 }
 
 void HelperTypes::ConvertJavaStringToArray( const boost::intrusive_ptr<ObjectReference> &pArray, const JavaString &string )

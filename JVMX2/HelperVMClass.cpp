@@ -5,6 +5,9 @@
 #include "JavaExceptionConstants.h"
 
 #include "FileDoesNotExistException.h"
+#include "InvalidStateException.h"
+#include "NotImplementedException.h"
+
 
 #include "ILogger.h"
 #include "IVirtualMachineState.h"
@@ -15,12 +18,13 @@
 
 #include "TypeParser.h"
 
-#include "InvalidStateException.h"
 
 #include "VirtualMachine.h"
 #include "GlobalCatalog.h"
 
 #include "ObjectReference.h"
+#include "HelperClasses.h"
+#include "HelperTypes.h"
 
 #include "HelperVMClass.h"
 
@@ -48,21 +52,25 @@ jobject JNICALL HelperVMClass::java_lang_VMClass_forName( JNIEnv *pEnv, jobject 
   pLogger->LogDebug( "*** Inside native Method: java_lang_VMClass_forName(%s, %d, %p)\n", reinterpret_cast<const char *>( pClassName->ToString().ToUtf8String().c_str() ), initialize ? 1 : 0, classLoader );
 #endif // _DEBUG
 
-  boost::intrusive_ptr<ObjectReference> pValueArray = boost::dynamic_pointer_cast<ObjectReference>( pClassName->GetContainedObject()->GetFieldByName( JavaString::FromCString( "value" ) ) );
-  boost::intrusive_ptr<JavaString> pClassNameAsJavaString = new JavaString( JavaString::FromArray( *( pValueArray->GetContainedArray() ) ) );
+  JavaString pTemp = HelperTypes::ExtractValueFromStringObject(pClassName);
+  boost::intrusive_ptr<JavaString> pClassNameAsJavaString = new JavaString(pTemp);
+
+  //boost::intrusive_ptr<ObjectReference> pValueArray = boost::dynamic_pointer_cast<ObjectReference>( ->GetContainedObject()->GetFieldByName( JavaString::FromCString( "value" ) ) );
+  //boost::intrusive_ptr<JavaString> pClassNameAsJavaString = new JavaString( JavaString::FromArray( *( pValueArray->GetContainedArray() ) ) );
 
   JNIEnvExported *pInternal = reinterpret_cast<JNIEnvExported *>( pEnv );
   IVirtualMachineState *pVirtualMachineState = reinterpret_cast<IVirtualMachineState *>( pInternal->m_pInternal );
 
-  *pClassNameAsJavaString = pClassNameAsJavaString->ReplaceAll( '.', '/' );
+  // I don't like the TrimRight here, I would like to know where the spaces come from :(
+  *pClassNameAsJavaString = pClassNameAsJavaString->ReplaceAll( u'.', u'/' ).TrimRight();
   try
   {
-    pVirtualMachineState->LoadClass( *pClassNameAsJavaString );
+    pVirtualMachineState->InitialiseClass( *pClassNameAsJavaString );
   }
   catch ( const FileDoesNotExistException & )
   {
-    std::shared_ptr<IExecutionEngine> pEngine = GlobalCatalog::GetInstance().Get( "ExecutionEngine" );
-    pEngine->ThrowJavaException( pVirtualMachineState, c_JavaJavaClassNotFoundException );
+    //std::shared_ptr<IExecutionEngine> pEngine = GlobalCatalog::GetInstance().Get( "ExecutionEngine" );
+    HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaJavaClassNotFoundException );
     return nullptr;
   }
 
@@ -127,7 +135,7 @@ jboolean JNICALL HelperVMClass::java_lang_VMClass_isPrimitive( JNIEnv *pEnv, job
   IVirtualMachineState *pVirtualMachineState = reinterpret_cast<IVirtualMachineState *>( pInternal->m_pInternal );
 
   boost::intrusive_ptr<ObjectReference> pObject = JNIEnvInternal::ConvertJObjectToObjectPointer( clazz );
-  boost::intrusive_ptr<JavaString> pClassName = GetClassName( pObject );
+  boost::intrusive_ptr<JavaString> pClassName = GetJavaLangClassName( pObject );
 
   if ( *pClassName == JavaString::FromCString( "java/lang/Integer" ) )
   {
@@ -211,7 +219,7 @@ jint JNICALL HelperVMClass::java_lang_VMClass_getModifiers( JNIEnv *pEnv, jobjec
   boost::intrusive_ptr<ObjectReference> pObject = JNIEnvInternal::ConvertJObjectToObjectPointer( klass );
 
   boost::intrusive_ptr<JavaString> pClazzName = boost::dynamic_pointer_cast<JavaString>( pObject->GetContainedObject()->GetJVMXFieldByName( c_SyntheticField_ClassName ) );
-  std::shared_ptr<JavaClass> pClazzValue = pVirtualMachineState->LoadClass( *pClazzName );
+  std::shared_ptr<JavaClass> pClazzValue = pVirtualMachineState->InitialiseClass( *pClazzName );
 
   return pClazzValue->GetModifiers();
 }
@@ -224,7 +232,7 @@ jclass JNICALL HelperVMClass::java_lang_VMClass_getComponentType( JNIEnv *pEnv, 
 #endif // _DEBUG
 
   boost::intrusive_ptr<ObjectReference> pObject = JNIEnvInternal::ConvertJObjectToObjectPointer( klass );
-  boost::intrusive_ptr<JavaString> pClassName = GetClassName( pObject );
+  boost::intrusive_ptr<JavaString> pClassName = GetJavaLangClassName( pObject );
 
   JNIEnvExported *pInternal = reinterpret_cast<JNIEnvExported *>( pEnv );
   IVirtualMachineState *pVirtualMachineState = reinterpret_cast<IVirtualMachineState *>( pInternal->m_pInternal );
@@ -246,23 +254,23 @@ jarray JNICALL HelperVMClass::java_lang_VMClass_getDeclaredFields( JNIEnv *pEnv,
 #endif // _DEBUG
 
   boost::intrusive_ptr<ObjectReference> pObject = JNIEnvInternal::ConvertJObjectToObjectPointer( classObject );
-  boost::intrusive_ptr<JavaString> pClassName = GetClassName( pObject );
+  boost::intrusive_ptr<JavaString> pClassName = GetJavaLangClassName( pObject );
 
   JNIEnvExported *pInternal = reinterpret_cast<JNIEnvExported *>( pEnv );
   IVirtualMachineState *pVirtualMachineState = reinterpret_cast<IVirtualMachineState *>( pInternal->m_pInternal );
 
-  std::shared_ptr<JavaClass> pTargetClass = pVirtualMachineState->LoadClass( *pClassName );
+  std::shared_ptr<JavaClass> pTargetClass = pVirtualMachineState->InitialiseClass( *pClassName );
   const size_t c_NumberOfFieldsFound = pTargetClass->GetLocalFieldCount( publicOnly ? e_PublicOnly::Yes : e_PublicOnly::No );
 
 #ifdef _DEBUG
   const size_t c_LocalNonStaticFieldsFound = pTargetClass->GetLocalNonStaticFieldCount( e_PublicOnly::Yes );
 #endif // _DEBUG
 
-  std::shared_ptr<JavaClass> pVMFieldClass = pVirtualMachineState->LoadClass( c_VMFieldClassName );
-  if ( !pVMFieldClass->IsInitialsed() )
+  std::shared_ptr<JavaClass> pVMFieldClass = pVirtualMachineState->InitialiseClass( c_VMFieldClassName );
+  /*if ( !pVMFieldClass->IsInitialsed() )
   {
     pVirtualMachineState->InitialiseClass( *pVMFieldClass->GetName() );
-  }
+  }*/
   std::shared_ptr<MethodInfo> pVMFieldConstructor = pVMFieldClass->GetMethodByNameAndType( c_InstanceInitialisationMethodName, c_VMField_ConstructorType );
 
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -270,11 +278,11 @@ jarray JNICALL HelperVMClass::java_lang_VMClass_getDeclaredFields( JNIEnv *pEnv,
 #endif // _DEBUG
 
   // Load java/lang/reflect/Constructor
-  std::shared_ptr<JavaClass> pJavaLangReflectField = pVirtualMachineState->LoadClass( c_JavaLangReflectFieldClassName );
-  if ( !pJavaLangReflectField->IsInitialsed() )
-  {
-    pVirtualMachineState->InitialiseClass( *pJavaLangReflectField->GetName() );
-  }
+  std::shared_ptr<JavaClass> pJavaLangReflectField = pVirtualMachineState->InitialiseClass( c_JavaLangReflectFieldClassName );
+  //if ( !pJavaLangReflectField->IsInitialsed() )
+  //{
+  //  pVirtualMachineState->InitialiseClass( *pJavaLangReflectField->GetName() );
+  //}
   std::shared_ptr<MethodInfo> pFieldConstructor = pJavaLangReflectField->GetMethodByNameAndType( c_InstanceInitialisationMethodName, c_JavaLangReflectField_ConstructorType );
 
   boost::intrusive_ptr<ObjectReference> pClassObject = pObject;
@@ -323,7 +331,7 @@ jarray JNICALL HelperVMClass::java_lang_VMClass_getDeclaredConstructors( JNIEnv 
 #endif // _DEBUG
 
   boost::intrusive_ptr<ObjectReference> pObject = JNIEnvInternal::ConvertJObjectToObjectPointer( classObject );
-  boost::intrusive_ptr<JavaString> pClassName = GetClassName( pObject );
+  boost::intrusive_ptr<JavaString> pClassName = GetJavaLangClassName( pObject );
 
   JNIEnvExported *pInternal = reinterpret_cast<JNIEnvExported *>( pEnv );
   IVirtualMachineState *pVirtualMachineState = reinterpret_cast<IVirtualMachineState *>( pInternal->m_pInternal );
@@ -332,7 +340,7 @@ jarray JNICALL HelperVMClass::java_lang_VMClass_getDeclaredConstructors( JNIEnv 
   pLogger->LogDebug( "\tGetting declared constructors for class %s\n", pClassName->ToUtf8String().c_str() );
 #endif // _DEBUG
 
-  std::shared_ptr<JavaClass> pTargetClass = pVirtualMachineState->LoadClass( *pClassName );
+  std::shared_ptr<JavaClass> pTargetClass = pVirtualMachineState->InitialiseClass( *pClassName );
   const size_t c_NumberOfConstructorsFound = CountClassConstructors( pTargetClass );
 
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -340,11 +348,11 @@ jarray JNICALL HelperVMClass::java_lang_VMClass_getDeclaredConstructors( JNIEnv 
 #endif // _DEBUG
 
   // Load VMConstructor
-  std::shared_ptr<JavaClass> pVMConstructorClass = pVirtualMachineState->LoadClass( c_VMConstructorClassName );
-  if ( !pVMConstructorClass->IsInitialsed() )
+  std::shared_ptr<JavaClass> pVMConstructorClass = pVirtualMachineState->InitialiseClass( c_VMConstructorClassName );
+  /*if ( !pVMConstructorClass->IsInitialsed() )
   {
     pVirtualMachineState->InitialiseClass( *pVMConstructorClass->GetName() );
-  }
+  }*/
   std::shared_ptr<MethodInfo> pVMConstructorConstructor = pVMConstructorClass->GetMethodByNameAndType( c_InstanceInitialisationMethodName, c_VMConstructor_ConstructorType );
 
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -352,11 +360,11 @@ jarray JNICALL HelperVMClass::java_lang_VMClass_getDeclaredConstructors( JNIEnv 
 #endif // _DEBUG
 
   // Load java/lang/reflect/Constructor
-  std::shared_ptr<JavaClass> pJavaLangReflectConstructor = pVirtualMachineState->LoadClass( c_JavaLangReflectConstructorClassName );
-  if ( !pJavaLangReflectConstructor->IsInitialsed() )
-  {
-    pVirtualMachineState->InitialiseClass( *pJavaLangReflectConstructor->GetName() );
-  }
+  std::shared_ptr<JavaClass> pJavaLangReflectConstructor = pVirtualMachineState->InitialiseClass( c_JavaLangReflectConstructorClassName );
+  //if ( !pJavaLangReflectConstructor->IsInitialsed() )
+  //{
+  //  pVirtualMachineState->InitialiseClass( *pJavaLangReflectConstructor->GetName() );
+  //}
   std::shared_ptr<MethodInfo> pConstructorConstructor = pJavaLangReflectConstructor->GetMethodByNameAndType( c_InstanceInitialisationMethodName, c_JavaLangReflectConstructor_ConstructorType );
 
   boost::intrusive_ptr<ObjectReference> pClassObject = pObject;
@@ -404,7 +412,7 @@ jarray JNICALL HelperVMClass::java_lang_VMClass_getInterfaces( JNIEnv *pEnv, job
 #endif // _DEBUG
 
   boost::intrusive_ptr<ObjectReference> pObject = JNIEnvInternal::ConvertJObjectToObjectPointer( classObject );
-  boost::intrusive_ptr<JavaString> pClassName = GetClassName( pObject );
+  boost::intrusive_ptr<JavaString> pClassName = GetJavaLangClassName( pObject );
 
   JNIEnvExported *pInternal = reinterpret_cast<JNIEnvExported *>( pEnv );
   IVirtualMachineState *pVirtualMachineState = reinterpret_cast<IVirtualMachineState *>( pInternal->m_pInternal );
@@ -413,7 +421,7 @@ jarray JNICALL HelperVMClass::java_lang_VMClass_getInterfaces( JNIEnv *pEnv, job
   pLogger->LogDebug( "\tGetting declared interfaces for class %s\n", pClassName->ToUtf8String().c_str() );
 #endif // _DEBUG
 
-  std::shared_ptr<JavaClass> pTargetClass = pVirtualMachineState->LoadClass( *pClassName );
+  std::shared_ptr<JavaClass> pTargetClass = pVirtualMachineState->InitialiseClass( *pClassName );
   const size_t c_NumberOfInterfacesFound = pTargetClass->GetInterfacesCount();
 
   boost::intrusive_ptr<ObjectReference> pResults = pVirtualMachineState->CreateArray( e_JavaArrayTypes::Reference, c_NumberOfInterfacesFound );
@@ -426,7 +434,7 @@ jarray JNICALL HelperVMClass::java_lang_VMClass_getInterfaces( JNIEnv *pEnv, job
   for ( size_t i = 0; i < pTargetClass->GetInterfacesCount(); ++i )
   {
     // Make sure the class is loaded.
-    pVirtualMachineState->LoadClass( pTargetClass->GetInterfaceName( i ) );
+    pVirtualMachineState->InitialiseClass( pTargetClass->GetInterfaceName( i ) );
 
     boost::intrusive_ptr<ObjectReference> pJavaLangClass = pVirtualMachineState->CreateJavaLangClassFromClassName( pTargetClass->GetInterfaceName( i ) );
     JVMX_ASSERT( !pJavaLangClass->IsNull() );
@@ -465,22 +473,138 @@ jobject JNICALL HelperVMClass::java_lang_VMClass_getSuperclass( JNIEnv *pEnv, jo
     return JNIEnvInternal::ConvertObjectPointerToJObject( pVirtualMachineState, pVirtualMachineState->CreateJavaLangClassFromClassName( JavaString::FromCString( u"java/lang/Object" ) ) );
   }
 
-  boost::intrusive_ptr<JavaString> pClassName = GetClassName( pObject );
-  std::shared_ptr<JavaClass> pClass = pVirtualMachineState->LoadClass( *pClassName );
+  boost::intrusive_ptr<JavaString> pClassName = GetJavaLangClassName( pObject );
+  std::shared_ptr<JavaClass> pClass = pVirtualMachineState->InitialiseClass( *pClassName );
 
   if ( pClass->GetSuperClassName()->IsEmpty() )
   {
     return JNIEnvInternal::ConvertNullPointerToJObject();
   }
 
-  std::shared_ptr<JavaClass> pSuperClass = pVirtualMachineState->LoadClass( *pClass->GetSuperClassName() );
-  if ( !pSuperClass->IsInitialsed() )
-  {
-    pVirtualMachineState->InitialiseClass( *pSuperClass->GetName() );
-  }
+  std::shared_ptr<JavaClass> pSuperClass = pVirtualMachineState->InitialiseClass( *pClass->GetSuperClassName() );
+  //if ( !pSuperClass->IsInitialsed() )
+  //{
+  //  pVirtualMachineState->InitialiseClass( *pSuperClass->GetName() );
+  //}
 
   return JNIEnvInternal::ConvertObjectPointerToJObject( pVirtualMachineState, pVirtualMachineState->CreateJavaLangClassFromClassName( *pSuperClass->GetName() ) );
 }
+
+jboolean JNICALL HelperVMClass::java_lang_VMClass_isAssignableFrom(JNIEnv* pEnv, jobject obj, jclass callingClass, jclass classToCheck)
+{
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  std::shared_ptr<ILogger> pLogger = GlobalCatalog::GetInstance().Get("Logger");
+  pLogger->LogDebug("*** Inside native Method: java_lang_VMClass_isAssignableFrom(%p, %p)\n", callingClass, classToCheck);
+#endif // _DEBUG
+
+  JNIEnvExported* pInternal = reinterpret_cast<JNIEnvExported*>(pEnv);
+  IVirtualMachineState* pVirtualMachineState = reinterpret_cast<IVirtualMachineState*>(pInternal->m_pInternal);
+
+  if (nullptr == classToCheck)
+  {
+    pInternal->ThrowNew(pEnv, pInternal->FindClass(pEnv, "java/io/NullPointerException"), "Parameter was null.");
+    return JNI_FALSE;
+  }
+
+  boost::intrusive_ptr<ObjectReference> pObjectCallingClass = JNIEnvInternal::ConvertJObjectToObjectPointer(callingClass);
+  boost::intrusive_ptr<JavaString> pCallingClassName = GetJavaLangClassName(pObjectCallingClass);
+
+  boost::intrusive_ptr<ObjectReference> pObjectClassToCheck = JNIEnvInternal::ConvertJObjectToObjectPointer(classToCheck);
+  if (pObjectClassToCheck->IsNull())
+  {
+    pInternal->ThrowNew(pEnv, pInternal->FindClass(pEnv, "java/io/NullPointerException"), "Parameter was null.");
+    return JNI_FALSE;
+  }
+  boost::intrusive_ptr<JavaString> pClassToCheckName = GetJavaLangClassName(pObjectClassToCheck);
+
+  std::shared_ptr<JavaClass> pCallingClassValue = pVirtualMachineState->FindClass(*pCallingClassName);
+  std::shared_ptr<JavaClass> pClassToCheckValue = pVirtualMachineState->FindClass(*pClassToCheckName);
+
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  pLogger->LogDebug("*** Classes To check: callingClass: %s classToCheck: %s\n", pCallingClassName->ToUtf8String().c_str(), pClassToCheckName->ToUtf8String().c_str());
+#endif // _DEBUG
+
+  if (pCallingClassValue->GetName() == pClassToCheckValue->GetName())
+  {
+    return JNI_TRUE;
+  }
+
+  if (pCallingClassValue->IsInterface())
+  {
+    if (HelperClasses::DoesClassImplementInterface(pVirtualMachineState, pClassToCheckValue, pCallingClassName.get()))
+    {
+      return JNI_TRUE;
+    }
+  }
+  else
+  {
+    if (HelperClasses::IsSuperClassOf(pVirtualMachineState, pCallingClassName.get(), pClassToCheckName.get()))
+    {
+      return JNI_TRUE;
+    }
+  }
+
+  return JNI_FALSE;
+}
+
+jboolean JNICALL HelperVMClass::java_lang_VMClass_isInstance(JNIEnv* pEnv, jobject obj, jclass callingClass, jobject objectToCheck)
+{
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  std::shared_ptr<ILogger> pLogger = GlobalCatalog::GetInstance().Get("Logger");
+  pLogger->LogDebug("*** Inside native Method: java_lang_VMClass_isInstance(%p, %p)\n", callingClass, objectToCheck);
+#endif // _DEBUG
+
+  JNIEnvExported* pInternal = reinterpret_cast<JNIEnvExported*>(pEnv);
+  IVirtualMachineState* pVirtualMachineState = reinterpret_cast<IVirtualMachineState*>(pInternal->m_pInternal);
+
+  if (nullptr == objectToCheck)
+  {
+    pInternal->ThrowNew(pEnv, pInternal->FindClass(pEnv, "java/io/NullPointerException"), "Parameter was null.");
+    return JNI_FALSE;
+  }
+
+  boost::intrusive_ptr<ObjectReference> pObjectCallingClass = JNIEnvInternal::ConvertJObjectToObjectPointer(callingClass);
+  boost::intrusive_ptr<JavaString> pCallingClassName = GetJavaLangClassName(pObjectCallingClass);
+
+  boost::intrusive_ptr<ObjectReference> pObjectToCheck = JNIEnvInternal::ConvertJObjectToObjectPointer(objectToCheck);
+  if (pObjectToCheck->IsNull())
+  {
+    pInternal->ThrowNew(pEnv, pInternal->FindClass(pEnv, "java/io/NullPointerException"), "Parameter was null.");
+    return JNI_FALSE;
+  }
+
+  if (e_JavaVariableTypes::Array == pObjectToCheck->GetVariableType())
+  {
+    if (e_JavaVariableTypes::Array != pObjectCallingClass->GetVariableType())
+    {
+      return JNI_FALSE;
+    }
+
+    return (pObjectToCheck->GetContainedArray()->GetContainedType()) == (pObjectCallingClass->GetContainedArray()->GetContainedType());
+  }
+
+  boost::intrusive_ptr<JavaString> pClassToCheckName = pObjectToCheck->GetContainedObject()->GetClass()->GetName();
+
+  std::shared_ptr<JavaClass> pCallingClassValue = pVirtualMachineState->FindClass(*pCallingClassName);
+  std::shared_ptr<JavaClass> pClassToCheckValue = pVirtualMachineState->FindClass(*pClassToCheckName);
+
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  pLogger->LogDebug("*** Classes To check: callingClass: %s classToCheck: %s\n", pCallingClassName->ToUtf8String().c_str(), pClassToCheckName->ToUtf8String().c_str());
+#endif // _DEBUG
+
+  if (*pCallingClassValue->GetName() == *pClassToCheckValue->GetName())
+  {
+    return JNI_TRUE;
+  }
+
+  if (pCallingClassValue->IsInterface())
+  {
+    return HelperClasses::DoesClassImplementInterface(pVirtualMachineState, pClassToCheckValue, pCallingClassName.get());
+  }
+  
+  return HelperClasses::IsSuperClassOf(pVirtualMachineState, pCallingClassName.get(), pClassToCheckName.get());
+}
+
 
 boost::intrusive_ptr<ObjectReference> HelperVMClass::InitialiseNewConstructorObject( boost::intrusive_ptr<ObjectReference> pVMConstructor, IVirtualMachineState *pVirtualMachineState, std::shared_ptr<JavaClass> pConstructorClass, std::shared_ptr<MethodInfo> pConstructorToExecute )
 {
@@ -542,8 +666,14 @@ boost::intrusive_ptr<ObjectReference> HelperVMClass::InitialiseNewVMConstructor(
   return pNewConstructor;
 }
 
-boost::intrusive_ptr<JavaString> HelperVMClass::GetClassName( boost::intrusive_ptr<ObjectReference> pObject )
+boost::intrusive_ptr<JavaString> HelperVMClass::GetJavaLangClassName( boost::intrusive_ptr<ObjectReference> pObject )
 {
+  // This method is is used to get the name of the class which the java/Lang/Class represents.
+#if defined (_DEBUG)
+  auto name = pObject->GetContainedObject()->GetClass()->GetName();
+  JVMX_ASSERT( *name == JavaString::FromCString(u"java/lang/Class"));
+#endif 
+
   boost::intrusive_ptr<JavaString> pClassName = boost::dynamic_pointer_cast<JavaString>( pObject->GetContainedObject()->GetJVMXFieldByName( c_SyntheticField_ClassName ) );
   if ( nullptr == pClassName )
   {
@@ -621,3 +751,4 @@ boost::intrusive_ptr<ObjectReference> HelperVMClass::InitialiseNewFieldObject( b
 
   return pNewField;
 }
+

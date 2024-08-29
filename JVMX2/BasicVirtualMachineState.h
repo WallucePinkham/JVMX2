@@ -30,7 +30,7 @@ public:
 
   //virtual std::shared_ptr<IMemoryManager> GetHeap() const JVMX_OVERRIDE;
   virtual std::shared_ptr<ILogger> GetLogger() JVMX_OVERRIDE;
-  virtual std::shared_ptr<IClassLibrary> GetClassLibrary();
+  virtual std::shared_ptr<IClassLibrary> GetClassLibrary() const;
 
   virtual std::shared_ptr<MethodInfo> GetMethod( size_t index ) JVMX_OVERRIDE;
   //virtual const FieldInfo &GetField( size_t index ) const JVMX_OVERRIDE;
@@ -46,7 +46,7 @@ public:
   virtual std::shared_ptr<ConstantPoolEntry> GetConstantFromCurrentClass( ConstantPoolIndex index ) JVMX_OVERRIDE;
 
   virtual bool IsClassInitialised( const JavaString &className ) JVMX_OVERRIDE;
-  virtual std::shared_ptr<JavaClass> GetCurrentClass()  JVMX_OVERRIDE;
+  virtual std::shared_ptr<JavaClass> GetCurrentClass() const  JVMX_OVERRIDE;
 
   virtual const JavaString &GetCurrentClassName() const JVMX_OVERRIDE;
   virtual const JavaString &GetCurrentMethodName() const JVMX_OVERRIDE;
@@ -87,9 +87,7 @@ public:
   virtual void UpdateCurrentClassName( boost::intrusive_ptr<JavaString> pNewName ) JVMX_OVERRIDE;
   virtual void UpdateCurrentClassName( JavaString pNewName );
 
-  virtual std::shared_ptr<JavaClass> LoadClass( const JavaString &className, const JavaString &path = JavaString::EmptyString() ) JVMX_OVERRIDE;
-  virtual std::shared_ptr<JavaClass> LoadClass(const DataBuffer& classData) JVMX_OVERRIDE;
-
+  virtual std::shared_ptr<JavaClass> FindClass(const JavaString& className) const JVMX_OVERRIDE;
 
   virtual void ReleaseLocalVariables() JVMX_OVERRIDE;
 
@@ -103,8 +101,8 @@ public:
 
   virtual boost::intrusive_ptr<ObjectReference> CreateArray( e_JavaArrayTypes type, size_t size ) JVMX_OVERRIDE;
 
-  virtual void InitialiseClass( const JavaString &className ) JVMX_OVERRIDE;
-  virtual void InitialiseClass(std::shared_ptr<JavaClass> pClass) JVMX_OVERRIDE;
+  virtual std::shared_ptr<JavaClass> InitialiseClass( const JavaString &className ) JVMX_OVERRIDE;
+  virtual std::shared_ptr<JavaClass> InitialiseClass(std::shared_ptr<JavaClass> pClass) JVMX_OVERRIDE;
 
   virtual std::shared_ptr<IClassLibrary> GetRuntimeConstantPool() JVMX_OVERRIDE;
   virtual std::shared_ptr<JavaNativeInterface> GetJavaNativeInterface() JVMX_OVERRIDE;
@@ -205,6 +203,13 @@ public:
   virtual size_t GetOperandStackSize() JVMX_OVERRIDE;
 #endif // _DEBUG
 
+  virtual void SetProperties(const std::string& classPath, const std::vector<Property>& properties) JVMX_OVERRIDE;
+  virtual const std::string& GetClassPath() const JVMX_OVERRIDE;
+  virtual const std::vector<Property>& GetProperties() const JVMX_OVERRIDE;
+
+  virtual std::shared_ptr<JavaClass> LoadClass(const JavaString& className, const JavaString& path = JavaString::EmptyString()) JVMX_OVERRIDE;
+  virtual std::shared_ptr<JavaClass> LoadClass(const DataBuffer& classData) JVMX_OVERRIDE;
+
 private:
 
   virtual void PushOperand( const IJavaVariableType *pOperand ) JVMX_FN_DELETE;
@@ -235,8 +240,8 @@ private:
   uint16_t GetLineNumber( int stackPos );
 
 private:
-  std::shared_ptr<ILogger> m_pLogger;
-  std::shared_ptr<IClassLibrary> m_pClassLibrary;
+  mutable std::shared_ptr<ILogger> m_pLogger;
+  mutable std::shared_ptr<IClassLibrary> m_pClassLibrary;
   std::shared_ptr<VirtualMachine> m_pVM;
 
   size_t m_LocalVariableStackFramePointer;
@@ -311,6 +316,9 @@ private:
   std::list<boost::intrusive_ptr<ObjectReference>> m_GlobalReferences;
 
   std::list< std::list<boost::intrusive_ptr<ObjectReference>> > m_LocalReferenceFrames;
+
+  std::vector<Property> m_Properties; // Passed to Java in gnu_classpath_VMSystemProperties_preInit
+  std::string m_ClassPath; // Passed to Java in gnu_classpath_VMSystemProperties_preInit
 
 #if _DEBUG
   unsigned long m_ThreadId;
