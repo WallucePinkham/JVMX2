@@ -37,8 +37,8 @@
 
 #include "BasicExecutionEngine.h"
 
-#if 1
-#define __EXRTA_LOGGING
+#if 0
+#define __EXTRA_LOGGING
 #endif
 
 extern const JavaString c_ClassInitialisationMethodName;
@@ -202,12 +202,12 @@ e_ImmediateReturnRequired BasicExecutionEngine::ProcessNextOpcode( const std::sh
   }
 #endif // _DEBUG
 
-#if defined( _DEBUG ) && defined (__EXRTA_LOGGING)
+#if defined( _DEBUG ) && defined (__EXTRA_LOGGING)
   //BreakDebug( pVirtualMachineState->GetCurrentClassAndMethodName().ToUtf16String().c_str(), u"java/awt/color/ICC_Profile::createLinearRGBProfile" );
   static bool extraDebugLogging = false;
   static std::thread::id debugThreadId = std::thread::id();
 
-  if ( pVirtualMachineState->GetCurrentClassAndMethodName().Contains( u"Level" ) )
+  if ( pVirtualMachineState->GetCurrentClassAndMethodName().Contains( u"URLClassLoader" ) )
   {
     extraDebugLogging = true;
     debugThreadId = std::this_thread::get_id();
@@ -221,7 +221,7 @@ e_ImmediateReturnRequired BasicExecutionEngine::ProcessNextOpcode( const std::sh
          //pVirtualMachineState->GetCurrentClassAndMethodName().EndsWith( u"QtImage::createImage" ) ||
          /*( pVirtualMachineState->GetCurrentClassAndMethodName().EndsWith( u"Reference::get" )  && pVirtualMachineState->GetProgramCounter() >= 12 ) ||
          ( pVirtualMachineState->GetCurrentClassAndMethodName().EndsWith( u"AWTKeyStroke::<clinit>" ) && pVirtualMachineState->GetProgramCounter() >= 32 ) || /**/
-         pVirtualMachineState->GetCurrentClassAndMethodName().EndsWith( u"parse" )
+         pVirtualMachineState->GetCurrentClassAndMethodName().EndsWith( u"URLClassLoader::<init>" )
          //&& pVirtualMachineState->GetCurrentMethodType().EndsWith(u"m;)V")
        ) )
   {
@@ -4306,8 +4306,10 @@ std::shared_ptr<MethodInfo> BasicExecutionEngine::IdentifyVirtualMethodToCall( c
 
   JavaString methodName = *( pMethodInfo->GetName() );
   JavaString methodType = *( pMethodInfo->GetType() );
-  std::shared_ptr<MethodInfo> pMethodToExecute = pObject->GetContainedObject()->GetClass()->GetMethodByNameAndType( methodName, methodType );
+  
   std::shared_ptr<JavaClass> pClass = pObject->GetContainedObject()->GetClass();
+  std::shared_ptr<MethodInfo> pMethodToExecute = pClass->GetMethodByNameAndType(methodName, methodType);
+  
 
   if ( nullptr == pMethodToExecute )
   {

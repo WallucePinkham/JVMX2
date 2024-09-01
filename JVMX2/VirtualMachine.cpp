@@ -40,6 +40,7 @@
 #include "HelperVMString.h"
 #include "HelperVMClassLoader.h"
 #include "HelperTypes.h"
+#include "HelperClasses.h"
 #include "HelperConversion.h"
 
 #include "VirtualMachine.h"
@@ -277,18 +278,42 @@ void VirtualMachine::RunClassName(const JavaString& className,
       }
     }
 
+    if (pInitialState->HasExceptionOccurred())
+    {
+      return;
+    }
+
     if (!pApplicationClassLoaderClass->IsInitialsed())
     {
       pInitialState->InitialiseClass(pApplicationClassLoaderClass);
     }
 
+#if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+    //if (pInitialState->HasUserCodeStarted())
+    //{
+    pInitialState->LogOperandStack();
+    //}
+#endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+
+    //pInitialState->SetUserCodeStarted();
+
     pInitialState->Execute(*pApplicationClassLoaderClass->GetName().get(), c_GetClassLoaderMethodName, c_GetClassLoaderMethodType);
+
+    if (pInitialState->HasExceptionOccurred())
+    {
+      return;
+    }
+
+    // TODO: Get System ClassLoader
+    // ClassLoader.getSystemClassLoader
+
+    // TODO: Push System classloader on to operand stack.
      
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-    if (pInitialState->HasUserCodeStarted())
-    {
+    //if (pInitialState->HasUserCodeStarted())
+    //{
       pInitialState->LogOperandStack();
-    }
+    //}
 #endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
 
 
@@ -314,6 +339,11 @@ void VirtualMachine::RunClassName(const JavaString& className,
     if (pInitialState->HasUserCodeStarted())
     {
       pInitialState->LogOperandStack();
+    }
+
+    if (pInitialState->HasExceptionOccurred())
+    {
+      return;
     }
 
     m_pLogger->LogDebug("Executing Main Class.");
@@ -954,6 +984,13 @@ void VirtualMachine::CreateInitialThreadObject(const std::shared_ptr<IVirtualMac
   AddToInheritableThreadLocal(pInitialState, pThread);
 }
 
+bool endsWith(const std::string& str, const std::string& suffix) {
+  if (suffix.size() > str.size()) {
+    return false; // Suffix is longer than the string
+  }
+  return std::equal(suffix.rbegin(), suffix.rend(), str.rbegin());
+}
+
 void VirtualMachine::Initialise(const std::string& startingClassfile, 
                                 const std::string& classPath,
                                 const std::vector<Property> &properties,
@@ -963,10 +1000,19 @@ void VirtualMachine::Initialise(const std::string& startingClassfile,
   m_pJNI->SetVMState(pInitialState);
   pInitialState->SetJavaNativeInterface(m_pJNI);
 
-  pInitialState->SetProperties(classPath, properties);
+  std::string newClassPath(classPath);
+  if (endsWith(startingClassfile, ".jar"))
+  {
+    newClassPath += OsFunctions::GetInstance().GetPathSeparator();
+    newClassPath += startingClassfile;
+  }
+
+  pInitialState->SetProperties(newClassPath, properties);
 
   m_pLogger->LogInformation("JVMX Starting...");
-  m_pLogger->LogInformation("Current working directory: %s", getcwd(NULL, 0));
+  auto pCwdBuffer = _getcwd(NULL, 0);
+  m_pLogger->LogInformation("Current working directory: %s", pCwdBuffer);
+  free(pCwdBuffer);
 
   RegisterNativeMethods(m_pJNI);
 
@@ -986,10 +1032,20 @@ void VirtualMachine::Initialise(const std::string& startingClassfile,
   InitialiseClass(JVMX_T("gnu/java/nio/charset/Provider"), pInitialState);
   //java/nio/charset/Charset.forName(ansi); 
   InitialiseClass(JVMX_T("java/util/Locale"), pInitialState);
-  InitialiseClass(JVMX_T("java/nio/charset/Charset"), pInitialState);
+  //InitialiseClass(JVMX_T("java/nio/charset/Charset"), pInitialState);
   InitialiseClass(JVMX_T("java/lang/ClassLoader"), pInitialState);
 
-  // InitialiseAnsiCharset(pInitialState);
+  if (pInitialState->HasExceptionOccurred())
+  {
+    return;
+  }
+
+  InitialiseUtf8Charset(pInitialState);
+
+  if (pInitialState->HasExceptionOccurred())
+  {
+    return;
+  }
 
   // Execute static Provider.provider
 
@@ -997,15 +1053,24 @@ void VirtualMachine::Initialise(const std::string& startingClassfile,
   m_pLogger->LogInformation("Running initial class...");
 }
 
-void VirtualMachine::InitialiseAnsiCharset(const std::shared_ptr<IVirtualMachineState>& pInitialState)
+void VirtualMachine::InitialiseUtf8Charset(const std::shared_ptr<IVirtualMachineState>& pInitialState)
 {
-  pInitialState->PushOperand(pInitialState->CreateStringObject("ansi"));
+  pInitialState->PushOperand(pInitialState->CreateStringObject("UTF-8"));
 
   const JavaString c_CharsetClassName = JavaString::FromCString(JVMX_T("java/nio/charset/Charset"));
   const JavaString c_CharsetMethodName = JavaString::FromCString(JVMX_T("forName"));
   const JavaString c_CharsetMethodType = JavaString::FromCString(JVMX_T("(Ljava/lang/String;)Ljava/nio/charset/Charset;"));
 
   pInitialState->Execute(c_CharsetClassName, c_CharsetMethodName, c_CharsetMethodType);
+
+#ifdef _DEBUG
+  auto pOp = pInitialState->PeekOperand();
+  JVMX_ASSERT(pOp->GetVariableType() == e_JavaVariableTypes::Object);
+  auto pObj = boost::dynamic_pointer_cast<ObjectReference>(pOp);
+  JVMX_ASSERT(HelperClasses::IsSuperClassOf(pInitialState.get(), &c_CharsetClassName, pObj->GetContainedObject()->GetClass()->GetName().get()));
+#endif
+
+  pInitialState->PopOperand(); 
 }
 
 void VirtualMachine::Stop(const std::shared_ptr<IVirtualMachineState>& pInitialState)

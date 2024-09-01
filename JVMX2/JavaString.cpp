@@ -356,10 +356,10 @@ JavaString JavaString::FromArray( const JavaArray &array )
     char16_t ch = pChar->ToChar16();
 
     // We assume that the null character ends the string.
-    if ( u'\u0000' == ch )
+ /*   if ( u'\u0000' == ch )
     {
       break;
-    }
+    }*/
 
     result += ch;
   }

@@ -87,7 +87,7 @@ jobject JNICALL HelperVMFile::java_io_VMFile_toCanonicalForm(JNIEnv* pEnv, jobje
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (pVirtualMachineState->HasUserCodeStarted())
   {
-    pLogger->LogDebug("Getting canonical form for %s", stringValue.ToCharacterArray());
+    pLogger->LogDebug("Getting canonical form for %s", stringValue.ToUtf8String().c_str());
   }
 #endif // _DEBUG
 
@@ -97,7 +97,7 @@ jobject JNICALL HelperVMFile::java_io_VMFile_toCanonicalForm(JNIEnv* pEnv, jobje
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (pVirtualMachineState->HasUserCodeStarted())
   {
-    pLogger->LogDebug("Canonical form is %s", result.ToCharacterArray());
+    pLogger->LogDebug("Canonical form is %s", result.ToUtf8String().c_str());
   }
 #endif // _DEBUG
 

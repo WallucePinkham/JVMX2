@@ -1,4 +1,5 @@
 #include <chrono>
+#include <direct.h>
 
 #include "JavaNativeInterface.h"
 
@@ -91,7 +92,8 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
   jmethodID methodID = pEnv->GetMethodID( pEnv, jClass, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;" );
 
   jstring strKey = pEnv->NewStringUTF( pEnv, "file.encoding" );
-  jstring strValue = pEnv->NewStringUTF( pEnv, "8859_1" );
+  //jstring strValue = pEnv->NewStringUTF( pEnv, "8859_1" );
+  jstring strValue = pEnv->NewStringUTF(pEnv, "UTF_8");
 
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (pVirtualMachineState->HasUserCodeStarted())
@@ -135,7 +137,9 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
   SetProperty(pVirtualMachineState->HasUserCodeStarted(), "path.separator", OsFunctions::GetInstance().GetPathSeparator(), pEnv, properties, methodID);
   SetProperty(pVirtualMachineState->HasUserCodeStarted(), "file.separator", OsFunctions::GetInstance().GetFileSeparator(), pEnv, properties, methodID);
   SetProperty(pVirtualMachineState->HasUserCodeStarted(), "line.separator", OsFunctions::GetInstance().GetLineSeparator(), pEnv, properties, methodID);
-
+  auto pCwdBuffer = _getcwd(NULL, 0);
+  SetProperty(pVirtualMachineState->HasUserCodeStarted(), "user.dir", pCwdBuffer, pEnv, properties, methodID);
+  free(pCwdBuffer);
   //   strKey = pEnv->NewStringUTF( pEnv, "java.security.manager" );
   //   strValue = pEnv->NewStringUTF( pEnv, "" );
   //

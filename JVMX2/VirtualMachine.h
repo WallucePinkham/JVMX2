@@ -81,7 +81,7 @@ private:
   void InitialiseClass( const JVMX_CHAR_TYPE *pClassName, const std::shared_ptr<IVirtualMachineState> &pInitialState );
 
   int GetMainClassFromJarFile(const JavaString& fileName, JavaString& mainClassName, DataBuffer& mainClassOuput);
-  void InitialiseAnsiCharset(const std::shared_ptr<IVirtualMachineState>& pInitialState);
+  void InitialiseUtf8Charset(const std::shared_ptr<IVirtualMachineState>& pInitialState);
 
 private:
 

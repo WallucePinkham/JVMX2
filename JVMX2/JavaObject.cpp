@@ -676,6 +676,45 @@ JavaString JavaObject::ToString() const
 
   }
 
+  if (IsInstanceOf(JavaString::FromCString(JVMX_T("java/net/URL"))))
+  {
+    boost::intrusive_ptr<ObjectReference> pProtocol = boost::dynamic_pointer_cast<ObjectReference>(GetFieldByNameConst(JavaString::FromCString(JVMX_T("protocol"))));
+    boost::intrusive_ptr<ObjectReference> pAuthority = boost::dynamic_pointer_cast<ObjectReference>(GetFieldByNameConst(JavaString::FromCString(JVMX_T("authority"))));
+    boost::intrusive_ptr<ObjectReference> pHost = boost::dynamic_pointer_cast<ObjectReference>(GetFieldByNameConst(JavaString::FromCString(JVMX_T("host"))));
+    boost::intrusive_ptr<ObjectReference> pUserInfo = boost::dynamic_pointer_cast<ObjectReference>(GetFieldByNameConst(JavaString::FromCString(JVMX_T("userInfo"))));
+    boost::intrusive_ptr<JavaInteger> pPort = boost::dynamic_pointer_cast<JavaInteger>(GetFieldByNameConst(JavaString::FromCString(JVMX_T("port"))));
+    boost::intrusive_ptr<ObjectReference> pFile = boost::dynamic_pointer_cast<ObjectReference>(GetFieldByNameConst(JavaString::FromCString(JVMX_T("file"))));
+    boost::intrusive_ptr<ObjectReference> pRef = boost::dynamic_pointer_cast<ObjectReference>(GetFieldByNameConst(JavaString::FromCString(JVMX_T("ref"))));
+
+    return JavaString::FromCString(JVMX_T("{")).Append(*(m_pClass->GetName())).Append(JVMX_T("} = { \n\t"))
+      .Append(JVMX_T("protocol")).Append(JVMX_T(" = ")).Append(pProtocol->ToString()).Append(JVMX_T("\n\t"))
+      .Append(JVMX_T("userInfo")).Append(JVMX_T(" = ")).Append(pUserInfo->ToString()).Append(JVMX_T("\n\t"))
+      .Append(JVMX_T("authority")).Append(JVMX_T(" = ")).Append(pAuthority->ToString()).Append(JVMX_T("\n\t"))
+      .Append(JVMX_T("host")).Append(JVMX_T(" = ")).Append(pHost->ToString()).Append(JVMX_T("\n\t"))
+      .Append(JVMX_T("port")).Append(JVMX_T(" = ")).Append(pPort->ToHostInt32()).Append(JVMX_T("\n\t"))
+      .Append(JVMX_T("file")).Append(JVMX_T(" = ")).Append(pFile->ToString()).Append(JVMX_T("\n\t"))
+      .Append(JVMX_T("ref")).Append(JVMX_T(" = ")).Append(pRef->ToString().Append(JVMX_T("\n")))
+      .Append(JVMX_T(" }")); 
+  }
+
+  if (IsInstanceOf(JavaString::FromCString(JVMX_T("java/lang/StringBuilder"))))
+  {
+    boost::intrusive_ptr<ObjectReference> pObject = boost::dynamic_pointer_cast<ObjectReference>(GetFieldByNameConst(JavaString::FromCString(JVMX_T("value"))));
+    boost::intrusive_ptr<JavaInteger> pCount = boost::dynamic_pointer_cast<JavaInteger>(GetFieldByNameConst(JavaString::FromCString(JVMX_T("count"))));
+    JavaString content = JavaString::EmptyString();
+    if (!pObject->IsNull())
+    {
+      auto pValue = pObject->GetContainedArray();
+      content = pValue->ToString();
+    }
+    else
+    {
+      content = JavaString::FromCString(JVMX_T("{null}"));
+    }
+    
+    return JavaString::FromCString(JVMX_T("{")).Append(*(m_pClass->GetName())).Append(JVMX_T("} = {")).Append(content).Append(JVMX_T(" }"));
+  }
+
   return JavaString::FromCString( JVMX_T( "{" ) ).Append( *( m_pClass->GetName() ) ).Append( JVMX_T( "}" ) );
 }
 

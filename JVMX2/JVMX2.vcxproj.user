@@ -5,7 +5,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>../Tests/TestLoadProperties.class</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-cp . -Dsomething=else -jar C:\Users\Walluce\AppData\Roaming\Code\User\globalStorage\redhat.java\1.33.0\config_ss_win\org.eclipse.osgi\38\0\.cp\lib\java-decompiler-engine-231.9011.34.jar</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

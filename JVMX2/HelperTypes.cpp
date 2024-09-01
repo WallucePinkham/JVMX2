@@ -46,7 +46,18 @@ JavaString HelperTypes::ExtractValueFromStringObject(const JavaObject* pStringOb
     throw InvalidStateException(__FUNCTION__ " - Cast failed.");
   }
 
-  return pStringValue->GetContainedArray()->ConvertCharArrayToString().SubString(offset);
+  JavaString result = pStringValue->GetContainedArray()->ConvertCharArrayToString();
+  if (offset > 0)
+  {
+    if (offset > result.GetLengthInCodePoints())
+    {
+#ifdef _DEBUG
+      int i = 0;
+#endif
+    }
+    result = result.SubString(offset);
+  }
+  return result;
 }
 
 JavaString HelperTypes::ExtractValueFromStringObject(const ObjectReference* pStringObject)
@@ -191,10 +202,10 @@ size_t HelperTypes::WideStringLength( const wchar_t *pString )
 
 boost::intrusive_ptr<ObjectReference> HelperTypes::CreateArray( e_JavaArrayTypes type, size_t size )
 {
-#if defined( _DEBUG ) && defined (JVMX_LOG_VERBOSE)
-  std::shared_ptr<ILogger> pLogger = GlobalCatalog::GetInstance().Get( "Logger" );
-  pLogger->LogDebug( "Creating array of type: %d with size %d", static_cast<int>( type ), static_cast<int>( size ) );
-#endif // _DEBUG
+//#if defined( _DEBUG ) && defined (JVMX_LOG_VERBOSE)
+//  std::shared_ptr<ILogger> pLogger = GlobalCatalog::GetInstance().Get( "Logger" );
+//  pLogger->LogDebug( "Creating array of type: %d with size %d", static_cast<int>( type ), static_cast<int>( size ) );
+//#endif // _DEBUG
 
   std::shared_ptr<IGarbageCollector> pGC = GlobalCatalog::GetInstance().Get( "GarbageCollector" );
 
