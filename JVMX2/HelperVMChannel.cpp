@@ -9,6 +9,10 @@
 
 #include "InvalidStateException.h"
 #include "InvalidArgumentException.h"
+#include "NotImplementedException.h"
+
+#include "JavaExceptionConstants.h"
+
 #include "GlobalCatalog.h"
 #include "HelperConversion.h"
 #include "HelperTypes.h"
@@ -139,6 +143,155 @@ void JNICALL HelperVMChannel::gnu_java_nio_VMChannel_write( JNIEnv *pEnv, jobjec
   }
 }
 
+jint JNICALL HelperVMChannel::gnu_java_nio_VMChannel_read(JNIEnv* pEnv, jobject obj, jint fd, jobject byteBufferSrc)
+{
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  std::shared_ptr<ILogger> pLogger = GlobalCatalog::GetInstance().Get("Logger");
+  pLogger->LogDebug("*** Inside native Method: gnu_java_nio_VMChannel_read(%d, %p)", fd, byteBufferSrc);
+#endif // _DEBUG
+
+  boost::intrusive_ptr<ObjectReference> pObject = JNIEnvInternal::ConvertJObjectToObjectPointer(byteBufferSrc);
+  if (nullptr == pObject)
+  {
+    throw InvalidArgumentException(__FUNCTION__ " - Object parameter was invalid.");
+  }
+
+  JNIEnvExported* pInternal = reinterpret_cast<JNIEnvExported*>(pEnv);
+  IVirtualMachineState* pVirtualMachineState = reinterpret_cast<IVirtualMachineState*>(pInternal->m_pInternal);
+
+  boost::intrusive_ptr<IJavaVariableType> pFieldValue = pObject->GetContainedObject()->GetFieldByName(JavaString::FromCString("backing_buffer"));
+  if (e_JavaVariableTypes::Array != pFieldValue->GetVariableType())
+  {
+    throw InvalidStateException(__FUNCTION__ " - Expected array type in backing_buffer.");
+  }
+
+  boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>(pFieldValue);
+
+  pFieldValue = pObject->GetContainedObject()->GetFieldByName(JavaString::FromCString("pos"));
+  if (e_JavaVariableTypes::Integer != pFieldValue->GetVariableType())
+  {
+    throw InvalidStateException(__FUNCTION__ " - Expected integer type in pos.");
+  }
+  boost::intrusive_ptr<JavaInteger> pPos = boost::dynamic_pointer_cast<JavaInteger>(pFieldValue);
+
+
+  pFieldValue = pObject->GetContainedObject()->GetFieldByName(JavaString::FromCString("limit"));
+  if (e_JavaVariableTypes::Integer != pFieldValue->GetVariableType())
+  {
+    throw InvalidStateException(__FUNCTION__ " - Expected integer type in limit.");
+  }
+  boost::intrusive_ptr<JavaInteger> pLimit = boost::dynamic_pointer_cast<JavaInteger>(pFieldValue);
+
+  int32_t remaining = pLimit->ToHostInt32() - pPos->ToHostInt32();
+
+  //_setmode( fd, _O_U16TEXT );
+  //if (STDIN_FILENO == fd)
+  //{
+  //  std::string data
+  //  std::wcin << HelperConversion::ConvertUtf16StringToWideString(buffer.ToCharacterArray() + pPos->ToHostInt32());
+  //}
+  //else if (STDERR_FILENO == fd)
+  //{
+  //  std::wcerr << HelperConversion::ConvertUtf16StringToWideString(buffer.ToCharacterArray() + pPos->ToHostInt32());
+  //}
+  //else
+  //{
+    uint8_t* pBuffer = new uint8_t[remaining];
+    jint result = -1;
+    try
+    {
+#ifdef _DEBUG
+      int64_t pos = _telli64(fd);
+#endif // _DEBUG
+
+      result = _read(fd, pBuffer, remaining);
+
+      if (result == 0) // eof
+      {
+        delete[] pBuffer;
+        return -1;
+      }
+
+      if (result == -1) // error
+      {
+        delete[] pBuffer;
+        pInternal->ThrowNew(pEnv, pInternal->FindClass(pEnv, c_JavaIOException), strerror(errno));
+        return -1;
+      }
+
+      // Put bytes back into buffer
+      for (int i = 0; i < std::min(result, remaining); ++i)
+      {
+        pArray->GetContainedArray()->SetAt(pPos->ToHostInt32() + i, JavaByte::FromHostInt8(pBuffer[i]));
+      }
+
+      delete[] pBuffer;
+    }
+    catch (...)
+    {
+      delete[] pBuffer;
+      throw;
+    }
+
+    return result;
+  //}
+}
+
+jlong JNICALL HelperVMChannel::gnu_java_nio_VMChannel_size(JNIEnv* pEnv, jobject obj, jint fd)
+{
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  std::shared_ptr<ILogger> pLogger = GlobalCatalog::GetInstance().Get("Logger");
+  pLogger->LogDebug("*** Inside native Method: gnu_java_nio_VMChannel_size(%d)", fd);
+#endif // _DEBUG
+
+  JNIEnvExported* pInternal = reinterpret_cast<JNIEnvExported*>(pEnv);
+  IVirtualMachineState* pVirtualMachineState = reinterpret_cast<IVirtualMachineState*>(pInternal->m_pInternal);
+
+  //_setmode( fd, _O_U16TEXT );
+  //if (STDIN_FILENO == fd)
+  //{
+  //  std::string data
+  //  std::wcin << HelperConversion::ConvertUtf16StringToWideString(buffer.ToCharacterArray() + pPos->ToHostInt32());
+  //}
+  //else if (STDERR_FILENO == fd)
+  //{
+  //  std::wcerr << HelperConversion::ConvertUtf16StringToWideString(buffer.ToCharacterArray() + pPos->ToHostInt32());
+  //}
+  //else
+  //{
+  jlong oldPos = _telli64(fd);
+  jlong fileSize = _lseeki64(fd, 0, SEEK_END);
+  _lseeki64(fd, oldPos, SEEK_SET);
+
+  return fileSize;
+}
+
+void JNICALL HelperVMChannel::gnu_java_nio_VMChannel_seek(JNIEnv* pEnv, jobject obj, jint fd, jlong pos)
+{
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  std::shared_ptr<ILogger> pLogger = GlobalCatalog::GetInstance().Get("Logger");
+  pLogger->LogDebug("*** Inside native Method: gnu_java_nio_VMChannel_seek(%d, %lld)", fd, pos);
+#endif // _DEBUG
+
+  JNIEnvExported* pInternal = reinterpret_cast<JNIEnvExported*>(pEnv);
+  IVirtualMachineState* pVirtualMachineState = reinterpret_cast<IVirtualMachineState*>(pInternal->m_pInternal);
+
+  //_setmode( fd, _O_U16TEXT );
+  //if (STDIN_FILENO == fd)
+  //{
+  //  std::string data
+  //  std::wcin << HelperConversion::ConvertUtf16StringToWideString(buffer.ToCharacterArray() + pPos->ToHostInt32());
+  //}
+  //else if (STDERR_FILENO == fd)
+  //{
+  //  std::wcerr << HelperConversion::ConvertUtf16StringToWideString(buffer.ToCharacterArray() + pPos->ToHostInt32());
+  //}
+  //else
+  //{
+  _lseeki64(fd, pos, SEEK_SET);
+}
+
+
 void JNICALL HelperVMChannel::gnu_java_nio_VMChannel_close( JNIEnv *pEnv, jobject obj, jint fd )
 {
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -211,7 +364,7 @@ jint JNICALL HelperVMChannel::gnu_java_nio_VMChannel_open( JNIEnv *pEnv, jobject
     }
   }
 
-  int fd = _open( pathAsString.ToUtf8String().c_str(), openFlags, openMode );
+  int fd = _open( pathAsString.ToUtf8String().c_str(), openFlags | _O_BINARY, openMode );
   if ( -1 == fd )
   {
     JNIEnvExported *pInternal = reinterpret_cast<JNIEnvExported *>(pEnv);
@@ -222,7 +375,7 @@ jint JNICALL HelperVMChannel::gnu_java_nio_VMChannel_open( JNIEnv *pEnv, jobject
     pLogger->LogDebug( "*** Could not open file: (%s)", pathAsString.ToUtf8String().c_str() );
 #endif // _DEBUG
 
-    pInternal->ThrowNew( pEnv, pInternal->FindClass( pEnv, "java/io/FileNotFoundException" ), "Could not open file." );
+    pInternal->ThrowNew( pEnv, pInternal->FindClass( pEnv, c_JavaFileNotFoundException), "Could not open file." );
     return 0;
   }
 

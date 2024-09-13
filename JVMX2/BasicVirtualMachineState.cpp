@@ -1138,10 +1138,10 @@ const boost::intrusive_ptr<JavaString>& BasicVirtualMachineState::GetLocalVariab
 }
 
 
-std::shared_ptr<JavaClass> BasicVirtualMachineState::LoadClass(const DataBuffer& classData)
+std::shared_ptr<JavaClass> BasicVirtualMachineState::LoadClass(const DataBuffer& classData, boost::intrusive_ptr<ObjectReference> pClassLoader)
 {
   DefaultClassLoader loader;
-  auto pClass = loader.LoadClass(BigEndianStream::FromDataBuffer(classData));
+  auto pClass = loader.LoadClass(BigEndianStream::FromDataBuffer(classData), pClassLoader);
 
   if (nullptr != pClass)
   {
@@ -1433,13 +1433,26 @@ std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethod(JavaClass* p
 
 std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethodOnClass(boost::intrusive_ptr<JavaString> pClassName, const ConstantPoolMethodReference* pMethodRef)
 {
-  std::shared_ptr<JavaClass> pClassFile = GetClassLibrary()->FindClass(*pClassName);
+  std::shared_ptr<JavaClass> pClassFile;
+
+  JavaString realClassName = *pClassName;
+
+  if ( pClassName->GetLengthInCodePoints() == 1)
+  {
+    realClassName = JavaString::FromCString( VirtualMachine::GetPrimitiveClassName(pClassName->At(0)));
+  }
+  else if (pClassName->At(0) == JVMX_T('['))
+  {
+    realClassName = JavaString::FromCString(JVMX_T("java/lang/Object"));
+  }
+
+  pClassFile = GetClassLibrary()->FindClass(realClassName);
   if (nullptr == pClassFile)
   {
-    pClassFile = LoadClass(*pClassName);
+    pClassFile = LoadClass(realClassName);
     if (nullptr == pClassFile)
     {
-      GetLogger()->LogError(__FUNCTION__ " - %s Could not load class file %s", GetCurrentClassAndMethodName(), pClassName->ToUtf8String().c_str());
+      GetLogger()->LogError(__FUNCTION__ " - %s Could not load class file %s", GetCurrentClassAndMethodName(), realClassName.ToUtf8String().c_str());
 
       // Assume Java Exception already thrown.
       return nullptr;

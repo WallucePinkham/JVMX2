@@ -51,6 +51,10 @@ public:
 
   std::u16string GetCanonicalFormUtf16(const JVMX_WIDE_CHAR_TYPE *pRelativePath);
 
+  void GetInetAddrAnyIpV4(uint8_t pBytes[4]);
+  uint8_t Ip4StringToBytes(const char* pIPAddress);
+  bool Ip4StringToBytes(const char* pIPAddress, uint8_t pBytes[4]);
+
 private:
   IOperatingSystemDelegate *m_pDelegate;
 

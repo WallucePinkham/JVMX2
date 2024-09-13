@@ -154,14 +154,14 @@ void BasicExecutionEngine::Run( const std::shared_ptr<IVirtualMachineState> &pVi
 void BasicExecutionEngine::TryDoGarbageCollection( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, const std::shared_ptr<IGarbageCollector> &pGarbageCollector )
 {
 #ifdef _DEBUG
-  if ( m_InstructionsExecuted > 0 && 0 == ( m_InstructionsExecuted % 100000 ) )
+  if ( m_InstructionsExecuted > 0 && 0 == ( m_InstructionsExecuted % 500000 ) )
   {
     GetLogger()->LogDebug( "%lld Instructions executed. MustCollect( %s ), StackLevel( %lld )", m_InstructionsExecuted, pGarbageCollector->MustCollect() ? "true" : "false", pVirtualMachineState->GetStackLevel().load() );
   }
 #endif // _DEBUG
 
 #ifdef _DEBUG
-  if ( ( m_InstructionsExecuted > 0 && 0 == ( m_InstructionsExecuted % 100000 ) ) || pGarbageCollector->MustCollect() )
+  if ( ( m_InstructionsExecuted > 0 && 0 == ( m_InstructionsExecuted % 500000 ) ) || pGarbageCollector->MustCollect() )
 #else
   if ( pGarbageCollector->MustCollect() )
 #endif // _DEBUG
@@ -169,7 +169,9 @@ void BasicExecutionEngine::TryDoGarbageCollection( const std::shared_ptr<IVirtua
   {
 
 #ifdef JVMX_LOG_VERBOSE
-      if (pVirtualMachineState->HasUserCodeStarted())
+    GetLogger()->LogDebug("MustCollect( %s )", pGarbageCollector->MustCollect() ? "true" : "false");
+
+    if (pVirtualMachineState->HasUserCodeStarted())
       {
           pVirtualMachineState->LogCallStack();
           pVirtualMachineState->LogLocalVariables();
@@ -1051,6 +1053,10 @@ e_ImmediateReturnRequired BasicExecutionEngine::ProcessNextOpcode( const std::sh
       ExecuteOpCodeORLong( pVirtualMachineState );
       break;
 
+    case e_JavaOpCodes::PopOperandStack_2:
+      ExecuteOpCodePopOperandStack_2(pVirtualMachineState);
+      break;
+
     default:
       pLogger->LogDebug( "%s %Id - Read opcode: %hu (%s)\n", pVirtualMachineState->GetCurrentClassAndMethodName().ToUtf8String().c_str(), pVirtualMachineState->GetProgramCounter() - 1, opCode, TranslateOpCode( opCode ) );
       pVirtualMachineState->LogCallStack();
@@ -1099,8 +1105,9 @@ void BasicExecutionEngine::ExecuteOpCodeGetStatic( const std::shared_ptr<IVirtua
       pVirtualMachineState->InitialiseClass(targetClassClassName);
     }
   }
-  catch (FileDoesNotExistException &)
+  catch (FileDoesNotExistException &ex)
   {
+    GetLogger()->LogDebug(__FUNCTION__ " - File not found: %s", ex.what());
     HelperClasses::ThrowJavaException(pVirtualMachineState, c_JavaJavaClassNotFoundException);
     return;
   }
@@ -1119,8 +1126,9 @@ void BasicExecutionEngine::ExecuteOpCodeGetStatic( const std::shared_ptr<IVirtua
         pVirtualMachineState->InitialiseClass( referencedClassName );
       }
     }
-    catch (FileDoesNotExistException&)
+    catch (FileDoesNotExistException& ex)
     {
+      GetLogger()->LogDebug(__FUNCTION__ " - File not found2: %s", ex.what());
       HelperClasses::ThrowJavaException(pVirtualMachineState, c_JavaJavaClassNotFoundException);
       return;
     }
@@ -2082,6 +2090,10 @@ const char *BasicExecutionEngine::TranslateOpCode( uint16_t opcode )
 
     case e_JavaOpCodes::PopOperandStack:
       return"pop";
+      break;
+
+    case e_JavaOpCodes::PopOperandStack_2:
+      return "pop2";
       break;
 
     case e_JavaOpCodes::StoreIntoCharArray:
@@ -4533,6 +4545,33 @@ void BasicExecutionEngine::ExecuteOpCodePopOperandStack( const std::shared_ptr<I
   pVirtualMachineState->PopOperand();
 }
 
+void BasicExecutionEngine::ExecuteOpCodePopOperandStack_2(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
+{
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  if (pVirtualMachineState->HasUserCodeStarted())
+  {
+    GetLogger()->LogDebug("Inside Pop2. Before:");
+    pVirtualMachineState->LogOperandStack();
+  }
+#endif // _DEBUG
+
+  auto pOldOperand = pVirtualMachineState->PopOperand();
+  if (IsCategoryOneType(pOldOperand))
+  {
+    JVMX_ASSERT(IsCategoryOneType(pVirtualMachineState->PeekOperand()));
+    pVirtualMachineState->PopOperand();
+  }
+
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  if (pVirtualMachineState->HasUserCodeStarted())
+  {
+    GetLogger()->LogDebug("Inside Pop2. After:");
+    pVirtualMachineState->LogOperandStack();
+  }
+#endif // _DEBUG
+
+}
+
 // TODO: Debug here
 void BasicExecutionEngine::ExecuteOpCodeBranchIfReferencesAreEqual( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState )
 {
@@ -4787,6 +4826,8 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteVirtualMethod( const std::
     GetLogger()->LogError( "Could not resolve method (%s) on class: (%s).", pMethodInfo->GetName()->ToUtf8String().c_str(), pMethodInfo->GetClass()->GetName()->ToUtf8String().c_str() );
     throw InvalidStateException( __FUNCTION__ " - Could not resolve method on class." );
   }
+
+  // TODO: Access Checks as per 5.4.3.1 (.3)
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (pVirtualMachineState->HasUserCodeStarted())
@@ -6466,6 +6507,10 @@ void BasicExecutionEngine::HandleUnhandledException(const std::shared_ptr<IVirtu
     GetLogger()->LogDebug("Unhandled Exception was handled by threadgroup.");
   }
 #endif // _DEBUG
+
+  // We have handeled it, and we needed to clear it so the code above can run, but now we are setting it again, 
+  // so we can detect it up-stream.
+  pVirtualMachineState->SetExceptionThrown(exception);
 
   // TODO: We may have to do some more stuff here to kill the thread!
   // I think we are safe, because in theory only the main thread will ever get here and all that is left is cleanup.

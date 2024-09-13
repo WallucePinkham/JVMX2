@@ -1,5 +1,6 @@
 #include <chrono>
 #include <direct.h>
+#include <boost/algorithm/string.hpp>
 
 #include "JavaNativeInterface.h"
 
@@ -60,6 +61,22 @@ jlong JNICALL HelperVMSystem::java_lang_VMSystem_currentTimeMillis( JNIEnv *pEnv
   return millsecondsSinceEpoch;
 }
 
+std::string GetCwd()
+{
+  std::string currentWorkingDir = ".";
+  char* pCwdBuffer = _getcwd(NULL, 0);
+
+  if (nullptr != pCwdBuffer)
+  {
+    currentWorkingDir.assign(pCwdBuffer);
+  }
+
+  free(pCwdBuffer);
+  pCwdBuffer = nullptr;
+
+  return currentWorkingDir;
+}
+
 void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *pEnv, jobject obj, jobject properties )
 {
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -70,19 +87,12 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
   JNIEnvExported *pInternal = reinterpret_cast<JNIEnvExported *>( pEnv );
   IVirtualMachineState *pVirtualMachineState = reinterpret_cast<IVirtualMachineState *>( pInternal->m_pInternal );
 
-//  pVirtualMachineState->SetUserCodeStarted();
-
   static const JavaString c_ClassName = JavaString::FromCString( "java/util/Properties" );
 
   boost::intrusive_ptr<ObjectReference> pJavaLangClass = pVirtualMachineState->FindJavaLangClass( c_ClassName );
   if ( nullptr == pJavaLangClass )
   {
     auto pClass = pVirtualMachineState->InitialiseClass( c_ClassName );
-
-    //if ( !pClass->IsInitialsed() )
-    //{
-    //  pVirtualMachineState->InitialiseClass( c_ClassName );
-    //}
 
     pJavaLangClass = pVirtualMachineState->CreateJavaLangClassFromClassName( pClass->GetName() );
   }
@@ -92,7 +102,6 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
   jmethodID methodID = pEnv->GetMethodID( pEnv, jClass, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;" );
 
   jstring strKey = pEnv->NewStringUTF( pEnv, "file.encoding" );
-  //jstring strValue = pEnv->NewStringUTF( pEnv, "8859_1" );
   jstring strValue = pEnv->NewStringUTF(pEnv, "UTF_8");
 
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -137,9 +146,20 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
   SetProperty(pVirtualMachineState->HasUserCodeStarted(), "path.separator", OsFunctions::GetInstance().GetPathSeparator(), pEnv, properties, methodID);
   SetProperty(pVirtualMachineState->HasUserCodeStarted(), "file.separator", OsFunctions::GetInstance().GetFileSeparator(), pEnv, properties, methodID);
   SetProperty(pVirtualMachineState->HasUserCodeStarted(), "line.separator", OsFunctions::GetInstance().GetLineSeparator(), pEnv, properties, methodID);
-  auto pCwdBuffer = _getcwd(NULL, 0);
-  SetProperty(pVirtualMachineState->HasUserCodeStarted(), "user.dir", pCwdBuffer, pEnv, properties, methodID);
-  free(pCwdBuffer);
+  
+  std::string currentWorkingDir = GetCwd();
+
+  SetProperty(pVirtualMachineState->HasUserCodeStarted(), "user.dir", currentWorkingDir, pEnv, properties, methodID);
+  
+  std::string classPathHome = std::string("file://") + currentWorkingDir + "\\classpath";
+  boost::replace_all(classPathHome, "\\", "/"); 
+  SetProperty(pVirtualMachineState->HasUserCodeStarted(), "gnu.classpath.home.url", classPathHome, pEnv, properties, methodID);
+
+  // This COULD be overwritten later by properties from the command line.
+  SetProperty(pVirtualMachineState->HasUserCodeStarted(), "java.util.logging.config.file", currentWorkingDir + "\\classpath\\java\\util\\logging\\logging.properties", pEnv, properties, methodID);
+  
+
+  
   //   strKey = pEnv->NewStringUTF( pEnv, "java.security.manager" );
   //   strValue = pEnv->NewStringUTF( pEnv, "" );
   //
@@ -177,10 +197,6 @@ void JNICALL HelperVMSystem::gnu_classpath_VMSystemProperties_preInit( JNIEnv *p
 
   pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
-  strKey = pEnv->NewStringUTF( pEnv, "gnu.classpath.home.url" );
-  strValue = pEnv->NewStringUTF( pEnv, "file:\\\\C:\\dev" );
-
-  pEnv->CallObjectMethod( pEnv, properties, methodID, strKey, strValue );
 
   strKey = pEnv->NewStringUTF( pEnv, "os.name" );
   strValue = pEnv->NewStringUTF( pEnv, "Windows 7" ); // TODO: This needs to be done via an API.

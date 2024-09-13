@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-      pJVM->RunClassName(fileNameJs, pInitialState, false);
+      pJVM->RunClassName(fileNameJs, pInitialState, cmdLine.classArguments, false);
     }
     
 

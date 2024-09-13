@@ -201,6 +201,7 @@ private:
   void ExecuteOpCodeConvertIntegerToByte( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
 
   void ExecuteOpCodePopOperandStack( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  void ExecuteOpCodePopOperandStack_2(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState);
   void ExecuteOpCodeBranchIfReferencesAreEqual( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeBranchIfReferencesAreNotEqual( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeIncrementLocalVariable( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );

@@ -48,7 +48,7 @@ public:
                   const std::vector<Property> &properties,
                   const std::shared_ptr<IVirtualMachineState> &pInitialState );
   void Run( const JavaString &fileName, const std::shared_ptr<IVirtualMachineState> &pInitialState, bool userCode = true );
-  void RunClassName(const JavaString& className, const std::shared_ptr<IVirtualMachineState>& pInitialState, bool userCode = true);
+  void RunClassName(const JavaString& className, const std::shared_ptr<IVirtualMachineState>& pInitialState, const std::vector<std::string> &classArguments, bool userCode = true);
   void Stop( const std::shared_ptr<IVirtualMachineState> &pInitialState );
 
   std::shared_ptr<JavaNativeInterface> GetNativeInterface() const;
@@ -66,6 +66,7 @@ public:
 public:
   static boost::intrusive_ptr<ObjectReference> GetPrimitiveClass( jstring str, IVirtualMachineState *pVirtualMachineState );
   static boost::intrusive_ptr<ObjectReference> GetPrimitiveClass( jchar chr, IVirtualMachineState *pVirtualMachineState );
+  static const char* GetPrimitiveClassName(const uint16_t primitiveType);
 
   static const char *GetClassNameFromType( JavaString finalStringValue );
 

@@ -998,9 +998,12 @@ extern "C"
 
     TypeParser::ParsedMethodType parsedType = TypeParser::ParseMethodType( *( pMethodInfo->GetType() ) );
 
-#if defined (_DEBUG) //&& defined(JVMX_LOG_VERBOSE)
-    pVirtualMachineState->GetLogger()->LogDebug( "Operand stack before native method call:" );
-    pVirtualMachineState->LogOperandStack();
+#if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+    if (pVirtualMachineState->HasUserCodeStarted())
+    {
+      pVirtualMachineState->GetLogger()->LogDebug("Operand stack before native method call:");
+      pVirtualMachineState->LogOperandStack();
+    }
 #endif // _DEBUG
 
 #ifdef _DEBUG
@@ -1035,9 +1038,12 @@ extern "C"
       throw InvalidStateException( __FUNCTION__ " - Expected reference on the stack." );
     }
 
-#if defined (_DEBUG) //&& defined(JVMX_LOG_VERBOSE)
-    pVirtualMachineState->GetLogger()->LogDebug( "Operand stack after native method call:" );
-    pVirtualMachineState->LogOperandStack();
+#if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+    if (pVirtualMachineState->HasUserCodeStarted())
+    {
+      pVirtualMachineState->GetLogger()->LogDebug("Operand stack after native method call:");
+      pVirtualMachineState->LogOperandStack();
+    }
 #endif // _DEBUG
 
 

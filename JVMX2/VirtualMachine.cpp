@@ -39,6 +39,7 @@
 #include "HelperVMFile.h"
 #include "HelperVMString.h"
 #include "HelperVMClassLoader.h"
+#include "HelperVMInetAddress.h"
 #include "HelperTypes.h"
 #include "HelperClasses.h"
 #include "HelperConversion.h"
@@ -248,6 +249,7 @@ void VirtualMachine::Run(const JavaString& fileName, const std::shared_ptr<IVirt
 
 void VirtualMachine::RunClassName(const JavaString& className, 
                                   const std::shared_ptr<IVirtualMachineState>& pInitialState, 
+                                  const std::vector<std::string> &classArguments,
                                   bool userCode)
 {
   try
@@ -295,8 +297,6 @@ void VirtualMachine::RunClassName(const JavaString& className,
     //}
 #endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
 
-    //pInitialState->SetUserCodeStarted();
-
     pInitialState->Execute(*pApplicationClassLoaderClass->GetName().get(), c_GetClassLoaderMethodName, c_GetClassLoaderMethodType);
 
     if (pInitialState->HasExceptionOccurred())
@@ -304,16 +304,12 @@ void VirtualMachine::RunClassName(const JavaString& className,
       return;
     }
 
-    // TODO: Get System ClassLoader
-    // ClassLoader.getSystemClassLoader
-
-    // TODO: Push System classloader on to operand stack.
      
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-    //if (pInitialState->HasUserCodeStarted())
-    //{
+    if (pInitialState->HasUserCodeStarted())
+    {
       pInitialState->LogOperandStack();
-    //}
+    }
 #endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
 
 
@@ -349,15 +345,23 @@ void VirtualMachine::RunClassName(const JavaString& className,
     m_pLogger->LogDebug("Executing Main Class.");
 #endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
 
-    //pInitialState->PopOperand();
-
     if (pInitialState->HasExceptionOccurred())
     {
       return;
     }
 
-    int argumentsCount = 0;
-    pInitialState->PushOperand(pInitialState->CreateArray(e_JavaArrayTypes::Reference, argumentsCount));
+    // TODO: Pass Command Line Arguments!
+
+    int argumentsCount = classArguments.size();
+    auto pArgsArray = pInitialState->CreateArray(e_JavaArrayTypes::Reference, argumentsCount);
+    
+    for (int i = 0; i < argumentsCount; ++i)
+    {
+      auto pStrObj = pInitialState->CreateStringObject(JavaString::FromCString(classArguments.at(i).c_str()));
+      pArgsArray->GetContainedArray()->SetAt(i, pStrObj.get());
+    }
+
+    pInitialState->PushOperand(pArgsArray);
 
     if (userCode)
     {
@@ -450,6 +454,13 @@ void VirtualMachine::RegisterNativeMethods(std::shared_ptr<JavaNativeInterface> 
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClass_getSuperclass"), HelperVMClass::java_lang_VMClass_getSuperclass);
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClass_isAssignableFrom"), HelperVMClass::java_lang_VMClass_isAssignableFrom);
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClass_isInstance"), HelperVMClass::java_lang_VMClass_isInstance);
+
+  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_net_VMInetAddress_lookupInaddrAny"), HelperVMInetAddress::java_net_VMInetAddress_lookupInaddrAny);
+  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_net_VMInetAddress_getLocalHostname"), HelperVMInetAddress::java_net_VMInetAddress_getLocalHostname);
+  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_net_VMInetAddress_aton"), HelperVMInetAddress::java_net_VMInetAddress_aton);
+
+  
+  
   
 
   //(Java_java_lang_VMClass_getModifiers)
@@ -470,8 +481,13 @@ void VirtualMachine::RegisterNativeMethods(std::shared_ptr<JavaNativeInterface> 
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_stdout_fd"), HelperVMChannel::gnu_java_nio_VMChannel_stdout_fd);
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_stderr_fd"), HelperVMChannel::gnu_java_nio_VMChannel_stderr_fd);
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_write"), HelperVMChannel::gnu_java_nio_VMChannel_write);
+  pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_read"), HelperVMChannel::gnu_java_nio_VMChannel_read);
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_close"), HelperVMChannel::gnu_java_nio_VMChannel_close);
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_open"), HelperVMChannel::gnu_java_nio_VMChannel_open);
+  pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_size"), HelperVMChannel::gnu_java_nio_VMChannel_size);
+  pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_seek"), HelperVMChannel::gnu_java_nio_VMChannel_seek);
+
+  
 
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMThread_currentThread"), HelperVMThread::java_lang_VMThread_currentThread);
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMThread_start"), HelperVMThread::java_lang_VMThread_start);
@@ -524,10 +540,10 @@ boost::intrusive_ptr<ObjectReference> VirtualMachine::GetPrimitiveClass(jstring 
   return pVirtualMachineState->CreateJavaLangClassFromClassName(pClass->GetName());
 }
 
-boost::intrusive_ptr<ObjectReference> VirtualMachine::GetPrimitiveClass(jchar chr, IVirtualMachineState* pVirtualMachineState)
+const char* VirtualMachine::GetPrimitiveClassName(const uint16_t primitiveType)
 {
   JavaString longTypeName = JavaString::EmptyString();
-  switch (chr)
+  switch (primitiveType)
   {
   case 'Z':
     longTypeName = JavaString::FromCString("boolean");
@@ -560,7 +576,12 @@ boost::intrusive_ptr<ObjectReference> VirtualMachine::GetPrimitiveClass(jchar ch
     throw InvalidArgumentException(__FUNCTION__ " - Type Not found.");
   }
 
-  const char* pFinalClassName = GetClassNameFromType(longTypeName);
+  return VirtualMachine::GetClassNameFromType(longTypeName);
+}
+
+boost::intrusive_ptr<ObjectReference> VirtualMachine::GetPrimitiveClass(jchar chr, IVirtualMachineState* pVirtualMachineState)
+{
+  const char* pFinalClassName = GetPrimitiveClassName(chr);
 
   std::shared_ptr<JavaClass> pClass = pVirtualMachineState->InitialiseClass(JavaString::FromCString(pFinalClassName));
   return pVirtualMachineState->CreateJavaLangClassFromClassName(pClass->GetName());

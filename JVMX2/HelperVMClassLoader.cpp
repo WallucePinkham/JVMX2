@@ -69,9 +69,9 @@ jobject JNICALL HelperVMClassLoader::java_lang_VMClassLoader_defineClass(
     throw InternalErrorException(__FUNCTION__ " - Something went wrong reading array of bytes into a buffer.");
   }
 
-  BigEndianStream stream = BigEndianStream::FromDataBuffer(buffer);
+  //BigEndianStream stream = BigEndianStream::FromDataBuffer(buffer);
 
-  auto pClass = loader.LoadClass(stream, pClassLoader);
+  auto pClass = pVirtualMachineState->LoadClass(buffer, pClassLoader); // loader.LoadClass(stream, pClassLoader);
 
   if (nullptr == pClass)
   {
@@ -83,9 +83,6 @@ jobject JNICALL HelperVMClassLoader::java_lang_VMClassLoader_defineClass(
   {
     pVirtualMachineState->InitialiseClass(*pClass->GetName().get());
   }
-
-  std::shared_ptr<IClassLibrary> lib = GlobalCatalog::GetInstance().Get("ClassLibrary");
-  lib->AddClass(pClass);
 
   auto pResult = pVirtualMachineState->CreateJavaLangClassFromClassName(pClass->GetName());
 

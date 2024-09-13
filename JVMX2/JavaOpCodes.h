@@ -99,6 +99,7 @@ enum class e_JavaOpCodes : uint16_t
   , StoreIntoByteArray = 0x54
   , StoreIntoCharArray = 0x55
   , PopOperandStack = 0x57
+  , PopOperandStack_2 = 0x58
   , DuplicateTopOperand = 0x59
   , DuplicateTopOperandx1 = 0x5a
   , DuplicateTopOperandx2 = 0x5b
@@ -191,6 +192,7 @@ enum class e_JavaOpCodes : uint16_t
   , InvokeSpecial = 0xb7
   , InvokeStatic = 0xb8
   , InvokeInterface = 0xb9
+    // TODO: 
   , New = 0xbb
   , NewArray = 0xbc
   , NewArrayOfReference = 0xbd

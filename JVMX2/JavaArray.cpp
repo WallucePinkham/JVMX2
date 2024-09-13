@@ -719,7 +719,6 @@ JavaString JavaArray::ToString() const
 
   outputStream << buffer << "[";
 
-  //JavaString result = JavaString::FromCString( buffer ).Append( JavaString::FromCString( JVMX_T("[") ) );
   for ( size_t i = 0; i < m_Size; ++ i )
   {
     const IJavaVariableType *pValue = GetValueAtIndex( i );

@@ -122,4 +122,13 @@ std::u16string OsFunctions::GetCanonicalFormUtf16(const JVMX_WIDE_CHAR_TYPE* pRe
   return m_pDelegate->GetCanonicalFormUtf16(pRelativePath);
 }
 
+void OsFunctions::GetInetAddrAnyIpV4(uint8_t pBytes[4])
+{
+  m_pDelegate->GetInetAddrAnyIpV4(pBytes);
+}
+
+bool OsFunctions::Ip4StringToBytes(const char* pIPAddress, uint8_t pBytes[4])
+{
+  return m_pDelegate->Ip4StringToBytes(pIPAddress, pBytes);
+}
 

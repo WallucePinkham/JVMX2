@@ -129,6 +129,12 @@ jint JNICALL HelperVMRuntime::java_lang_VMRuntime_nativeLoad( JNIEnv *pEnv, jobj
       return 1;
     }
 
+    if (0 == strcmp(reinterpret_cast<const char*>(bytes), "c:\\javanet.dll"))
+    {
+      pEnv->ReleaseStringUTFChars(pEnv, fileName, reinterpret_cast<const char*>(bytes));
+      return 1;
+    }
+
     std::shared_ptr<JavaNativeInterface> pJNI = pVirtualMachineState->GetJavaNativeInterface();
     bResult = pJNI->LoadOsLibrary( reinterpret_cast<const char *>(bytes) );
   }

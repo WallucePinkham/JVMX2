@@ -477,6 +477,9 @@
     <ClCompile Include="HelperVMString.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="HelperVMInetAddress.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AgregateLogger.h">
@@ -1056,6 +1059,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HelperVMString.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="HelperVMInetAddress.h">
       <Filter>Header Files\Helpers</Filter>
     </ClInclude>
   </ItemGroup>

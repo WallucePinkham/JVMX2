@@ -1,3 +1,7 @@
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
+// windows.h should be below the networking headers to avoid compiler errors
 #include <windows.h>
 #include <Shlwapi.h>
 
@@ -240,4 +244,26 @@ std::u16string OperatingSystemWindows::GetCanonicalFormUtf16(const JVMX_WIDE_CHA
   }
 
   return std::u16string(reinterpret_cast<const char16_t*>(absolutePath));
+}
+
+void OperatingSystemWindows::GetInetAddrAnyIpV4(uint8_t pBytes[4])
+{
+  JVMX_ASSERT(4 == sizeof(INADDR_ANY));
+
+  uint32_t any = INADDR_ANY;
+  memcpy(pBytes, &any, 4);
+}
+
+bool OperatingSystemWindows::Ip4StringToBytes(const char* pIPAddress, uint8_t pBytes[4])
+{
+  unsigned long addr = inet_addr(pIPAddress);
+  if (addr == INADDR_ANY || addr == INADDR_NONE)
+  {
+    return false;
+  }
+
+  addr = ntohl(addr);
+  memcpy(pBytes, &addr, 4);
+
+  return true;
 }

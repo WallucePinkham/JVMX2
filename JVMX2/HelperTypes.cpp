@@ -49,12 +49,6 @@ JavaString HelperTypes::ExtractValueFromStringObject(const JavaObject* pStringOb
   JavaString result = pStringValue->GetContainedArray()->ConvertCharArrayToString();
   if (offset > 0)
   {
-    if (offset > result.GetLengthInCodePoints())
-    {
-#ifdef _DEBUG
-      int i = 0;
-#endif
-    }
     result = result.SubString(offset);
   }
   return result;

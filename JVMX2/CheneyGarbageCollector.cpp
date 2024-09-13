@@ -583,7 +583,7 @@ bool CheneyGarbageCollector::MustCollect() const
   double x = static_cast<double>( GetHeapSize() ) / 2;
   double z = static_cast<double>( GetFreeHeapSpace() );
 
-  double percentageSpaceLeft = ( static_cast<double>( GetFreeHeapSpace() ) / ( static_cast<double>( GetHeapSize() ) / static_cast<double>( 2 ) ) ) * 100.0;
+  double percentageSpaceLeft = ( static_cast<double>( GetFreeHeapSpace() ) / ( static_cast<double>( GetHeapSize() ) / 2.0 ) ) * 100.0;
   if ( percentageSpaceLeft < 10.0 )
   {
     return m_AllocationCountSinceLastCollect >= 100;

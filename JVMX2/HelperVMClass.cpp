@@ -502,7 +502,7 @@ jboolean JNICALL HelperVMClass::java_lang_VMClass_isAssignableFrom(JNIEnv* pEnv,
 
   if (nullptr == classToCheck)
   {
-    pInternal->ThrowNew(pEnv, pInternal->FindClass(pEnv, "java/io/NullPointerException"), "Parameter was null.");
+    pInternal->ThrowNew(pEnv, pInternal->FindClass(pEnv, c_JavaNullPointerExceptionException), "Parameter was null.");
     return JNI_FALSE;
   }
 
@@ -512,7 +512,7 @@ jboolean JNICALL HelperVMClass::java_lang_VMClass_isAssignableFrom(JNIEnv* pEnv,
   boost::intrusive_ptr<ObjectReference> pObjectClassToCheck = JNIEnvInternal::ConvertJObjectToObjectPointer(classToCheck);
   if (pObjectClassToCheck->IsNull())
   {
-    pInternal->ThrowNew(pEnv, pInternal->FindClass(pEnv, "java/io/NullPointerException"), "Parameter was null.");
+    pInternal->ThrowNew(pEnv, pInternal->FindClass(pEnv, c_JavaNullPointerExceptionException), "Parameter was null.");
     return JNI_FALSE;
   }
   boost::intrusive_ptr<JavaString> pClassToCheckName = GetJavaLangClassName(pObjectClassToCheck);
@@ -559,7 +559,7 @@ jboolean JNICALL HelperVMClass::java_lang_VMClass_isInstance(JNIEnv* pEnv, jobje
 
   if (nullptr == objectToCheck)
   {
-    pInternal->ThrowNew(pEnv, pInternal->FindClass(pEnv, "java/io/NullPointerException"), "Parameter was null.");
+    pInternal->ThrowNew(pEnv, pInternal->FindClass(pEnv, c_JavaNullPointerExceptionException), "Parameter was null.");
     return JNI_FALSE;
   }
 
@@ -569,7 +569,7 @@ jboolean JNICALL HelperVMClass::java_lang_VMClass_isInstance(JNIEnv* pEnv, jobje
   boost::intrusive_ptr<ObjectReference> pObjectToCheck = JNIEnvInternal::ConvertJObjectToObjectPointer(objectToCheck);
   if (pObjectToCheck->IsNull())
   {
-    pInternal->ThrowNew(pEnv, pInternal->FindClass(pEnv, "java/io/NullPointerException"), "Parameter was null.");
+    pInternal->ThrowNew(pEnv, pInternal->FindClass(pEnv, c_JavaNullPointerExceptionException), "Parameter was null.");
     return JNI_FALSE;
   }
 
@@ -614,21 +614,23 @@ boost::intrusive_ptr<ObjectReference> HelperVMClass::InitialiseNewConstructorObj
   pVirtualMachineState->PushOperand( pVMConstructor );
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-  pVirtualMachineState->LogOperandStack();
-#endif // _DEBUG && defined(JVMX_LOG_VERBOSE)
+  if (pVirtualMachineState->HasUserCodeStarted())
+  {
+    pVirtualMachineState->LogOperandStack();
+    pVirtualMachineState->LogLocalVariables();
 
-#if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-  pVirtualMachineState->LogOperandStack();
-  pVirtualMachineState->LogLocalVariables();
-
-  std::shared_ptr<ILogger> pLogger = GlobalCatalog::GetInstance().Get( "Logger" );
-  pLogger->LogDebug( "\tExecuting %s\n", pConstructorToExecute->GetFullName().ToUtf8String().c_str() );
+    std::shared_ptr<ILogger> pLogger = GlobalCatalog::GetInstance().Get("Logger");
+    pLogger->LogDebug("\tExecuting %s\n", pConstructorToExecute->GetFullName().ToUtf8String().c_str());
+  }
 #endif // _DEBUG && defined(JVMX_LOG_VERBOSE)
 
   pVirtualMachineState->ExecuteMethod( *pConstructorToExecute->GetClass()->GetName(), *pConstructorToExecute->GetName(), *pConstructorToExecute->GetType(), pConstructorToExecute );
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-  pVirtualMachineState->LogOperandStack();
+  if (pVirtualMachineState->HasUserCodeStarted())
+  {
+    pVirtualMachineState->LogOperandStack();
+  }
 #endif
 
   return pNewConstructor;
@@ -644,23 +646,23 @@ boost::intrusive_ptr<ObjectReference> HelperVMClass::InitialiseNewVMConstructor(
   pVirtualMachineState->PushOperand( pSlot );
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-  pVirtualMachineState->LogOperandStack();
-#endif
+  if (pVirtualMachineState->HasUserCodeStarted())
+  {
+    pVirtualMachineState->LogOperandStack();
+    pVirtualMachineState->LogLocalVariables();
 
-  //  std::vector<boost::intrusive_ptr<IJavaVariableType> > paramArray = pVirtualMachineState->PopulateParameterArrayFromOperandStack( pConstructorToExecute );
-
-#if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-  pVirtualMachineState->LogOperandStack();
-  pVirtualMachineState->LogLocalVariables();
-
-  std::shared_ptr<ILogger> pLogger = GlobalCatalog::GetInstance().Get( "Logger" );
-  pLogger->LogDebug( "\tExecuting %s\n", pConstructorToExecute->GetFullName().ToUtf8String().c_str() );
+    std::shared_ptr<ILogger> pLogger = GlobalCatalog::GetInstance().Get("Logger");
+    pLogger->LogDebug("\tExecuting %s\n", pConstructorToExecute->GetFullName().ToUtf8String().c_str());
+  }
 #endif // _DEBUG
 
   pVirtualMachineState->ExecuteMethod( *pConstructorToExecute->GetClass()->GetName(), *pConstructorToExecute->GetName(), *pConstructorToExecute->GetType(), pConstructorToExecute );
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-  pVirtualMachineState->LogOperandStack();
+  if (pVirtualMachineState->HasUserCodeStarted())
+  {
+    pVirtualMachineState->LogOperandStack();
+  }
 #endif
 
   return pNewConstructor;

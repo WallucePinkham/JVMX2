@@ -82,6 +82,7 @@
     <ClCompile Include="HelperVMClassLoader.cpp" />
     <ClCompile Include="HelperVMDouble.cpp" />
     <ClCompile Include="HelperVMFile.cpp" />
+    <ClCompile Include="HelperVMInetAddress.cpp" />
     <ClCompile Include="HelperVMRuntime.cpp" />
     <ClCompile Include="HelperVMString.cpp" />
     <ClCompile Include="HelperVMSystem.cpp" />
@@ -228,6 +229,7 @@
     <ClInclude Include="HelperVMClassLoader.h" />
     <ClInclude Include="HelperVMDouble.h" />
     <ClInclude Include="HelperVMFile.h" />
+    <ClInclude Include="HelperVMInetAddress.h" />
     <ClInclude Include="HelperVMRuntime.h" />
     <ClInclude Include="HelperVMString.h" />
     <ClInclude Include="HelperVMSystem.h" />
