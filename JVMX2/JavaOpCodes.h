@@ -66,6 +66,7 @@ enum class e_JavaOpCodes : uint16_t
   , LoadReferenceFromArray = 0x32
   , LoadByteOrBooleanFromArray = 0x33
   , LoadCharacterFromArray = 0x34
+  , LoadShortFromArray = 0x35
   , StoreLongInLocal = 0x37 //lstore
   , StoreFloatInLocal = 0x38
   , StoreDoubleInLocal = 0x39
@@ -98,6 +99,7 @@ enum class e_JavaOpCodes : uint16_t
   , StoreIntoReferenceArray = 0x53
   , StoreIntoByteArray = 0x54
   , StoreIntoCharArray = 0x55
+  , StoreIntoShortArray = 0x56
   , PopOperandStack = 0x57
   , PopOperandStack_2 = 0x58
   , DuplicateTopOperand = 0x59

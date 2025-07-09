@@ -19,6 +19,14 @@
 #include "ClassFactory.h"
 #include "HelperConversion.h"
 
+const JavaString DefaultClassLoader::c_ApplicationClassLoaderClassName = JavaString::FromCString("java/lang/ClassLoader");
+//const JavaString DefaultClassLoader::c_LoadClassMethodName = JavaString::FromCString(JVMX_T("defineClass"));
+const JavaString DefaultClassLoader::c_LoadClassMethodName = JavaString::FromCString(JVMX_T("loadClass"));
+//const JavaString DefaultClassLoader::c_LoadClassMethodType = JavaString::FromCString(JVMX_T("(Ljava/lang/String;[BII)Ljava/lang/Class;"));
+const JavaString DefaultClassLoader::c_LoadClassMethodType = JavaString::FromCString(JVMX_T("(Ljava/lang/String;)Ljava/lang/Class;"));
+const JavaString DefaultClassLoader::c_GetClassLoaderMethodName = JavaString::FromCString(JVMX_T("getSystemClassLoader"));
+const JavaString DefaultClassLoader::c_GetClassLoaderMethodType = JavaString::FromCString(JVMX_T("()Ljava/lang/ClassLoader;"));
+
 DefaultClassLoader::DefaultClassLoader()
   : m_pAttributeFactory( new CodeAttributeFactory )
   , m_fileStream( Stream::EmptyStream() )

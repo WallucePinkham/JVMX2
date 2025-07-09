@@ -14,6 +14,14 @@ class CodeAttributeFactory; // Forward declaration.
 class DefaultClassLoader : public FileLoader
 {
 public:
+  static const JavaString c_ApplicationClassLoaderClassName;
+  static const JavaString c_LoadClassMethodName;
+  static const JavaString c_LoadClassMethodType;
+
+  static const JavaString c_GetClassLoaderMethodName;
+  static const JavaString c_GetClassLoaderMethodType;
+
+public:
   DefaultClassLoader();
 
   virtual ~DefaultClassLoader() JVMX_NOEXCEPT;

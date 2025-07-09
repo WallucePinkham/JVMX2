@@ -95,16 +95,11 @@ static const JavaString c_ProgramStartMethodName = JavaString::FromCString(JVMX_
 static const JavaString c_ProgramStartMethodType = JavaString::FromCString(JVMX_T("([Ljava/lang/String;)V"));
 static const JavaString c_SystemClassInitialisationMethodName = JavaString::FromCString(JVMX_T("initializeSystemClass"));
 
-static const JavaString c_LoadClassMethodName = JavaString::FromCString(JVMX_T("defineClass"));
-static const JavaString c_LoadClassMethodType = JavaString::FromCString(JVMX_T("(Ljava/lang/String;[BII)Ljava/lang/Class;"));
-
-static const JavaString c_GetClassLoaderMethodName = JavaString::FromCString(JVMX_T("getSystemClassLoader"));
-static const JavaString c_GetClassLoaderMethodType = JavaString::FromCString(JVMX_T("()Ljava/lang/ClassLoader;"));
 
 
 #ifdef _WIN32
 [[deprecated("We should use the separator defined in OSFunctions")]]
-const JVMX_CHAR_TYPE c_PathSeparator = JVMX_T('\\'); 
+const JVMX_CHAR_TYPE c_PathSeparator = JVMX_T('\\');
 #else
 [[deprecated]]
 const JVMX_CHAR_TYPE c_PathSeparator = JVMX_T('/');
@@ -120,7 +115,8 @@ extern const JavaString c_SyntheticField_ClassName;
 extern const JavaString c_JavaLangClassName;
 
 VirtualMachine::VirtualMachine()
-{}
+{
+}
 
 std::string GetMainClassNameFromManifestFile(DataBuffer manifestFileData)
 {
@@ -158,7 +154,7 @@ std::string GetMainClassNameFromManifestFile(DataBuffer manifestFileData)
   return result;
 }
 
-int VirtualMachine::GetMainClassFromJarFile(const JavaString& fileName, JavaString &mainClassName, DataBuffer& mainClassOuput)
+int VirtualMachine::GetMainClassFromJarFile(const JavaString& fileName, JavaString& mainClassName, DataBuffer& mainClassOuput)
 {
   DataBuffer manifestFileData = DataBuffer::EmptyBuffer();
 
@@ -247,33 +243,93 @@ void VirtualMachine::Run(const JavaString& fileName, const std::shared_ptr<IVirt
   }
 }
 
-void VirtualMachine::RunClassName(const JavaString& className, 
-                                  const std::shared_ptr<IVirtualMachineState>& pInitialState, 
-                                  const std::vector<std::string> &classArguments,
-                                  bool userCode)
+void VirtualMachine::AddUrlSourceToSystemClassloader(const std::shared_ptr<IVirtualMachineState>& pInitialState, const JavaString &jarFileName, boost::intrusive_ptr<ObjectReference> pApplicationClassLoader)
+{
+  // Create an instance of a Java URL object to represent the jar file.
+  auto pJarFileUrlClass = m_pRuntimeConstantPool->FindClass(JavaString::FromCString(JVMX_T("java/net/URL")));
+  auto pJarFileUrl = pInitialState->CreateObject(pJarFileUrlClass);
+
+  // We want to call: new URL(String protocol, String host, String file)
+  // Java expects parameters to be pushed left-to-right, then the object reference for constructors.
+  // Stack (top to bottom after pushes):
+  //   [pJarFileUrl] (URL object, 'this')
+  //   [pFile]       (String file)
+  //   [pHost]       (String host)
+  //   [pProtocol]   (String protocol)
+
+  pInitialState->PushOperand(pJarFileUrl); // 'this' (URL object for constructor)
+
+  boost::intrusive_ptr<ObjectReference> pProtocol = pInitialState->CreateStringObject("file");
+  pInitialState->PushOperand(pProtocol); // 1st parameter: protocol
+
+  boost::intrusive_ptr<ObjectReference> pHost = pInitialState->CreateStringObject(JavaString::EmptyString()); // No host for file URLs
+  pInitialState->PushOperand(pHost); // 2nd parameter: host
+
+  boost::intrusive_ptr<ObjectReference> pFile = pInitialState->CreateStringObject(jarFileName);
+  pInitialState->PushOperand(pFile); // 3rd parameter: file
+
+  pInitialState->Execute(*pJarFileUrlClass->GetName().get(),
+    c_InstanceInitialisationMethodName,
+    JavaString::FromCString(JVMX_T("(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")));
+
+  if (pInitialState->HasExceptionOccurred())
+  {
+    return;
+  }
+
+  // At this point, the URL object is initialized and should be on top of the stack.
+
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  if (pInitialState->HasUserCodeStarted())
+  {
+    pInitialState->LogOperandStack();
+    m_pLogger->LogDebug("Added URL %s to system class loader.", jarFileName.ToUtf8String().c_str());
+  }
+#endif // _DEBUG && defined(JVMX_LOG_VERBOSE)
+
+  // To call addURL(URL url) on the class loader, push the class loader instance.
+  // Stack order for instance method:
+  //   [pApplicationClassLoader] (this for addURL)
+  //   [pJarFileUrl]             (URL parameter)
+
+  pInitialState->PushOperand(pJarFileUrl);
+
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  pInitialState->LogOperandStack();
+#endif
+
+  pInitialState->Execute(JVMX_T("java/net/URLClassLoader"), JVMX_T("addURL"), JVMX_T("(Ljava/net/URL;)V"));
+
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  if (pInitialState->HasUserCodeStarted())
+  {
+    pInitialState->LogOperandStack();
+  }
+#endif // _DEBUG && defined(JVMX_LOG_VERBOSE)
+
+}
+
+void VirtualMachine::RunClassName(const JavaString& className,
+  const std::shared_ptr<IVirtualMachineState>& pInitialState,
+  const std::vector<std::string>& classArguments,
+  bool userCode)
 {
   try
   {
     JavaString mainClassName = className;
     DataBuffer mainClassData = DataBuffer::EmptyBuffer();
-    if (className.EndsWith(JVMX_T(".jar")))
-    {
-      if (0 != GetMainClassFromJarFile(className, mainClassName, mainClassData))
-      {
-        // Error was logged in GetMainClassFromJarFile()
-        return;
-      }
-    }
-    else
+    if (!className.EndsWith(JVMX_T(".jar")))
     {
       throw NotImplementedException("Not implemented yet.");
     }
 
-    std::shared_ptr<JavaClass> pApplicationClassLoaderClass = m_pRuntimeConstantPool->FindClass(JavaString::FromCString("java/lang/ClassLoader"));
+
+
+    std::shared_ptr<JavaClass> pApplicationClassLoaderClass = m_pRuntimeConstantPool->FindClass(DefaultClassLoader::c_ApplicationClassLoaderClassName);
     if (nullptr == pApplicationClassLoaderClass)
     {
-      InitialiseClass(JVMX_T("java/lang/ClassLoader"), pInitialState);
-      pApplicationClassLoaderClass = m_pRuntimeConstantPool->FindClass(JavaString::FromCString("java/lang/ClassLoader"));
+      InitialiseClass(DefaultClassLoader::c_ApplicationClassLoaderClassName.ToCharacterArray(), pInitialState);
+      pApplicationClassLoaderClass = m_pRuntimeConstantPool->FindClass(DefaultClassLoader::c_ApplicationClassLoaderClassName);
       if (nullptr == pApplicationClassLoaderClass)
       {
         throw InvalidStateException(__FUNCTION__ " - Could not resolve class for java/lang/ClassLoader.");
@@ -297,14 +353,28 @@ void VirtualMachine::RunClassName(const JavaString& className,
     //}
 #endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
 
-    pInitialState->Execute(*pApplicationClassLoaderClass->GetName().get(), c_GetClassLoaderMethodName, c_GetClassLoaderMethodType);
+    pInitialState->Execute(*pApplicationClassLoaderClass->GetName().get(), DefaultClassLoader::c_GetClassLoaderMethodName, DefaultClassLoader::c_GetClassLoaderMethodType);
 
     if (pInitialState->HasExceptionOccurred())
     {
       return;
     }
 
-     
+    // Push a copy of the system classloader on to the stack, so that when we call AddUrlSourceToSystemClassloader we have
+    // another copy on the stack afterward.
+    pInitialState->PushOperand(pInitialState->PeekOperand());
+
+    AddUrlSourceToSystemClassloader(pInitialState, className, boost::dynamic_pointer_cast<ObjectReference>( pInitialState->PeekOperand()));
+
+    if (pInitialState->HasExceptionOccurred())
+    {
+      return;
+    }
+
+    
+
+    // If we have a class loader, we can load the main class.
+
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
     if (pInitialState->HasUserCodeStarted())
     {
@@ -312,30 +382,38 @@ void VirtualMachine::RunClassName(const JavaString& className,
     }
 #endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
 
+   // m_pSystemClassLoader = boost::dynamic_pointer_cast<ObjectReference>(pInitialState->PeekOperand());
 
-    boost::intrusive_ptr<ObjectReference> pArray = JavaArray::CreateFromCArray(mainClassData.ToByteArray(), mainClassData.GetByteLength());
+//
+//    boost::intrusive_ptr<ObjectReference> pArray = JavaArray::CreateFromCArray(mainClassData.ToByteArray(), mainClassData.GetByteLength());
+//
+//    boost::intrusive_ptr<ObjectReference> pObject = pInitialState->CreateStringObject(mainClassName);
+//    pInitialState->PushOperand(pObject); // name
+//    pInitialState->PushOperand(pArray); // data
+//    pInitialState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(0))); // offset
+//    pInitialState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(mainClassData.GetByteLength()))); // len
+//
+//#if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+//    if (pInitialState->HasUserCodeStarted())
+//    {
+//      pInitialState->LogOperandStack();
+//      m_pLogger->LogDebug("Executing Application Class Loader to load main class.");
+//    }
+//#endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+//
+//    pInitialState->Execute(*pApplicationClassLoaderClass->GetName().get(), DefaultClassLoader::c_LoadClassMethodName, DefaultClassLoader::c_LoadClassMethodType);
 
-    boost::intrusive_ptr<ObjectReference> pObject = pInitialState->CreateStringObject(mainClassName);
-    pInitialState->PushOperand(pObject); // name
-    pInitialState->PushOperand(pArray); // data
-    pInitialState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(0))); // offset
-    pInitialState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(mainClassData.GetByteLength()))); // len
+    // We need to call the loadClass(String name) method on the classloader.
+    // Stack order for instance method:
+    //   [pApplicationClassLoader] (this for loadClass)
+    //   [mainClassName]           (String name)
+    
+    pInitialState->PushOperand(pInitialState->CreateStringObject(mainClassName));
+    
+    pInitialState->Execute(*pApplicationClassLoaderClass->GetName().get(), DefaultClassLoader::c_LoadClassMethodName, DefaultClassLoader::c_LoadClassMethodType);
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-    if (pInitialState->HasUserCodeStarted())
-    {
-      pInitialState->LogOperandStack();
-      m_pLogger->LogDebug("Executing Application Class Loader to load main class.");
-    }
-#endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-
-    pInitialState->Execute(*pApplicationClassLoaderClass->GetName().get(), c_LoadClassMethodName, c_LoadClassMethodType);
-
-#if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
-    if (pInitialState->HasUserCodeStarted())
-    {
-      pInitialState->LogOperandStack();
-    }
+    pInitialState->LogOperandStack();
 
     if (pInitialState->HasExceptionOccurred())
     {
@@ -354,7 +432,7 @@ void VirtualMachine::RunClassName(const JavaString& className,
 
     int argumentsCount = classArguments.size();
     auto pArgsArray = pInitialState->CreateArray(e_JavaArrayTypes::Reference, argumentsCount);
-    
+
     for (int i = 0; i < argumentsCount; ++i)
     {
       auto pStrObj = pInitialState->CreateStringObject(JavaString::FromCString(classArguments.at(i).c_str()));
@@ -377,6 +455,142 @@ void VirtualMachine::RunClassName(const JavaString& className,
     m_pLogger->LogError(ex.what());
   }
 }
+
+//void VirtualMachine::RunClassName(const JavaString& className, 
+//                                  const std::shared_ptr<IVirtualMachineState>& pInitialState, 
+//                                  const std::vector<std::string> &classArguments,
+//                                  bool userCode)
+//{
+//  try
+//  {
+//    JavaString mainClassName = className;
+//    DataBuffer mainClassData = DataBuffer::EmptyBuffer();
+//    if (className.EndsWith(JVMX_T(".jar")))
+//    {
+//      if (0 != GetMainClassFromJarFile(className, mainClassName, mainClassData))
+//      {
+//        // Error was logged in GetMainClassFromJarFile()
+//        return;
+//      }
+//    }
+//    else
+//    {
+//      throw NotImplementedException("Not implemented yet.");
+//    }
+//
+//    
+//
+//    std::shared_ptr<JavaClass> pApplicationClassLoaderClass = m_pRuntimeConstantPool->FindClass(DefaultClassLoader::c_ApplicationClassLoaderClassName);
+//    if (nullptr == pApplicationClassLoaderClass)
+//    {
+//      InitialiseClass(DefaultClassLoader::c_ApplicationClassLoaderClassName.ToCharacterArray(), pInitialState);
+//      pApplicationClassLoaderClass = m_pRuntimeConstantPool->FindClass(DefaultClassLoader::c_ApplicationClassLoaderClassName);
+//      if (nullptr == pApplicationClassLoaderClass)
+//      {
+//        throw InvalidStateException(__FUNCTION__ " - Could not resolve class for java/lang/ClassLoader.");
+//      }
+//    }
+//
+//    if (pInitialState->HasExceptionOccurred())
+//    {
+//      return;
+//    }
+//
+//    if (!pApplicationClassLoaderClass->IsInitialsed())
+//    {
+//      pInitialState->InitialiseClass(pApplicationClassLoaderClass);
+//    }
+//
+//#if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+//    //if (pInitialState->HasUserCodeStarted())
+//    //{
+//    pInitialState->LogOperandStack();
+//    //}
+//#endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+//
+//    pInitialState->Execute(*pApplicationClassLoaderClass->GetName().get(), DefaultClassLoader::c_GetClassLoaderMethodName, DefaultClassLoader::c_GetClassLoaderMethodType);
+//
+//    if (pInitialState->HasExceptionOccurred())
+//    {
+//      return;
+//    }
+//
+//    // If we have a class loader, we can load the main class.
+//     
+//#if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+//    if (pInitialState->HasUserCodeStarted())
+//    {
+//      pInitialState->LogOperandStack();
+//    }
+//#endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+//
+//    m_pSystemClassLoader = boost::dynamic_pointer_cast<ObjectReference>(pInitialState->PeekOperand());
+//
+//
+//    boost::intrusive_ptr<ObjectReference> pArray = JavaArray::CreateFromCArray(mainClassData.ToByteArray(), mainClassData.GetByteLength());
+//
+//    boost::intrusive_ptr<ObjectReference> pObject = pInitialState->CreateStringObject(mainClassName);
+//    pInitialState->PushOperand(pObject); // name
+//    pInitialState->PushOperand(pArray); // data
+//    pInitialState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(0))); // offset
+//    pInitialState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(mainClassData.GetByteLength()))); // len
+//
+//#if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+//    if (pInitialState->HasUserCodeStarted())
+//    {
+//      pInitialState->LogOperandStack();
+//      m_pLogger->LogDebug("Executing Application Class Loader to load main class.");
+//    }
+//#endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+//
+//    pInitialState->Execute(*pApplicationClassLoaderClass->GetName().get(), DefaultClassLoader::c_LoadClassMethodName, DefaultClassLoader::c_LoadClassMethodType);
+//
+//#if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+//    if (pInitialState->HasUserCodeStarted())
+//    {
+//      pInitialState->LogOperandStack();
+//    }
+//
+//    if (pInitialState->HasExceptionOccurred())
+//    {
+//      return;
+//    }
+//
+//    m_pLogger->LogDebug("Executing Main Class.");
+//#endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+//
+//    if (pInitialState->HasExceptionOccurred())
+//    {
+//      return;
+//    }
+//
+//    // TODO: Pass Command Line Arguments!
+//
+//    int argumentsCount = classArguments.size();
+//    auto pArgsArray = pInitialState->CreateArray(e_JavaArrayTypes::Reference, argumentsCount);
+//    
+//    for (int i = 0; i < argumentsCount; ++i)
+//    {
+//      auto pStrObj = pInitialState->CreateStringObject(JavaString::FromCString(classArguments.at(i).c_str()));
+//      pArgsArray->GetContainedArray()->SetAt(i, pStrObj.get());
+//    }
+//
+//    pInitialState->PushOperand(pArgsArray);
+//
+//    if (userCode)
+//    {
+//      pInitialState->SetUserCodeStarted();
+//    }
+//
+//    pInitialState->Execute(mainClassName, c_ProgramStartMethodName, c_ProgramStartMethodType);
+//  }
+//  catch (JVMXException& ex)
+//  {
+//    m_pLogger->LogError(__FUNCTION__ " - Exception thrown from running virtual machine.");
+//    m_pLogger->LogError("\tException Detail:");
+//    m_pLogger->LogError(ex.what());
+//  }
+//}
 
 void VirtualMachine::LoadFile(const JVMX_CHAR_TYPE* pFileName)
 {
@@ -459,15 +673,15 @@ void VirtualMachine::RegisterNativeMethods(std::shared_ptr<JavaNativeInterface> 
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_net_VMInetAddress_getLocalHostname"), HelperVMInetAddress::java_net_VMInetAddress_getLocalHostname);
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_net_VMInetAddress_aton"), HelperVMInetAddress::java_net_VMInetAddress_aton);
 
-  
-  
-  
+
+
+
 
   //(Java_java_lang_VMClass_getModifiers)
 
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClassLoader_getPrimitiveClass"), HelperVMClassLoader::java_lang_VMClassLoader_getPrimitiveClass);
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClassLoader_defineClass"), HelperVMClassLoader::java_lang_VMClassLoader_defineClass);
-  
+
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMSecurityManager_currentClassLoader"), VirtualMachine::java_lang_VMSecurityManager_currentClassLoader);
 
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMObject_clone"), VirtualMachine::java_lang_VMObject_clone);
@@ -487,7 +701,7 @@ void VirtualMachine::RegisterNativeMethods(std::shared_ptr<JavaNativeInterface> 
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_size"), HelperVMChannel::gnu_java_nio_VMChannel_size);
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_seek"), HelperVMChannel::gnu_java_nio_VMChannel_seek);
 
-  
+
 
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMThread_currentThread"), HelperVMThread::java_lang_VMThread_currentThread);
   pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMThread_start"), HelperVMThread::java_lang_VMThread_start);
@@ -1012,10 +1226,10 @@ bool endsWith(const std::string& str, const std::string& suffix) {
   return std::equal(suffix.rbegin(), suffix.rend(), str.rbegin());
 }
 
-void VirtualMachine::Initialise(const std::string& startingClassfile, 
-                                const std::string& classPath,
-                                const std::vector<Property> &properties,
-                                const std::shared_ptr<IVirtualMachineState>& pInitialState)
+void VirtualMachine::Initialise(const std::string& startingClassfile,
+  const std::string& classPath,
+  const std::vector<Property>& properties,
+  const std::shared_ptr<IVirtualMachineState>& pInitialState)
 {
   m_pJNI = std::make_shared<JavaNativeInterface>();
   m_pJNI->SetVMState(pInitialState);
@@ -1091,7 +1305,7 @@ void VirtualMachine::InitialiseUtf8Charset(const std::shared_ptr<IVirtualMachine
   JVMX_ASSERT(HelperClasses::IsSuperClassOf(pInitialState.get(), &c_CharsetClassName, pObj->GetContainedObject()->GetClass()->GetName().get()));
 #endif
 
-  pInitialState->PopOperand(); 
+  pInitialState->PopOperand();
 }
 
 void VirtualMachine::Stop(const std::shared_ptr<IVirtualMachineState>& pInitialState)
@@ -1120,6 +1334,11 @@ void VirtualMachine::Stop(const std::shared_ptr<IVirtualMachineState>& pInitialS
 std::shared_ptr<JavaNativeInterface> VirtualMachine::GetNativeInterface() const
 {
   return m_pJNI;
+}
+
+boost::intrusive_ptr<ObjectReference> VirtualMachine::GetSystemClassLoader() const
+{
+  return m_pSystemClassLoader;
 }
 
 ThreadInfo VirtualMachine::ReturnCurrentThreadObject() const

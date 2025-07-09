@@ -8,18 +8,19 @@
 //#include <wallaroo/part.h>
 //#include <wallaroo/catalog.h>
 
-#include <boost/program_options/variables_map.hpp>
 #include <boost/intrusive_ptr.hpp>
+#include <boost/program_options/variables_map.hpp>
 
 
+#include "CommandLineProcessor.h"
 #include "GlobalConstants.h"
-#include "JavaTypes.h"
 #include "include/jni.h"
-#include "ThreadManager.h"
-#include "TypeParser.h"
+#include "JavaObject.h"
+#include "JavaTypes.h"
 #include "NativeLibraryContainer.h"
 #include "StringPool.h"
-#include "CommandLineProcessor.h"
+#include "ThreadManager.h"
+#include "TypeParser.h"
 
 // Forward Declarations
 class IMemoryManager;
@@ -27,7 +28,7 @@ class IStackManager;
 class ILogger;
 class IVirtualMachineState;
 class IClassLibrary;
-class JavaObject;
+//class JavaObject;
 class JavaNativeInterface;
 class IJavaVariableType;
 class IGarbageCollector;
@@ -48,10 +49,13 @@ public:
                   const std::vector<Property> &properties,
                   const std::shared_ptr<IVirtualMachineState> &pInitialState );
   void Run( const JavaString &fileName, const std::shared_ptr<IVirtualMachineState> &pInitialState, bool userCode = true );
+  void AddUrlSourceToSystemClassloader(const std::shared_ptr<IVirtualMachineState>& pInitialState, const JavaString& jarFileName, boost::intrusive_ptr<ObjectReference> pApplicationClassLoader);
   void RunClassName(const JavaString& className, const std::shared_ptr<IVirtualMachineState>& pInitialState, const std::vector<std::string> &classArguments, bool userCode = true);
   void Stop( const std::shared_ptr<IVirtualMachineState> &pInitialState );
 
   std::shared_ptr<JavaNativeInterface> GetNativeInterface() const;
+
+  boost::intrusive_ptr<ObjectReference> GetSystemClassLoader() const;
 
   // jint JNI_CreateJavaVM( JavaVM **pvm, void **penv, void *vm_args ) { throw "Not Implemented yet." };
   // jint JNI_GetCreatedJavaVMs( JavaVM **vmBuf, jsize bufLen, jsize *nVMs );
@@ -134,11 +138,12 @@ private:
   std::shared_ptr<IExecutionEngine> m_pEngine;
   std::shared_ptr<JavaNativeInterface> m_pJNI;  
   std::shared_ptr<IJavaLangClassList> m_pJavaLangClassList;
-  std::shared_ptr<IThreadManager> m_pThreadManager;
+  std::shared_ptr<IThreadManager> m_pThreadManager; 
   std::shared_ptr<NativeLibraryContainer> m_pNativeLibraryContainer;
   std::shared_ptr<IObjectRegistry> m_pObjectRegistry;
   std::shared_ptr<FileSearchPathCollection> m_pFileSearchPathCollection;
   std::shared_ptr<StringPool> m_pStringPool;
+  boost::intrusive_ptr<ObjectReference> m_pSystemClassLoader;
 };
 
 #endif // _VIRTUALMACHINE__H_

@@ -56,7 +56,7 @@ private:
   static const char *TranslateOpCode( uint16_t opcode );
 
   int GetIntegerFromOperandStack( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState ) const;
-  uint64_t GetLongFromOperandStack( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  int64_t GetLongFromOperandStack( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
 
   static bool IsReference( e_JavaVariableTypes type );
 
@@ -115,6 +115,7 @@ private:
   void InitialiseDimention( const std::vector<int32_t> &dimentionSizes, const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState, boost::intrusive_ptr<ObjectReference> pFirstDimention, uint8_t dimentionCount, int32_t currentDimention, e_JavaArrayTypes finalDimentionType );
 
   void HandleUnhandledException(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState);
+  std::pair< boost::intrusive_ptr<ObjectReference>, uint32_t> LoadFromArrayInternal(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState);
 
   // Op Codes
 private:
@@ -188,6 +189,7 @@ private:
   void ExecuteOpCodeIntegerMultiply( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeIntegerSubtract( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeStoreIntoCharArray( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  void ExecuteOpCodeStoreIntoShortArray(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState);
   void ExecuteOpCodeStoreIntoByteArray( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
 
   void ExecuteOpCodeStoreIntoReferenceArray( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
@@ -206,6 +208,7 @@ private:
   void ExecuteOpCodeBranchIfReferencesAreNotEqual( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeIncrementLocalVariable( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeLoadCharacterFromArray( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  void ExecuteOpCodeLoadShortFromArray(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState);
   void ExecuteOpCodeNegateInteger( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeConvertIntegerToChar( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeShiftIntegerLeft( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );

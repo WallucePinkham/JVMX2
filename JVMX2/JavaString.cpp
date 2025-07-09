@@ -53,6 +53,20 @@ m_Data( other )
 {
 }
 
+JavaString::JavaString(const JVMX_WIDE_CHAR_TYPE* other) JVMX_NOEXCEPT
+{
+    if (other == nullptr)
+    {
+        // Initialize with an empty string if the input is null
+        m_Data = boost::flyweight<std::u16string>(std::u16string());
+    }
+    else
+    {
+        // Initialize with the provided char16_t string
+        m_Data = boost::flyweight<std::u16string>(std::u16string(other));
+    }
+}
+
 JavaString::~JavaString() JVMX_NOEXCEPT
 {}
 
@@ -279,12 +293,12 @@ bool JavaString::EndsWith( const JVMX_WIDE_CHAR_TYPE *pStringToMatch ) const
 
 JavaString JavaString::SubString( size_t offset ) const
 {
-  return JavaString::FromCString( m_Data.get().substr( offset ).c_str() );
+  return JavaString( m_Data.get().substr( offset ) );
 }
 
 JavaString JavaString::SubString( size_t offset, size_t numberOfCharacters ) const
 {
-  return JavaString::FromCString( m_Data.get().substr( offset, numberOfCharacters ).c_str() );
+  return JavaString( m_Data.get().substr( offset, numberOfCharacters ) );
 }
 
 bool JavaString::operator!=( const JavaString &other ) const

@@ -9,6 +9,8 @@
 #include "ILogger.h"
 #include "IExecutionEngine.h"
 
+#include "BasicClassLibrary.h"
+
 #include "NullPointerException.h"
 #include "InvalidStateException.h"
 #include "InvalidArgumentException.h"
@@ -1160,6 +1162,17 @@ std::shared_ptr<JavaClass> BasicVirtualMachineState::LoadClass(const JavaString&
   {
     return pClass;
   }
+
+  //// We need to try to use the system class loader first.
+  //boost::intrusive_ptr<ObjectReference> pSystemClassLoader = m_pVM->GetSystemClassLoader();
+  //if (nullptr != pSystemClassLoader)
+  //{
+  //  this->ExecuteMethod(DefaultClassLoader::c_ApplicationClassLoaderClassName,
+  //    DefaultClassLoader::c_LoadClassMethodName,
+  //    DefaultClassLoader::c_LoadClassMethodType);
+  //}
+
+  // Use the boostrap class loader to load the class.
 
   try
   {
