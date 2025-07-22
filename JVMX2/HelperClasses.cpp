@@ -7,7 +7,9 @@
 #include "JavaExceptionConstants.h"
 #include "InvalidArgumentException.h"
 #include "InvalidStateException.h"
+#include "ClassFactory.h"
 
+#include "TypeParser.h"
 #include "HelperClasses.h"
 
 
@@ -46,6 +48,14 @@ std::shared_ptr<JavaClass> HelperClasses::ResolveClass(IVirtualMachineState* pVi
   std::shared_ptr<IClassLibrary> pClassLib = GlobalCatalog::GetInstance().Get("ClassLibrary");
 
   std::shared_ptr<JavaClass> pClassFile = pClassLib->FindClass(className);
+
+  if (nullptr == pClassFile && TypeParser::IsArrayTypeDescriptor(className))
+  {
+    // If the class is an array type, we can create a dummy class for it.
+    pClassFile = ClassFactory::CreateArrayClass(TypeParser::ConvertTypeDescriptorToArrayType(className.At(1)));
+    pClassLib->AddClass(pClassFile);
+  }
+
   if (nullptr == pClassFile)
   {
     try

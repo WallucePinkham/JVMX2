@@ -291,6 +291,29 @@ bool JavaString::EndsWith( const JVMX_WIDE_CHAR_TYPE *pStringToMatch ) const
   return false;
 }
 
+bool JavaString::StartsWith( const JVMX_WIDE_CHAR_TYPE *pStringToMatch ) const
+{
+  std::u16string temp( pStringToMatch );
+  auto pTempPos = temp.cbegin();
+  for ( auto pos = m_Data.get().cbegin(); pos != m_Data.get().cend(); ++ pos )
+  {
+    if ( *pos != *pTempPos )
+    {
+      return false;
+    }
+    ++ pTempPos;
+    if ( pTempPos == temp.cend() )
+    {
+      return true;
+    }
+  }
+  if ( pTempPos == temp.cend() )
+  {
+    return true;
+  }
+  return false;
+}
+
 JavaString JavaString::SubString( size_t offset ) const
 {
   return JavaString( m_Data.get().substr( offset ) );

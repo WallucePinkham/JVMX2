@@ -15,9 +15,12 @@
 
 #include "JavaTypes.h"
 
-#include "JavaClass.h"
 #include "GlobalCatalog.h"
 #include "IClassLibrary.h"
+
+#include "TypeParser.h"
+
+#include "JavaClass.h"
 
 const ConstantPoolIndex c_DefaultIndex = 1;
 
@@ -51,6 +54,26 @@ JavaClass::JavaClass( uint16_t minorVersion, uint16_t majorVersion, std::shared_
   SetupSuperClassName();
   SetupMethods();
   //SetupSuperClass();
+}
+
+JavaClass::JavaClass(e_JavaArrayTypes arrayType)
+{
+  JavaString className = u"[";
+  className = className.Append(TypeParser::ConvertArrayTypeToDescriptor(arrayType));
+
+  m_pClassName = new JavaString(className);
+  m_pSuperClassName = new JavaString(u"java/lang/Object");
+  m_Initialised = true;
+  m_Initialising = false;
+  m_AccessFlags = static_cast<uint16_t>(e_JavaClassAccessFlags::Public) | static_cast<uint16_t>(e_JavaClassAccessFlags::Final) | static_cast<uint16_t>(e_JavaClassAccessFlags::Synthetic);
+  m_pMonitor = std::make_shared<Lockable>();
+  m_MajorVersion = 0;
+  m_MinorVersion = 0;
+  m_pConstantPool = nullptr;
+  m_ThisClassReferenceIndex = c_DefaultIndex;
+  m_SuperClassReferenceIndex = c_DefaultIndex;
+  m_pClassLoader = nullptr;
+  m_pSuperClass = nullptr;
 }
 
 JavaClass::JavaClass( const JavaClass &other )
@@ -204,6 +227,11 @@ bool JavaClass::IsSynthetic() const
 bool JavaClass::IsAnnotation() const
 {
   return 0 != ( m_AccessFlags & static_cast<uint16_t>( e_JavaClassAccessFlags::Annotation ) );
+}
+
+bool JavaClass::IsArray() const
+{
+  return m_pClassName->StartsWith(u"[");
 }
 
 bool JavaClass::IsEnum() const

@@ -60,7 +60,7 @@ enum class e_JavaOpCodes : uint16_t
   , LoadReferenceFromLocal_3 = 0x2d
 
   , LoadIntegerFromArray = 0x2e
-
+  , LoadLongFromArray = 0x2f
   , LoadFloatFromArray = 0x30
   , LoadDoubleFromArray = 0x31
   , LoadReferenceFromArray = 0x32
@@ -93,7 +93,7 @@ enum class e_JavaOpCodes : uint16_t
   , StoreReferenceInLocal_2 = 0x4d
   , StoreReferenceInLocal_3 = 0x4e
   , StoreIntoIntArray = 0x4f
-
+  , StoreIntoLongArray = 0x50
   , StoreIntoFloatArray = 0x51
   , StoreIntoDoubleArray = 0x52
   , StoreIntoReferenceArray = 0x53

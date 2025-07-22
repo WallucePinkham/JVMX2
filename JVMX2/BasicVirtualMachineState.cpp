@@ -40,6 +40,7 @@
 #include "BasicVirtualMachineState.h"
 #include "ClassAttributeSourceFile.h"
 #include "CodeAttributeLineNumberTable.h"
+#include "ClassLoaderList.h"
 
 
 extern const JavaString c_ClassInitialisationMethodName = JavaString::FromCString(JVMX_T("<clinit>"));
@@ -415,7 +416,8 @@ std::shared_ptr<IClassLibrary> BasicVirtualMachineState::GetClassLibrary() const
 
 void BasicVirtualMachineState::Execute(const JavaString& startingClassName, const JavaString& methodName, const JavaString& methodType)
 {
-  std::shared_ptr<MethodInfo> pInitialMethod = GetMethodByNameAndType(startingClassName, methodName, methodType, GetClassLibrary());
+  bool searchParentClass = methodName != c_ClassInitialisationMethodName && methodName != c_InstanceInitialisationMethodName;
+  std::shared_ptr<MethodInfo> pInitialMethod = GetMethodByNameAndType(startingClassName, methodName, methodType, GetClassLibrary(), searchParentClass);
 
   if (nullptr == pInitialMethod)
   {
@@ -453,7 +455,7 @@ void BasicVirtualMachineState::Execute(const JavaString& startingClassName, cons
     pInitialMethod->GetClass()->SetInitialising();
   }
 
-  ExecuteMethod(startingClassName, methodName, *(pInitialMethod->GetType()), pInitialMethod);
+  ExecuteMethod(*pInitialMethod->GetClass()->GetName(), methodName, *(pInitialMethod->GetType()), pInitialMethod);
 
   if (pInitialMethod->GetClass()->IsInitialsing() && methodName == c_ClassInitialisationMethodName)
   {
@@ -489,17 +491,37 @@ void BasicVirtualMachineState::Execute(const MethodInfo& method)
 #endif // _DEBUG
 }
 
-std::shared_ptr<MethodInfo> BasicVirtualMachineState::GetMethodByNameAndType(const JavaString& className, const JavaString& methodName, const JavaString& methodType, std::shared_ptr<IClassLibrary> pConstantPool)
+std::shared_ptr<MethodInfo> BasicVirtualMachineState::GetMethodByNameAndType(const JavaString& className, const JavaString& methodName, const JavaString& methodType, std::shared_ptr<IClassLibrary> pConstantPool, bool searchParentClass)
 {
+  // We probably need to check all class libraries?
   std::shared_ptr<JavaClass> pClass = GetClassByName(pConstantPool, className);
 
   std::shared_ptr<MethodInfo> pMethod = pClass->GetMethodByNameAndType(methodName, methodType);
-  if (nullptr != pMethod)
+
+  if (!searchParentClass)
   {
     return pMethod;
   }
 
-  return nullptr;
+  if (nullptr == pMethod)
+  {
+    // We need to try the parent class if the method is not found in the current class.
+    std::shared_ptr<JavaClass> pParentClass = pClass->GetSuperClass();
+    while (nullptr != pParentClass)
+    {
+      pMethod = pParentClass->GetMethodByNameAndType(methodName, methodType);
+      if (nullptr == pMethod)
+      {
+        pParentClass = pParentClass->GetSuperClass();
+      }
+      else
+      {
+        return pMethod;
+      }
+    }
+  }
+
+  return pMethod;
 }
 
 std::shared_ptr<JavaClass> BasicVirtualMachineState::GetClassByName(std::shared_ptr<IClassLibrary> pConstantPool, const JavaString& className)
@@ -629,12 +651,14 @@ void BasicVirtualMachineState::PopState()
 
 const CodeAttributeStackMapTable* BasicVirtualMachineState::GetCurrentStackMap()
 {
-  return GetMethodByNameAndType(m_CurrentDisplayCallStackEntry.m_ClassName, m_CurrentDisplayCallStackEntry.m_MethodName, m_CurrentDisplayCallStackEntry.m_MethodType, GetClassLibrary())->GetFrame();
+  // Not sure about the last parameter here, but setting it to false for now to keep existing behaviour.
+  return GetMethodByNameAndType(m_CurrentDisplayCallStackEntry.m_ClassName, m_CurrentDisplayCallStackEntry.m_MethodName, m_CurrentDisplayCallStackEntry.m_MethodType, GetClassLibrary(), false)->GetFrame();
 }
 
 const ClassAttributeCode* BasicVirtualMachineState::GetCurrentCodeInfo()
 {
-  return GetMethodByNameAndType(m_CurrentDisplayCallStackEntry.m_ClassName, m_CurrentDisplayCallStackEntry.m_MethodName, m_CurrentDisplayCallStackEntry.m_MethodType, GetClassLibrary())->GetCodeInfo();
+  // Not sure about the last parameter here, but setting it to false for now to keep existing behaviour.
+  return GetMethodByNameAndType(m_CurrentDisplayCallStackEntry.m_ClassName, m_CurrentDisplayCallStackEntry.m_MethodName, m_CurrentDisplayCallStackEntry.m_MethodType, GetClassLibrary(), false)->GetCodeInfo();
 }
 
 const JavaString& BasicVirtualMachineState::GetCurrentClassAndMethodName() const
@@ -1450,9 +1474,9 @@ std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethodOnClass(boost
 
   JavaString realClassName = *pClassName;
 
-  if ( pClassName->GetLengthInCodePoints() == 1)
+  if (pClassName->GetLengthInCodePoints() == 1)
   {
-    realClassName = JavaString::FromCString( VirtualMachine::GetPrimitiveClassName(pClassName->At(0)));
+    realClassName = JavaString::FromCString(VirtualMachine::GetPrimitiveClassName(pClassName->At(0)));
   }
   else if (pClassName->At(0) == JVMX_T('['))
   {
@@ -1568,7 +1592,7 @@ std::shared_ptr<JavaClass> BasicVirtualMachineState::InitialiseClass(std::shared
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
     if (HasUserCodeStarted())
     {
-      GetLogger()->LogDebug(__FUNCTION__ " - Class %s already initialized.", (* pClassFile->GetName().get()).ToUtf8String().c_str());
+      GetLogger()->LogDebug(__FUNCTION__ " - Class %s already initialized.", (*pClassFile->GetName().get()).ToUtf8String().c_str());
     }
 #endif // _DEBUG
     return pClassFile;
@@ -1678,7 +1702,8 @@ BasicVirtualMachineState::DisplayCallStackEntry::DisplayCallStackEntry()
   : m_ClassName(JavaString::EmptyString())
   , m_MethodName(JavaString::EmptyString())
   , m_MethodType(JavaString::EmptyString())
-{}
+{
+}
 
 std::vector<boost::intrusive_ptr<IJavaVariableType> > BasicVirtualMachineState::PopulateParameterArrayFromOperandStack(std::shared_ptr<MethodInfo> pMethodInfo)
 {
@@ -1739,10 +1764,18 @@ boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateJavaLangCl
     return pResult;
   }
 
+  // This will only check in the default / bootstrap class loader.
   std::shared_ptr<JavaClass> pClassClass = GetClassLibrary()->FindClass(c_JavaLangClassName);
   if (nullptr == pClassClass)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected to find class: java.lang.Class");
+    // Not found in the bootstrap loader. Look in other class loaders.
+    std::shared_ptr<ClassLoaderList> pClassLoaderList = GlobalCatalog::GetInstance().Get("ClassLoaderList");
+    pClassClass = pClassLoaderList->FindInAnyClassLoader(className);
+
+    if (nullptr == pClassClass)
+    {
+      throw InvalidStateException(__FUNCTION__ " - Expected to find class: java.lang.Class");
+    }
   }
 
   if (!pClassClass->IsInitialsed())
@@ -2096,14 +2129,14 @@ void BasicVirtualMachineState::SetProperties(const std::string& classPath, const
   {
     m_ClassPath = ".";
   }
-  
+
   m_Properties = properties;
 }
 
 const std::string& BasicVirtualMachineState::GetClassPath() const
 {
   JVMX_ASSERT(!m_ClassPath.empty()); // We should only call this once in the main thread during initialisation of the JVM
-                                     // for other threads / states this will be empty.
+  // for other threads / states this will be empty.
   return m_ClassPath;
 }
 
@@ -2112,7 +2145,7 @@ const std::vector<Property>& BasicVirtualMachineState::GetProperties() const
   return m_Properties;
 }
 
-std::shared_ptr<JavaClass> BasicVirtualMachineState::FindClass(const JavaString &className) const
+std::shared_ptr<JavaClass> BasicVirtualMachineState::FindClass(const JavaString& className) const
 {
   return GetClassLibrary()->FindClass(className);
 }

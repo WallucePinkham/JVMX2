@@ -67,6 +67,7 @@
 #include "GlobalCatalog.h"
 #include "ZipFile.h"
 #include "StringPool.h"
+#include "ClassLoaderList.h"
 
 WALLAROO_REGISTER(FileLogger, const JVMX_ANSI_CHAR_TYPE*);
 WALLAROO_REGISTER(ConsoleLogger);
@@ -84,6 +85,7 @@ WALLAROO_REGISTER(ThreadManager);
 WALLAROO_REGISTER(NativeLibraryContainer);
 WALLAROO_REGISTER(StringPool);
 WALLAROO_REGISTER(FileSearchPathCollection); //TODO: Replace with proper classpath handling
+WALLAROO_REGISTER(ClassLoaderList);
 #ifdef REDIS_SUPPORT
 WALLAROO_REGISTER(RedisGarbageCollector, const std::string&, size_t);
 WALLAROO_REGISTER(ObjectRegistryRedis);
@@ -207,6 +209,40 @@ int VirtualMachine::GetMainClassFromJarFile(const JavaString& fileName, JavaStri
   return zipFileResult;
 }
 
+int VirtualMachine::GetMainClassNameFromJarFile(const JavaString& fileName, JavaString& mainClassName)
+{
+  DataBuffer manifestFileData = DataBuffer::EmptyBuffer();
+
+  int zipFileResult = ZipFile::GetFile(fileName.ToUtf8String().c_str(), "META-INF/MANIFEST.MF", manifestFileData);
+  if (zipFileResult == ZIP_COULD_NOT_OPEN_FILE)
+  {
+    m_pLogger->LogError("Could not open jar file %s: %s", fileName.ToUtf8String().c_str(), ZipFile::GetError(zipFileResult));
+    return zipFileResult;
+  }
+
+  if (zipFileResult == ZIP_FILE_NOT_FOUND)
+  {
+    zipFileResult = ZipFile::GetFile(fileName.ToUtf8String().c_str(), "META-INF\\MANIFEST.MF", manifestFileData);
+  }
+
+  if (zipFileResult != ZIP_OK)
+  {
+    m_pLogger->LogError("Could not determine main class from jar file %s : %s", fileName.ToUtf8String().c_str(), ZipFile::GetError(zipFileResult));
+    return zipFileResult;
+  }
+
+  std::string mainClassNameString = GetMainClassNameFromManifestFile(manifestFileData);
+  if (mainClassNameString.empty())
+  {
+    m_pLogger->LogError("Could not determine main class from jar file %s : %s", fileName.ToUtf8String().c_str(), "Could not locate 'Main-Class' specifier.");
+    return ZIP_FILE_NOT_FOUND;
+  }
+
+  mainClassName = JavaString::FromCString(mainClassNameString.c_str());
+
+  return ZIP_OK;
+}
+
 void VirtualMachine::Run(const JavaString& fileName, const std::shared_ptr<IVirtualMachineState>& pInitialState, bool userCode)
 {
   try
@@ -316,14 +352,22 @@ void VirtualMachine::RunClassName(const JavaString& className,
 {
   try
   {
-    JavaString mainClassName = className;
     DataBuffer mainClassData = DataBuffer::EmptyBuffer();
     if (!className.EndsWith(JVMX_T(".jar")))
     {
       throw NotImplementedException("Not implemented yet.");
     }
 
+    JavaString jarFileName = className;
+    // Get the main class name from the jar file.
+    JavaString mainClassName = JavaString::EmptyString();
+    int zipFileResult = GetMainClassNameFromJarFile(jarFileName, mainClassName);
 
+    if (zipFileResult != ZIP_OK)
+    {
+      m_pLogger->LogError("Could not determine main class from jar file %s : %s", jarFileName.ToUtf8String().c_str(), ZipFile::GetError(zipFileResult));
+      return;
+    }
 
     std::shared_ptr<JavaClass> pApplicationClassLoaderClass = m_pRuntimeConstantPool->FindClass(DefaultClassLoader::c_ApplicationClassLoaderClassName);
     if (nullptr == pApplicationClassLoaderClass)
@@ -359,6 +403,16 @@ void VirtualMachine::RunClassName(const JavaString& className,
     {
       return;
     }
+
+#if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+    //if (pInitialState->HasUserCodeStarted())
+    //{
+    pInitialState->LogOperandStack();
+    //}
+#endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+
+    // The system class loader should now be on the stack.
+    auto pSystemClassLoader = boost::dynamic_pointer_cast<ObjectReference>(pInitialState->PeekOperand());
 
     // Push a copy of the system classloader on to the stack, so that when we call AddUrlSourceToSystemClassloader we have
     // another copy on the stack afterward.
@@ -410,7 +464,10 @@ void VirtualMachine::RunClassName(const JavaString& className,
     
     pInitialState->PushOperand(pInitialState->CreateStringObject(mainClassName));
     
-    pInitialState->Execute(*pApplicationClassLoaderClass->GetName().get(), DefaultClassLoader::c_LoadClassMethodName, DefaultClassLoader::c_LoadClassMethodType);
+    //pInitialState->SetUserCodeStarted(); // todo: remove later
+
+    auto systemClassLoaderName = pSystemClassLoader->GetContainedObject()->GetClass()->GetName();
+    pInitialState->Execute(*systemClassLoaderName, DefaultClassLoader::c_LoadClassMethodName, DefaultClassLoader::c_LoadClassMethodType);
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
     pInitialState->LogOperandStack();
@@ -643,35 +700,35 @@ void VirtualMachine::InitialiseClass(const JVMX_CHAR_TYPE* pClassName, const std
 
 void VirtualMachine::RegisterNativeMethods(std::shared_ptr<JavaNativeInterface> pJNI)
 {
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMRuntime_insertSystemProperties"), HelperVMRuntime::java_lang_VMRuntime_insertSystemProperties);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMRuntime_mapLibraryName"), HelperVMRuntime::Java_java_lang_VMRuntime_mapLibraryName);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMRuntime_nativeLoad"), HelperVMRuntime::java_lang_VMRuntime_nativeLoad);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMRuntime_runFinalizationForExit"), HelperVMRuntime::java_lang_VMRuntime_runFinalizationForExit);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMRuntime_exit"), HelperVMRuntime::java_lang_VMRuntime_exit);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMRuntime_insertSystemProperties"), HelperVMRuntime::java_lang_VMRuntime_insertSystemProperties);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMRuntime_mapLibraryName"), HelperVMRuntime::Java_java_lang_VMRuntime_mapLibraryName);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMRuntime_nativeLoad"), HelperVMRuntime::java_lang_VMRuntime_nativeLoad);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMRuntime_runFinalizationForExit"), HelperVMRuntime::java_lang_VMRuntime_runFinalizationForExit);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMRuntime_exit"), HelperVMRuntime::java_lang_VMRuntime_exit);
 
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMSystem_identityHashCode"), HelperVMSystem::java_lang_VMSystem_identityHashCode);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMSystem_arraycopy"), HelperVMSystem::java_lang_VMSystem_arraycopy);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMSystem_isWordsBigEndian"), HelperVMSystem::java_lang_VMSystem_isWordsBigEndian);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMSystem_currentTimeMillis"), HelperVMSystem::java_lang_VMSystem_currentTimeMillis);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_classpath_VMSystemProperties_preInit"), HelperVMSystem::gnu_classpath_VMSystemProperties_preInit);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMSystem_identityHashCode"), HelperVMSystem::java_lang_VMSystem_identityHashCode);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMSystem_arraycopy"), HelperVMSystem::java_lang_VMSystem_arraycopy);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMSystem_isWordsBigEndian"), HelperVMSystem::java_lang_VMSystem_isWordsBigEndian);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMSystem_currentTimeMillis"), HelperVMSystem::java_lang_VMSystem_currentTimeMillis);
+  pJNI->RegisterFunction(JavaString(u"Java_gnu_classpath_VMSystemProperties_preInit"), HelperVMSystem::gnu_classpath_VMSystemProperties_preInit);
 
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClass_forName"), HelperVMClass::java_lang_VMClass_forName);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClass_getName"), HelperVMClass::java_lang_VMClass_getName);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClass_getDeclaredConstructors"), HelperVMClass::java_lang_VMClass_getDeclaredConstructors);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClass_isArray"), HelperVMClass::java_lang_VMClass_isArray);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClass_isPrimitive"), HelperVMClass::java_lang_VMClass_isPrimitive);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClass_getClassLoader"), HelperVMClass::java_lang_VMClass_getClassLoader);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClass_getModifiers"), HelperVMClass::java_lang_VMClass_getModifiers);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClass_getComponentType"), HelperVMClass::java_lang_VMClass_getComponentType);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClass_getDeclaredFields"), HelperVMClass::java_lang_VMClass_getDeclaredFields);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClass_getInterfaces"), HelperVMClass::java_lang_VMClass_getInterfaces);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClass_getSuperclass"), HelperVMClass::java_lang_VMClass_getSuperclass);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClass_isAssignableFrom"), HelperVMClass::java_lang_VMClass_isAssignableFrom);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClass_isInstance"), HelperVMClass::java_lang_VMClass_isInstance);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMClass_forName"), HelperVMClass::java_lang_VMClass_forName);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMClass_getName"), HelperVMClass::java_lang_VMClass_getName);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMClass_getDeclaredConstructors"), HelperVMClass::java_lang_VMClass_getDeclaredConstructors);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMClass_isArray"), HelperVMClass::java_lang_VMClass_isArray);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMClass_isPrimitive"), HelperVMClass::java_lang_VMClass_isPrimitive);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMClass_getClassLoader"), HelperVMClass::java_lang_VMClass_getClassLoader);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMClass_getModifiers"), HelperVMClass::java_lang_VMClass_getModifiers);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMClass_getComponentType"), HelperVMClass::java_lang_VMClass_getComponentType);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMClass_getDeclaredFields"), HelperVMClass::java_lang_VMClass_getDeclaredFields);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMClass_getInterfaces"), HelperVMClass::java_lang_VMClass_getInterfaces);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMClass_getSuperclass"), HelperVMClass::java_lang_VMClass_getSuperclass);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMClass_isAssignableFrom"), HelperVMClass::java_lang_VMClass_isAssignableFrom);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMClass_isInstance"), HelperVMClass::java_lang_VMClass_isInstance);
 
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_net_VMInetAddress_lookupInaddrAny"), HelperVMInetAddress::java_net_VMInetAddress_lookupInaddrAny);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_net_VMInetAddress_getLocalHostname"), HelperVMInetAddress::java_net_VMInetAddress_getLocalHostname);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_net_VMInetAddress_aton"), HelperVMInetAddress::java_net_VMInetAddress_aton);
+  pJNI->RegisterFunction(JavaString(u"Java_java_net_VMInetAddress_lookupInaddrAny"), HelperVMInetAddress::java_net_VMInetAddress_lookupInaddrAny);
+  pJNI->RegisterFunction(JavaString(u"Java_java_net_VMInetAddress_getLocalHostname"), HelperVMInetAddress::java_net_VMInetAddress_getLocalHostname);
+  pJNI->RegisterFunction(JavaString(u"Java_java_net_VMInetAddress_aton"), HelperVMInetAddress::java_net_VMInetAddress_aton);
 
 
 
@@ -679,66 +736,69 @@ void VirtualMachine::RegisterNativeMethods(std::shared_ptr<JavaNativeInterface> 
 
   //(Java_java_lang_VMClass_getModifiers)
 
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClassLoader_getPrimitiveClass"), HelperVMClassLoader::java_lang_VMClassLoader_getPrimitiveClass);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMClassLoader_defineClass"), HelperVMClassLoader::java_lang_VMClassLoader_defineClass);
-
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMSecurityManager_currentClassLoader"), VirtualMachine::java_lang_VMSecurityManager_currentClassLoader);
-
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMObject_clone"), VirtualMachine::java_lang_VMObject_clone);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMObject_wait"), VirtualMachine::java_lang_VMObject_wait);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMObject_getClass"), VirtualMachine::java_lang_VMObject_getClass);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMObject_notifyAll"), VirtualMachine::java_lang_VMObject_notifyAll);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMObject_notify"), VirtualMachine::java_lang_VMObject_notify);
-
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_initIDs"), HelperVMChannel::gnu_java_nio_VMChannel_initIDs);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_stdin_fd"), HelperVMChannel::gnu_java_nio_VMChannel_stdin_fd);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_stdout_fd"), HelperVMChannel::gnu_java_nio_VMChannel_stdout_fd);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_stderr_fd"), HelperVMChannel::gnu_java_nio_VMChannel_stderr_fd);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_write"), HelperVMChannel::gnu_java_nio_VMChannel_write);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_read"), HelperVMChannel::gnu_java_nio_VMChannel_read);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_close"), HelperVMChannel::gnu_java_nio_VMChannel_close);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_open"), HelperVMChannel::gnu_java_nio_VMChannel_open);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_size"), HelperVMChannel::gnu_java_nio_VMChannel_size);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_java_nio_VMChannel_seek"), HelperVMChannel::gnu_java_nio_VMChannel_seek);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMClassLoader_getPrimitiveClass"), HelperVMClassLoader::java_lang_VMClassLoader_getPrimitiveClass);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMClassLoader_defineClass"), HelperVMClassLoader::java_lang_VMClassLoader_defineClass);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMClassLoader_findLoadedClass"), HelperVMClassLoader::java_lang_VMClassLoader_findLoadedClass);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMClassLoader_loadClass"), HelperVMClassLoader::java_lang_VMClassLoader_loadClass);
 
 
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMSecurityManager_currentClassLoader"), VirtualMachine::java_lang_VMSecurityManager_currentClassLoader);
 
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMThread_currentThread"), HelperVMThread::java_lang_VMThread_currentThread);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMThread_start"), HelperVMThread::java_lang_VMThread_start);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMThread_sleep"), HelperVMThread::java_lang_VMThread_sleep);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMThread_suspend"), HelperVMThread::java_lang_VMThread_suspend);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMThread_suspend"), HelperVMThread::java_lang_VMThread_resume);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMThread_interrupted"), HelperVMThread::java_lang_VMThread_interrupted);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMThread_interrupt"), HelperVMThread::java_lang_VMThread_interrupt);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMObject_clone"), VirtualMachine::java_lang_VMObject_clone);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMObject_wait"), VirtualMachine::java_lang_VMObject_wait);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMObject_getClass"), VirtualMachine::java_lang_VMObject_getClass);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMObject_notifyAll"), VirtualMachine::java_lang_VMObject_notifyAll);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMObject_notify"), VirtualMachine::java_lang_VMObject_notify);
 
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMDouble_initIDs"), HelperVMDouble::java_lang_Double_initIDs);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMDouble_toString"), HelperVMDouble::java_lang_Double_toString);
+  pJNI->RegisterFunction(JavaString(u"Java_gnu_java_nio_VMChannel_initIDs"), HelperVMChannel::gnu_java_nio_VMChannel_initIDs);
+  pJNI->RegisterFunction(JavaString(u"Java_gnu_java_nio_VMChannel_stdin_fd"), HelperVMChannel::gnu_java_nio_VMChannel_stdin_fd);
+  pJNI->RegisterFunction(JavaString(u"Java_gnu_java_nio_VMChannel_stdout_fd"), HelperVMChannel::gnu_java_nio_VMChannel_stdout_fd);
+  pJNI->RegisterFunction(JavaString(u"Java_gnu_java_nio_VMChannel_stderr_fd"), HelperVMChannel::gnu_java_nio_VMChannel_stderr_fd);
+  pJNI->RegisterFunction(JavaString(u"Java_gnu_java_nio_VMChannel_write"), HelperVMChannel::gnu_java_nio_VMChannel_write);
+  pJNI->RegisterFunction(JavaString(u"Java_gnu_java_nio_VMChannel_read"), HelperVMChannel::gnu_java_nio_VMChannel_read);
+  pJNI->RegisterFunction(JavaString(u"Java_gnu_java_nio_VMChannel_close"), HelperVMChannel::gnu_java_nio_VMChannel_close);
+  pJNI->RegisterFunction(JavaString(u"Java_gnu_java_nio_VMChannel_open"), HelperVMChannel::gnu_java_nio_VMChannel_open);
+  pJNI->RegisterFunction(JavaString(u"Java_gnu_java_nio_VMChannel_size"), HelperVMChannel::gnu_java_nio_VMChannel_size);
+  pJNI->RegisterFunction(JavaString(u"Java_gnu_java_nio_VMChannel_seek"), HelperVMChannel::gnu_java_nio_VMChannel_seek);
 
-  //pJNI->RegisterFunction( JavaString::FromCString( u"Java_java_lang_reflect_Constructor_constructNative" ), VirtualMachine::java_lang_reflect_Constructor_constructNative );
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_reflect_Constructor_getModifiers"), VirtualMachine::java_lang_reflect_Constructor_getModifiers);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_reflect_VMConstructor_construct"), VirtualMachine::java_lang_reflect_VMConstructor_construct);
 
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_reflect_VMConstructor_getParameterTypes"), VirtualMachine::java_lang_reflect_VMConstructor_getParameterTypes);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_reflect_VMConstructor_getModifiersInternal"), VirtualMachine::java_lang_reflect_VMConstructor_getModifiersInternal);
 
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_io_VMFile_isDirectory"), HelperVMFile::java_io_VMFile_isDirectory);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_io_VMFile_exists"), HelperVMFile::java_io_VMFile_exists);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_io_VMFile_toCanonicalForm"), HelperVMFile::java_io_VMFile_toCanonicalForm);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMThread_currentThread"), HelperVMThread::java_lang_VMThread_currentThread);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMThread_start"), HelperVMThread::java_lang_VMThread_start);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMThread_sleep"), HelperVMThread::java_lang_VMThread_sleep);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMThread_suspend"), HelperVMThread::java_lang_VMThread_suspend);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMThread_suspend"), HelperVMThread::java_lang_VMThread_resume);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMThread_interrupted"), HelperVMThread::java_lang_VMThread_interrupted);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMThread_interrupt"), HelperVMThread::java_lang_VMThread_interrupt);
 
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_classpath_VMStackWalker_getClassContext"), VirtualMachine::gnu_classpath_VMStackWalker_getClassContext);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_gnu_classpath_VMStackWalker_getClassLoader"), VirtualMachine::gnu_classpath_VMStackWalker_getClassLoader);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMDouble_initIDs"), HelperVMDouble::java_lang_Double_initIDs);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMDouble_toString"), HelperVMDouble::java_lang_Double_toString);
 
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMThrowable_fillInStackTrace"), VirtualMachine::java_lang_VMThrowable_fillInStackTrace);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMThrowable_getStackTrace"), VirtualMachine::Java_java_lang_VMThrowable_getStackTrace);
+  //pJNI->RegisterFunction( JavaString( u"Java_java_lang_reflect_Constructor_constructNative" ), VirtualMachine::java_lang_reflect_Constructor_constructNative );
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_reflect_Constructor_getModifiers"), VirtualMachine::java_lang_reflect_Constructor_getModifiers);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_reflect_VMConstructor_construct"), VirtualMachine::java_lang_reflect_VMConstructor_construct);
 
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMMath_log"), VirtualMachine::java_lang_VMMath_log);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMMath_exp"), VirtualMachine::java_lang_VMMath_exp);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_reflect_VMConstructor_getParameterTypes"), VirtualMachine::java_lang_reflect_VMConstructor_getParameterTypes);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_reflect_VMConstructor_getModifiersInternal"), VirtualMachine::java_lang_reflect_VMConstructor_getModifiersInternal);
 
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_reflect_VMField_get"), VirtualMachine::java_lang_reflect_VMField_get);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_reflect_VMField_getModifiersInternal"), VirtualMachine::java_lang_reflect_VMField_getModifiersInternal);
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_reflect_VMField_getType"), VirtualMachine::java_lang_reflect_VMField_getType);
+  pJNI->RegisterFunction(JavaString(u"Java_java_io_VMFile_isDirectory"), HelperVMFile::java_io_VMFile_isDirectory);
+  pJNI->RegisterFunction(JavaString(u"Java_java_io_VMFile_exists"), HelperVMFile::java_io_VMFile_exists);
+  pJNI->RegisterFunction(JavaString(u"Java_java_io_VMFile_toCanonicalForm"), HelperVMFile::java_io_VMFile_toCanonicalForm);
 
-  pJNI->RegisterFunction(JavaString::FromCString(u"Java_java_lang_VMString_intern"), HelperVMString::java_lang_VMString_intern);
+  pJNI->RegisterFunction(JavaString(u"Java_gnu_classpath_VMStackWalker_getClassContext"), VirtualMachine::gnu_classpath_VMStackWalker_getClassContext);
+  pJNI->RegisterFunction(JavaString(u"Java_gnu_classpath_VMStackWalker_getClassLoader"), VirtualMachine::gnu_classpath_VMStackWalker_getClassLoader);
+
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMThrowable_fillInStackTrace"), VirtualMachine::java_lang_VMThrowable_fillInStackTrace);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMThrowable_getStackTrace"), VirtualMachine::Java_java_lang_VMThrowable_getStackTrace);
+
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMMath_log"), VirtualMachine::java_lang_VMMath_log);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMMath_exp"), VirtualMachine::java_lang_VMMath_exp);
+
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_reflect_VMField_get"), VirtualMachine::java_lang_reflect_VMField_get);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_reflect_VMField_getModifiersInternal"), VirtualMachine::java_lang_reflect_VMField_getModifiersInternal);
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_reflect_VMField_getType"), VirtualMachine::java_lang_reflect_VMField_getType);
+
+  pJNI->RegisterFunction(JavaString(u"Java_java_lang_VMString_intern"), HelperVMString::java_lang_VMString_intern);
 }
 
 
@@ -1336,11 +1396,6 @@ std::shared_ptr<JavaNativeInterface> VirtualMachine::GetNativeInterface() const
   return m_pJNI;
 }
 
-boost::intrusive_ptr<ObjectReference> VirtualMachine::GetSystemClassLoader() const
-{
-  return m_pSystemClassLoader;
-}
-
 ThreadInfo VirtualMachine::ReturnCurrentThreadObject() const
 {
   return std::move(m_pThreadManager->GetCurrentThreadInfo());
@@ -1376,6 +1431,8 @@ void VirtualMachine::SetupDependencies(std::shared_ptr<VirtualMachine> pThis)
   m_pObjectRegistry = std::make_shared<ObjectRegistryLocalMachine>();
   m_pFileSearchPathCollection = std::make_shared<FileSearchPathCollection>();
   m_pStringPool = std::make_shared<StringPool>();
+  m_pClassLoaderList = std::make_shared<ClassLoaderList>();
+
   // ************************************************************************************
   // If you want to change a mapping, instantiate the new class above, and change it here
   // that way, the code below can stay the same.
@@ -1389,6 +1446,7 @@ void VirtualMachine::SetupDependencies(std::shared_ptr<VirtualMachine> pThis)
   mainCatalog.Add("ObjectRegistry", m_pObjectRegistry);
   mainCatalog.Add("SearchPaths", m_pFileSearchPathCollection);
   mainCatalog.Add("StringPool", m_pStringPool);
+  mainCatalog.Add("ClassLoaderList", m_pClassLoaderList);
   // ************************************************************************************
 }
 

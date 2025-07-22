@@ -30,7 +30,8 @@ const JavaString DefaultClassLoader::c_GetClassLoaderMethodType = JavaString::Fr
 DefaultClassLoader::DefaultClassLoader()
   : m_pAttributeFactory( new CodeAttributeFactory )
   , m_fileStream( Stream::EmptyStream() )
-{}
+{
+}
 
 DefaultClassLoader::~DefaultClassLoader() JVMX_NOEXCEPT
 {

@@ -12,6 +12,11 @@ public:
   {
     return std::shared_ptr<JavaClass>( new JavaClass( minorVersion, majorVersion, pConstantPool, accessFlags, thisClassIndex, superIndex, std::move( interfaces ), std::move( fields ), std::move( methods ), std::move( attributes ), pClassLoader) );
   }
+
+  static std::shared_ptr<JavaClass> CreateArrayClass(e_JavaArrayTypes type)
+  {
+    return std::shared_ptr<JavaClass>(new JavaClass(type));
+  }
 };
 
 #endif // _CLASSFILEFACTORY__H_

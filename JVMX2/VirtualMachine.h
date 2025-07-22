@@ -35,6 +35,7 @@ class IGarbageCollector;
 class IExecutionEngine;
 class IJavaLangClassList;
 class FileSearchPathCollection;
+class ClassLoaderList;
 
 class VirtualMachine : public std::enable_shared_from_this<VirtualMachine>
 {
@@ -86,6 +87,7 @@ private:
   void InitialiseClass( const JVMX_CHAR_TYPE *pClassName, const std::shared_ptr<IVirtualMachineState> &pInitialState );
 
   int GetMainClassFromJarFile(const JavaString& fileName, JavaString& mainClassName, DataBuffer& mainClassOuput);
+  int GetMainClassNameFromJarFile(const JavaString& fileName, JavaString& mainClassName);
   void InitialiseUtf8Charset(const std::shared_ptr<IVirtualMachineState>& pInitialState);
 
 private:
@@ -143,7 +145,7 @@ private:
   std::shared_ptr<IObjectRegistry> m_pObjectRegistry;
   std::shared_ptr<FileSearchPathCollection> m_pFileSearchPathCollection;
   std::shared_ptr<StringPool> m_pStringPool;
-  boost::intrusive_ptr<ObjectReference> m_pSystemClassLoader;
+  std::shared_ptr<ClassLoaderList> m_pClassLoaderList;
 };
 
 #endif // _VIRTUALMACHINE__H_

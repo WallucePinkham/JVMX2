@@ -59,7 +59,7 @@ public:
 
   virtual std::shared_ptr<JavaClass> GetCurrentClass() const JVMX_PURE;
 
-  virtual std::shared_ptr<MethodInfo> GetMethodByNameAndType( const JavaString &className, const JavaString &methodName, const JavaString &methodType, std::shared_ptr<IClassLibrary> pConstantPool ) JVMX_PURE;
+  virtual std::shared_ptr<MethodInfo> GetMethodByNameAndType( const JavaString &className, const JavaString &methodName, const JavaString &methodType, std::shared_ptr<IClassLibrary> pConstantPool, bool searchParentClass) JVMX_PURE;
 
   virtual void PushState( const JavaString &newClassName, const JavaString &newMethodName, const JavaString &newMethodType, std::shared_ptr<MethodInfo> pNewMethodInfo ) JVMX_PURE;
   virtual void PopState() JVMX_PURE;

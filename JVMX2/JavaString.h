@@ -93,6 +93,7 @@ public:
   size_t GetLastStringPosition() const;
 
   bool EndsWith(const JVMX_WIDE_CHAR_TYPE* pStringToMatch) const;
+  bool StartsWith(const JVMX_WIDE_CHAR_TYPE* pStringToMatch) const;
 
   JavaString SubString(size_t offset) const;
   JavaString SubString(size_t offset, size_t numberOfCharacters) const;

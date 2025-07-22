@@ -64,11 +64,13 @@ public:
   void SetAt( const JavaInteger &index, const JavaChar &value );
   void SetAt( const JavaInteger &index, const IJavaVariableType *pValue );
   void SetAt(const JavaInteger& index, const JavaByte& pValue);
+  void SetAt(const JavaInteger& index, JavaLong value);
 
   void SetAt( const uint32_t &index, const JavaInteger &value );
   void SetAt( const uint32_t &index, const JavaChar &value );
   void SetAt( const uint32_t &index, const IJavaVariableType *pValue );
   void SetAt(const uint32_t& index, const JavaByte& value);
+  void SetAt(const uint32_t& index, JavaLong value);
 
   JavaString ConvertCharArrayToString() const;
   DataBuffer ConvertByteArrayToBuffer() const;
@@ -111,14 +113,14 @@ private:
 
 
 private:
-  e_JavaArrayTypes m_ContainedType;
-  size_t m_Size;
+  e_JavaArrayTypes m_ContainedType = e_JavaArrayTypes::Reference;
+  size_t m_Size = 0;
 
 private:
   std::shared_ptr<Lockable> m_pMonitor;
 
 #ifdef _DEBUG
-  size_t debugInitialLength;
+  size_t debugInitialLength = 0;
 #endif // _DEBUG
 
 private:

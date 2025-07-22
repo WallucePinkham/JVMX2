@@ -52,7 +52,7 @@ public:
   virtual const JavaString &GetCurrentMethodName() const JVMX_OVERRIDE;
   virtual const JavaString &GetCurrentMethodType() const JVMX_OVERRIDE;
 
-  virtual std::shared_ptr<MethodInfo> GetMethodByNameAndType( const JavaString &className, const JavaString &methodName, const JavaString &methodType, std::shared_ptr<IClassLibrary> pConstantPool ) JVMX_OVERRIDE;
+  virtual std::shared_ptr<MethodInfo> GetMethodByNameAndType( const JavaString &className, const JavaString &methodName, const JavaString &methodType, std::shared_ptr<IClassLibrary> pConstantPool, bool searchParentClass) JVMX_OVERRIDE;
   virtual std::shared_ptr<JavaClass> GetClassByName( std::shared_ptr<IClassLibrary> pConstantPool, const JavaString &className );
 
   virtual void PushState( const JavaString &newClassName, const JavaString &newMethodName, const JavaString &newMethodType, std::shared_ptr<MethodInfo> pNewMethodInfo ) JVMX_OVERRIDE;

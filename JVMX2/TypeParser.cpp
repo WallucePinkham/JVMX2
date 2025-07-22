@@ -499,7 +499,7 @@ bool TypeParser::IsPrimitiveTypeDescriptor(char16_t type)
   return false;
 }
 
-JavaString ConvertArrayTypeToDescriptor(e_JavaArrayTypes type)
+JavaString TypeParser::ConvertArrayTypeToDescriptor(e_JavaArrayTypes type)
 {
   switch (type)
   {

@@ -799,7 +799,7 @@ void JavaNativeInterface::ExecuteFunctionInternal( boost::intrusive_ptr<JavaStri
 
   if ( nullptr == pFoundFunction )
   {
-    GetLogger()->LogError( "Native function (%s) not found.", pName->ToUtf8String().c_str() );
+    GetLogger()->LogError( "Native function (%s) (%s) not found.", pName->ToUtf8String().c_str(), pParameterTypes->ToUtf8String().c_str() );
 
     throw InvalidArgumentException( __FUNCTION__ " - Native function not found." );
   }

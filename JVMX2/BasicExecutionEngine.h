@@ -148,6 +148,7 @@ private:
 
   void ExecuteOpCodePushFromConstantPoolWide( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeStoreIntoIntArray( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  void ExecuteOpCodeStoreIntoLongArray(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState);
   void ExecuteOpCodeGetField( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecutedOpBranchIfEquals( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
 
@@ -247,6 +248,7 @@ private:
   void ExecuteOpCodeANDInteger( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeDuplicateTopOperandOrTwo( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeLoadIntegerFromArray( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  void ExecuteOpCodeLoadLongFromArray(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState);
   void ExecuteOpCodeReturnFloat( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeLongSubtract( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeORInteger( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );

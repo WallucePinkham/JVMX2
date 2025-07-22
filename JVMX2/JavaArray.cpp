@@ -253,6 +253,13 @@ void JavaArray::SetAt(const JavaInteger& index, const JavaByte& value)
   DebugAssert();
 }
 
+void JavaArray::SetAt(const JavaInteger& index, JavaLong value)
+{
+  DebugAssert();
+  SetAt(index.ToHostInt32(), value);
+  DebugAssert();
+}
+
 
 void JavaArray::SetAt( const JavaInteger &index, const IJavaVariableType *pValue )
 {
@@ -319,6 +326,26 @@ void JavaArray::SetAt(const uint32_t& index, const JavaByte& value)
   if (m_ContainedType != e_JavaArrayTypes::Byte)
   {
     throw InvalidArgumentException(__FUNCTION__ " - Trying to add byte to an array that does not contain bytes.");
+  }
+
+  if (index < 0)
+  {
+    throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in. Less than zero.");
+  }
+
+  if (index > m_Size)
+  {
+    throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in.");
+  }
+
+  InternalSetValue(index, &value);
+}
+
+void JavaArray::SetAt(const uint32_t& index, JavaLong value)
+{
+  if (m_ContainedType != e_JavaArrayTypes::Long)
+  {
+    throw InvalidArgumentException(__FUNCTION__ " - Trying to add long to an array that does not contain longs.");
   }
 
   if (index < 0)

@@ -47,6 +47,7 @@ public:
   static e_JavaArrayTypes ConvertTypeDescriptorToArrayType( char16_t type );
   static JavaString ExtractClassNameFromReference( const JavaString &referenceName );
   static e_JavaArrayTypes ExtractContainedTypeFromArrayTypeDescriptor( const JavaString &referenceName );
+  static JavaString ConvertArrayTypeToDescriptor(e_JavaArrayTypes type);
 
   static bool IsPrimitiveTypeDescriptor( char16_t type );
 
