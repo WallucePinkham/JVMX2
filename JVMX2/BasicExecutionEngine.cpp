@@ -434,19 +434,19 @@ e_ImmediateReturnRequired BasicExecutionEngine::ProcessNextOpcode( const std::sh
       break;
 
     case e_JavaOpCodes::LoadFloatFromLocal_0:
-      ExecuteOpLoadFloatFromLocal( pVirtualMachineState, 0 );
+      ExecuteOpCodeLoadFloatFromLocal( pVirtualMachineState, 0 );
       break;
 
     case e_JavaOpCodes::LoadFloatFromLocal_1:
-      ExecuteOpLoadFloatFromLocal( pVirtualMachineState, 1 );
+      ExecuteOpCodeLoadFloatFromLocal( pVirtualMachineState, 1 );
       break;
 
     case e_JavaOpCodes::LoadFloatFromLocal_2:
-      ExecuteOpLoadFloatFromLocal( pVirtualMachineState, 2 );
+      ExecuteOpCodeLoadFloatFromLocal( pVirtualMachineState, 2 );
       break;
 
     case e_JavaOpCodes::LoadFloatFromLocal_3:
-      ExecuteOpLoadFloatFromLocal( pVirtualMachineState, 3 );
+      ExecuteOpCodeLoadFloatFromLocal( pVirtualMachineState, 3 );
       break;
 
     case e_JavaOpCodes::GetStatic:
@@ -587,7 +587,7 @@ e_ImmediateReturnRequired BasicExecutionEngine::ProcessNextOpcode( const std::sh
       break;
 
     case e_JavaOpCodes::IncrementLocalVariable:
-      ExecuteOpCodeIncrementLocalVariable( pVirtualMachineState );
+      ExecuteOpCodeIncrementLocalVariableWithIndex( pVirtualMachineState );
       break;
 
     case e_JavaOpCodes::ConvertIntegerToFloat:
@@ -672,6 +672,10 @@ e_ImmediateReturnRequired BasicExecutionEngine::ProcessNextOpcode( const std::sh
 
     case e_JavaOpCodes::MonitorExit:
       ExecuteOpCodeMonitorExit( pVirtualMachineState );
+      break;
+
+    case e_JavaOpCodes::Wide:
+      ExecuteOpCodeWide(pVirtualMachineState);
       break;
 
     case e_JavaOpCodes::CheckCast:
@@ -1250,7 +1254,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadReferenceFromLocalWithSpecifiedIndex
   ExecuteOpCodeLoadReferenceFromLocalIndex( pVirtualMachineState, ReadByteUnsigned( pVirtualMachineState ) );
 }
 
-void BasicExecutionEngine::ExecuteOpCodeLoadReferenceFromLocalIndex( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint8_t index )
+void BasicExecutionEngine::ExecuteOpCodeLoadReferenceFromLocalIndex( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint16_t index )
 {
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
     if (pVirtualMachineState->HasUserCodeStarted())
@@ -1587,6 +1591,68 @@ void BasicExecutionEngine::ExecuteOpCodeLoadDoubleFromArray( const std::shared_p
   pVirtualMachineState->PushOperand( pDouble );
 }
 
+void BasicExecutionEngine::ExecuteOpCodeWide(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
+{
+#if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  if (pVirtualMachineState->HasUserCodeStarted())
+  {
+    pVirtualMachineState->LogOperandStack();
+    pVirtualMachineState->LogLocalVariables();
+  }
+#endif // _DEBUG
+
+  uint16_t opCode = ReadByteUnsigned(pVirtualMachineState);
+  // The wide instruction is always followed by a 16-bit index, which is read as two bytes.
+
+  uint8_t indexByte1 = ReadByteUnsigned(pVirtualMachineState);
+  uint8_t indexByte2 = ReadByteUnsigned(pVirtualMachineState);
+  uint16_t index = (indexByte1 << 8) | indexByte2;
+  
+  switch (opCode)
+  {
+  case (uint16_t)e_JavaOpCodes::LoadIntegerFromLocal:
+    ExecuteOpCodeLoadIntegerFromLocal(pVirtualMachineState, index);
+    break;
+  case (uint16_t)e_JavaOpCodes::LoadLongFromLocal:
+    ExecuteOpCodeLoadLongFromLocal(pVirtualMachineState, index);
+    break;
+  case (uint16_t)e_JavaOpCodes::LoadReferenceFromLocal:
+    ExecuteOpCodeLoadReferenceFromLocalIndex(pVirtualMachineState, index);
+    break;
+  case (uint16_t)e_JavaOpCodes::StoreIntegerInLocal:
+    ExecuteOpCodeStoreIntegerInLocal(pVirtualMachineState, index);
+    break;
+  case (uint16_t)e_JavaOpCodes::StoreLongInLocal:
+    ExecuteOpCodeStoreLongInLocal(pVirtualMachineState, index);
+    break;
+  case (uint16_t)e_JavaOpCodes::StoreReferenceInLocal:
+    ExecuteOpCodeStoreReferenceInLocal(pVirtualMachineState, index);
+    break;
+  case (uint16_t)e_JavaOpCodes::LoadFloatFromLocal:
+    ExecuteOpCodeLoadFloatFromLocal(pVirtualMachineState, index);
+    break;
+  case (uint16_t)e_JavaOpCodes::StoreFloatInLocal:
+    ExecuteOpCodeStoreFloatInLocal(pVirtualMachineState, index);
+    break;
+  case (uint16_t)e_JavaOpCodes::LoadDoubleFromLocal:
+    ExecuteOpCodeLoadDoubleFromLocal(pVirtualMachineState, index);
+    break;
+  case (uint16_t)e_JavaOpCodes::StoreDoubleInLocal:
+    ExecuteOpCodeStoreDoubleInLocal(pVirtualMachineState, index);
+    break;
+
+  case (uint16_t)e_JavaOpCodes::IncrementLocalVariable:
+    uint8_t constByte1 = ReadByteUnsigned(pVirtualMachineState);
+    uint8_t constByte2 = ReadByteUnsigned(pVirtualMachineState);
+    uint16_t value = (constByte1 << 8) | constByte2;
+
+    ExecuteOpCodeIncrementLocalVariable(pVirtualMachineState, index, value);
+
+    break;
+
+  }
+}
+
 void BasicExecutionEngine::ExecuteOpCodeORLong( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState )
 {
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -1803,7 +1869,7 @@ void BasicExecutionEngine::ExecuteOpCodeFloatSubtract( const std::shared_ptr<IVi
   pVirtualMachineState->PushOperand( new JavaFloat( JavaFloat::FromHostFloat( float1 - float2 ) ) );
 }
 
-void BasicExecutionEngine::ExecuteOpCodeStoreFloatInLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint8_t localVariableIndex )
+void BasicExecutionEngine::ExecuteOpCodeStoreFloatInLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint16_t localVariableIndex )
 {
   if ( e_JavaVariableTypes::Float != pVirtualMachineState->PeekOperand()->GetVariableType() )
   {
@@ -2257,6 +2323,10 @@ const char *BasicExecutionEngine::TranslateOpCode( uint16_t opcode )
 
     case e_JavaOpCodes::MonitorExit:
       return "monitorexit";
+      break;
+
+    case e_JavaOpCodes::Wide:
+      return "wide";
       break;
 
     case e_JavaOpCodes::CheckCast:
@@ -3047,7 +3117,7 @@ bool BasicExecutionEngine::IsSuperClassOfCurrentClass( const std::shared_ptr<IVi
   return IsSuperClassOf( pVirtualMachineState, pClassName, pVirtualMachineState->GetCurrentClass()->GetName() );
 }
 
-void BasicExecutionEngine::ExecuteOpCodeStoreLongInLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint8_t localVariableIndex )
+void BasicExecutionEngine::ExecuteOpCodeStoreLongInLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint16_t localVariableIndex )
 {
   if ( e_JavaVariableTypes::Long != pVirtualMachineState->PeekOperand()->GetVariableType() )
   {
@@ -3573,7 +3643,7 @@ void BasicExecutionEngine::ExecuteOpCodeStoreReferenceInLocalWithIndex( const st
   ExecuteOpCodeStoreReferenceInLocal( pVirtualMachineState, ReadByteUnsigned( pVirtualMachineState ) );
 }
 
-void BasicExecutionEngine::ExecuteOpCodeStoreReferenceInLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint8_t localVariableIndex )
+void BasicExecutionEngine::ExecuteOpCodeStoreReferenceInLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint16_t localVariableIndex )
 {
   e_JavaVariableTypes type = pVirtualMachineState->PeekOperand()->GetVariableType();
   if ( !IsReference( type ) )
@@ -3744,7 +3814,7 @@ void BasicExecutionEngine::ExecuteOpCodeIntegerRemainder( const std::shared_ptr<
   pVirtualMachineState->PushOperand( new JavaInteger( JavaInteger::FromHostInt32( integer1 % integer2 ) ) );
 }
 
-void BasicExecutionEngine::ExecuteOpCodeStoreIntegerInLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint8_t localVariableIndex )
+void BasicExecutionEngine::ExecuteOpCodeStoreIntegerInLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint16_t localVariableIndex )
 {
   if ( e_JavaVariableTypes::Integer != pVirtualMachineState->PeekOperand()->GetVariableType() )
   {
@@ -3771,7 +3841,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadIntegerFromLocalWithIndex( const std
   ExecuteOpCodeLoadIntegerFromLocal( pVirtualMachineState, ReadByteUnsigned( pVirtualMachineState ) );
 }
 
-void BasicExecutionEngine::ExecuteOpCodeLoadIntegerFromLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint8_t localVariableIndex )
+void BasicExecutionEngine::ExecuteOpCodeLoadIntegerFromLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint16_t localVariableIndex )
 {
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
     if (pVirtualMachineState->HasUserCodeStarted())
@@ -3944,10 +4014,10 @@ void BasicExecutionEngine::ExecuteOpCodeLoadShortFromArray(const std::shared_ptr
 
 void BasicExecutionEngine::ExecuteOpCodeLoadFloatFromLocalWithIndex( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState )
 {
-  ExecuteOpLoadFloatFromLocal( pVirtualMachineState, ReadByteUnsigned( pVirtualMachineState ) );
+  ExecuteOpCodeLoadFloatFromLocal( pVirtualMachineState, ReadByteUnsigned( pVirtualMachineState ) );
 }
 
-void BasicExecutionEngine::ExecuteOpLoadFloatFromLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint8_t localVariableIndex )
+void BasicExecutionEngine::ExecuteOpCodeLoadFloatFromLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint16_t localVariableIndex )
 {
   if ( e_JavaVariableTypes::Float != pVirtualMachineState->GetLocalVariable( localVariableIndex )->GetVariableType() )
   {
@@ -4802,27 +4872,32 @@ void BasicExecutionEngine::ExecuteOpCodeBranchIfReferencesAreNotEqual( const std
   }
 }
 
-void BasicExecutionEngine::ExecuteOpCodeIncrementLocalVariable( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState )
+void BasicExecutionEngine::ExecuteOpCodeIncrementLocalVariableWithIndex( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState )
 {
   uint8_t index = ReadByteUnsigned( pVirtualMachineState );
   int8_t constantValue = ReadByteSigned( pVirtualMachineState );
 
-  boost::intrusive_ptr< JavaInteger > pIntValue = boost::dynamic_pointer_cast<JavaInteger>( pVirtualMachineState->GetLocalVariable( index ) );
-  if ( nullptr == pIntValue )
+  ExecuteOpCodeIncrementLocalVariable(pVirtualMachineState, index, constantValue);
+}
+
+void BasicExecutionEngine::ExecuteOpCodeIncrementLocalVariable(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState, uint16_t index, int16_t constantValue)
+{
+  boost::intrusive_ptr< JavaInteger > pIntValue = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->GetLocalVariable(index));
+  if (nullptr == pIntValue)
   {
-    throw InvalidStateException( __FUNCTION__ " - Expected integer in local variable" );
+    throw InvalidStateException(__FUNCTION__ " - Expected integer in local variable");
   }
 
   int32_t finalValue = pIntValue->ToHostInt32() + constantValue;
 
 #ifdef _DEBUG
-  if ( finalValue < pIntValue->ToHostInt32() && constantValue > 0 )
+  if (finalValue < pIntValue->ToHostInt32() && constantValue > 0)
   {
-    JVMX_ASSERT( false );
+    JVMX_ASSERT(false);
   }
 #endif // _DEBUG
 
-  pVirtualMachineState->SetLocalVariable( index, new JavaInteger( JavaInteger::FromHostInt32( finalValue ) ) );
+  pVirtualMachineState->SetLocalVariable(index, new JavaInteger(JavaInteger::FromHostInt32(finalValue)));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeNegateInteger( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState )
@@ -5360,7 +5435,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadLongFromLocalWithIndex( const std::s
   ExecuteOpCodeLoadLongFromLocal( pVirtualMachineState, ReadByteUnsigned( pVirtualMachineState ) );
 }
 
-void BasicExecutionEngine::ExecuteOpCodeLoadLongFromLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint8_t localVariableIndex )
+void BasicExecutionEngine::ExecuteOpCodeLoadLongFromLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint16_t localVariableIndex )
 {
 #if defined (_DEBUG) && defined (JVMX_LOG_VERBOSE)
     if (pVirtualMachineState->HasUserCodeStarted())
@@ -6111,7 +6186,7 @@ void BasicExecutionEngine::ExecuteOpCodeReturnDouble( const std::shared_ptr<IVir
 #endif // _DEBUG
 }
 
-void BasicExecutionEngine::ExecuteOpCodeStoreDoubleInLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint8_t localVariableIndex )
+void BasicExecutionEngine::ExecuteOpCodeStoreDoubleInLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint16_t localVariableIndex )
 {
   if ( e_JavaVariableTypes::Double != pVirtualMachineState->PeekOperand()->GetVariableType() )
   {
@@ -6155,7 +6230,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadDoubleFromLocalWithIndex( const std:
   ExecuteOpCodeLoadDoubleFromLocal( pVirtualMachineState, ReadByteUnsigned( pVirtualMachineState ) );
 }
 
-void BasicExecutionEngine::ExecuteOpCodeLoadDoubleFromLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint8_t localVariableIndex )
+void BasicExecutionEngine::ExecuteOpCodeLoadDoubleFromLocal( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState, uint16_t localVariableIndex )
 {
   if ( e_JavaVariableTypes::Double != pVirtualMachineState->GetLocalVariable( localVariableIndex )->GetVariableType() )
   {

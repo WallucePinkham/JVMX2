@@ -204,6 +204,7 @@ enum class e_JavaOpCodes : uint16_t
   , IsInstanceOf = 0xc1
   , MonitorEnter = 0xc2
   , MonitorExit = 0xc3
+  , Wide = 0xc4
   , NewMultiDimentionalArray = 0xc5
   , BranchIfNull = 0xc6
   , BranchIfNotNull = 0xc7
