@@ -10,7 +10,7 @@ void ClassLoaderList::AddClassLoader(boost::intrusive_ptr<ObjectReference> pClas
     {
         throw NullPointerException(__FUNCTION__ " - ClassLoader pointer is NULL.");
     }
-    m_classLoaders[pClassLoader] = std::make_shared< BasicClassLibrary>();
+    m_classLoaders[pClassLoader->GetContainedObject()] = std::make_shared< BasicClassLibrary>();
 }
 
 std::shared_ptr<JavaClass> ClassLoaderList::FindLoadedClass(boost::intrusive_ptr<ObjectReference> pClassLoader, const JavaString& className)
@@ -20,7 +20,7 @@ std::shared_ptr<JavaClass> ClassLoaderList::FindLoadedClass(boost::intrusive_ptr
     throw NullPointerException(__FUNCTION__ " - ClassLoader pointer is NULL.");
   }
   
-  auto it = m_classLoaders.find(pClassLoader);
+  auto it = m_classLoaders.find(pClassLoader->GetContainedObject());
   
   if (it != m_classLoaders.end())
   {
@@ -31,21 +31,21 @@ std::shared_ptr<JavaClass> ClassLoaderList::FindLoadedClass(boost::intrusive_ptr
   return nullptr;
 }
 
-std::shared_ptr<JavaClass> ClassLoaderList::AddLoadedClass(boost::intrusive_ptr<ObjectReference> pClassLoader, std::shared_ptr<JavaClass> pClass)
+void ClassLoaderList::AddLoadedClass(boost::intrusive_ptr<ObjectReference> pClassLoader, std::shared_ptr<JavaClass> pClass)
 {
   if (pClassLoader == nullptr)
   {
     throw NullPointerException(__FUNCTION__ " - ClassLoader pointer is NULL.");
   }
 
-  auto it = m_classLoaders.find(pClassLoader);
+  auto it = m_classLoaders.find(pClassLoader->GetContainedObject());
 
   if (it == m_classLoaders.end())
   {
     AddClassLoader(pClassLoader);
   }
 
-  m_classLoaders[pClassLoader]->AddClass(pClass);
+  m_classLoaders[pClassLoader->GetContainedObject()]->AddClass(pClass);
 }
 
 std::shared_ptr<JavaClass> ClassLoaderList::FindInAnyClassLoader(const JavaString& className) const

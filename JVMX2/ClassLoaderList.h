@@ -22,7 +22,7 @@ public:
 
   void AddClassLoader(boost::intrusive_ptr<ObjectReference> pClassLoader);
   std::shared_ptr<JavaClass> FindLoadedClass(boost::intrusive_ptr<ObjectReference> pClassLoader, const JavaString& className);
-  std::shared_ptr<JavaClass> AddLoadedClass(boost::intrusive_ptr<ObjectReference> pClassLoader, std::shared_ptr<JavaClass> pClass);
+  void AddLoadedClass(boost::intrusive_ptr<ObjectReference> pClassLoader, std::shared_ptr<JavaClass> pClass);
   std::shared_ptr<JavaClass> FindInAnyClassLoader(const JavaString& className) const;
 
 
@@ -31,7 +31,7 @@ private:
   ClassLoaderList& operator=(const ClassLoaderList& other) JVMX_FN_DELETE;
 
 private:
-  std::map<boost::intrusive_ptr<ObjectReference>, std::shared_ptr<IClassLibrary> > m_classLoaders;
+  std::map<JavaObject *, std::shared_ptr<IClassLibrary> > m_classLoaders;
 };
 
 

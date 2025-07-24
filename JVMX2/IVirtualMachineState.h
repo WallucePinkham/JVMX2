@@ -203,7 +203,7 @@ public:
   virtual const std::vector<Property>& GetProperties() const JVMX_PURE;
 
   // Consider using InitialiseClass or FindClass Instead
-  virtual std::shared_ptr<JavaClass> LoadClass(const JavaString& className, const JavaString& path = JavaString::EmptyString()) JVMX_PURE;
+  virtual std::shared_ptr<JavaClass> LoadClass(const JavaString& className, bool allowSystemClassLoader, const JavaString& path = JavaString::EmptyString()) JVMX_PURE;
   virtual std::shared_ptr<JavaClass> LoadClass(const DataBuffer& classData, boost::intrusive_ptr<ObjectReference> pClassLoader = nullptr) JVMX_PURE;
 };
 

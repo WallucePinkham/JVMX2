@@ -4515,11 +4515,11 @@ void BasicExecutionEngine::ExecuteOpCodeBranchIfNull( const std::shared_ptr<IVir
 
 void BasicExecutionEngine::ExecuteOpCodeIsInstanceOf( const std::shared_ptr<IVirtualMachineState> &pVirtualMachineState )
 {
-#if defined _DEBUG && defined(JVMX_LOG_VERBOSE)
-  pVirtualMachineState->LogCallStack();
-  pVirtualMachineState->LogOperandStack();
-  pVirtualMachineState->LogLocalVariables();
-#endif // _DEBUG
+//#if defined _DEBUG && defined(JVMX_LOG_VERBOSE)
+//  pVirtualMachineState->LogCallStack();
+//  pVirtualMachineState->LogOperandStack();
+//  pVirtualMachineState->LogLocalVariables();
+//#endif // _DEBUG
 
   boost::intrusive_ptr<IJavaVariableType> pOperand = pVirtualMachineState->PopOperand();
   ConstantPoolIndex index = ReadIndex( pVirtualMachineState );

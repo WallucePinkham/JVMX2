@@ -263,7 +263,7 @@ void VirtualMachine::Run(const JavaString& fileName, const std::shared_ptr<IVirt
     std::shared_ptr<JavaClass> pClass;
     auto className = GetClassNameFromFileName(fileName);
 
-    pClass = pInitialState->LoadClass(className, path);
+    pClass = pInitialState->LoadClass(className, false, path);
     pInitialState->InitialiseClass(className);
 
     //Because this is main(), we need to push an array of strings.
@@ -413,6 +413,7 @@ void VirtualMachine::RunClassName(const JavaString& className,
 
     // The system class loader should now be on the stack.
     auto pSystemClassLoader = boost::dynamic_pointer_cast<ObjectReference>(pInitialState->PeekOperand());
+    m_pSystemClassLoader = pSystemClassLoader;
 
     // Push a copy of the system classloader on to the stack, so that when we call AddUrlSourceToSystemClassloader we have
     // another copy on the stack afterward.
@@ -1394,6 +1395,11 @@ void VirtualMachine::Stop(const std::shared_ptr<IVirtualMachineState>& pInitialS
 std::shared_ptr<JavaNativeInterface> VirtualMachine::GetNativeInterface() const
 {
   return m_pJNI;
+}
+
+boost::intrusive_ptr<ObjectReference> VirtualMachine::GetSystemClassLoader() const
+{
+  return m_pSystemClassLoader;
 }
 
 ThreadInfo VirtualMachine::ReturnCurrentThreadObject() const

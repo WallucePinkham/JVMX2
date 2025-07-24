@@ -74,6 +74,7 @@ BasicVirtualMachineState::BasicVirtualMachineState(std::shared_ptr<VirtualMachin
   , m_isInterrupted(false)
   , m_NativeExecutionCount(0)
   , m_hasUserCodeStarted(hasUserCodeStarted)
+  , m_ThreadId(0)
 {
   m_CurrentRegisters.m_ProgramCounter = 0;
   m_CurrentRegisters.m_pCodeSegmentStart = nullptr;
@@ -321,7 +322,7 @@ boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::GetCallStackOfSt
 #endif
 
   // Preparation in terms of StackTraceElement.
-  std::shared_ptr<JavaClass> pClassOfStackTraceElement = LoadClass(JavaString::FromCString("java/lang/StackTraceElement"));
+  std::shared_ptr<JavaClass> pClassOfStackTraceElement = LoadClass(JavaString::FromCString("java/lang/StackTraceElement"), false);
   if (nullptr == pClassOfStackTraceElement)
   {
     throw InvalidStateException(__FUNCTION__ " - Could not load class StackTraceElement.");
@@ -434,7 +435,7 @@ void BasicVirtualMachineState::Execute(const JavaString& startingClassName, cons
       }
 #endif // (_DEBUG) && defined(JVMX_LOG_VERBOSE)
 
-      auto pClass = LoadClass(startingClassName);
+      auto pClass = LoadClass(startingClassName, true);
       //pClass->SetInitialised();
       if (!pClass->IsInitialsed() && !pClass->IsInitialsing())
       {
@@ -529,7 +530,7 @@ std::shared_ptr<JavaClass> BasicVirtualMachineState::GetClassByName(std::shared_
   std::shared_ptr<JavaClass> pClass = pConstantPool->FindClass(className);
   if (nullptr == pClass)
   {
-    pClass = LoadClass(className);
+    pClass = LoadClass(className, true);
     if (nullptr == pClass)
     {
       throw InvalidArgumentException(__FUNCTION__ " - Could not load class.");
@@ -723,6 +724,7 @@ boost::intrusive_ptr<IJavaVariableType> BasicVirtualMachineState::PopOperand()
 {
   if (m_OperandStack.size() < 1)
   {
+    LogCallStack();
     throw InvalidStateException(__FUNCTION__ " - PopOperand called on empty operand stack.");
   }
 
@@ -1172,12 +1174,15 @@ std::shared_ptr<JavaClass> BasicVirtualMachineState::LoadClass(const DataBuffer&
   if (nullptr != pClass)
   {
     GetClassLibrary()->AddClass(pClass);
+
+    std::shared_ptr<ClassLoaderList> pClassLoaderList = GlobalCatalog::GetInstance().Get("ClassLoaderList");
+    pClassLoaderList->AddLoadedClass(pClassLoader, pClass);
   }
 
   return pClass;
 }
 
-std::shared_ptr<JavaClass> BasicVirtualMachineState::LoadClass(const JavaString& className, const JavaString& path)
+std::shared_ptr<JavaClass> BasicVirtualMachineState::LoadClass(const JavaString& className, bool allowSystemClassLoader, const JavaString& path)
 {
   DefaultClassLoader loader;
 
@@ -1187,14 +1192,12 @@ std::shared_ptr<JavaClass> BasicVirtualMachineState::LoadClass(const JavaString&
     return pClass;
   }
 
-  //// We need to try to use the system class loader first.
-  //boost::intrusive_ptr<ObjectReference> pSystemClassLoader = m_pVM->GetSystemClassLoader();
-  //if (nullptr != pSystemClassLoader)
-  //{
-  //  this->ExecuteMethod(DefaultClassLoader::c_ApplicationClassLoaderClassName,
-  //    DefaultClassLoader::c_LoadClassMethodName,
-  //    DefaultClassLoader::c_LoadClassMethodType);
-  //}
+  // We need to try to use the system class loader first.
+  pClass = LoadClassFromSystemClassLoader(allowSystemClassLoader, className);
+  if (nullptr != pClass)
+  {
+    return pClass;
+  }
 
   // Use the boostrap class loader to load the class.
 
@@ -1231,6 +1234,65 @@ std::shared_ptr<JavaClass> BasicVirtualMachineState::LoadClass(const JavaString&
   }
 
   return pClass;
+}
+
+std::shared_ptr<JavaClass> BasicVirtualMachineState::LoadClassFromSystemClassLoader(bool allowSystemClassLoader, const JavaString& className)
+{
+  boost::intrusive_ptr<ObjectReference> pSystemClassLoader = m_pVM->GetSystemClassLoader();
+  if (allowSystemClassLoader && nullptr != pSystemClassLoader)
+  {
+    auto systemClassLoaderName = pSystemClassLoader->GetContainedObject()->GetClass()->GetName();
+
+    PushOperand(pSystemClassLoader);
+    PushOperand(CreateStringObject(className));
+
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+    if (HasUserCodeStarted())
+    {
+      LogOperandStack();
+    }
+#endif // _DEBUG
+
+    Execute(*systemClassLoaderName,
+      DefaultClassLoader::c_LoadClassMethodName,
+      DefaultClassLoader::c_LoadClassMethodType);
+
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+    if (HasUserCodeStarted())
+    {
+      LogOperandStack();
+    }
+#endif // _DEBUG
+
+    if (HasExceptionOccurred())
+    {
+      auto pExceptionObject = GetException().get();
+      auto pExceptionClass = pExceptionObject->GetContainedObject()->GetClass().get();
+      auto pClassName = pExceptionClass->GetName().get();
+      if (*pClassName == JavaString::FromCString(c_JavaJavaClassNotFoundException))
+      {
+        ResetException();
+        return nullptr;
+      }
+    }
+    else
+    {
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+      LogOperandStack();
+#endif // _DEBUG
+
+      auto pLoadedClass = PopOperand();
+      if (nullptr != pLoadedClass && pLoadedClass->GetVariableType() != e_JavaVariableTypes::Object)
+      {
+        throw InvalidStateException(__FUNCTION__ " - Expected a valid object reference to be returned from the system class loader.");
+        //pClass = boost::dynamic_pointer_cast<ObjectReference>(pLoadedClass)->GetContainedObject()->;
+      }
+
+      return GetClassLibrary()->FindClass(className);
+    }
+  }
+
+  return nullptr;
 }
 
 boost::intrusive_ptr<IJavaVariableType> BasicVirtualMachineState::PeekOperand()
@@ -1339,7 +1401,7 @@ boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateObject(std
   boost::intrusive_ptr<JavaString> pSuperClassName = pClass->GetSuperClassName();
   while (!pSuperClassName->IsEmpty())
   {
-    std::shared_ptr<JavaClass> pSuperClass = LoadClass(*pSuperClassName);
+    std::shared_ptr<JavaClass> pSuperClass = LoadClass(*pSuperClassName, true);
 
     if (!pSuperClass->IsInitialsed())
     {
@@ -1486,7 +1548,7 @@ std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethodOnClass(boost
   pClassFile = GetClassLibrary()->FindClass(realClassName);
   if (nullptr == pClassFile)
   {
-    pClassFile = LoadClass(realClassName);
+    pClassFile = LoadClass(realClassName, true);
     if (nullptr == pClassFile)
     {
       GetLogger()->LogError(__FUNCTION__ " - %s Could not load class file %s", GetCurrentClassAndMethodName(), realClassName.ToUtf8String().c_str());
@@ -1569,7 +1631,7 @@ std::shared_ptr<JavaClass> BasicVirtualMachineState::InitialiseClass(const JavaS
     }
 #endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
 
-    pClassFile = LoadClass(className);
+    pClassFile = LoadClass(className, true);
     if (nullptr == pClassFile)
     {
 #ifdef _DEBUG
@@ -1702,6 +1764,7 @@ BasicVirtualMachineState::DisplayCallStackEntry::DisplayCallStackEntry()
   : m_ClassName(JavaString::EmptyString())
   , m_MethodName(JavaString::EmptyString())
   , m_MethodType(JavaString::EmptyString())
+  , m_ProgramCounter(0)
 {
 }
 

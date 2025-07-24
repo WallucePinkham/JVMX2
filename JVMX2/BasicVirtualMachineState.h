@@ -207,8 +207,10 @@ public:
   virtual const std::string& GetClassPath() const JVMX_OVERRIDE;
   virtual const std::vector<Property>& GetProperties() const JVMX_OVERRIDE;
 
-  virtual std::shared_ptr<JavaClass> LoadClass(const JavaString& className, const JavaString& path = JavaString::EmptyString()) JVMX_OVERRIDE;
+  virtual std::shared_ptr<JavaClass> LoadClass(const JavaString& className, bool allowSystemClassLoader, const JavaString& path = JavaString::EmptyString()) JVMX_OVERRIDE;
   virtual std::shared_ptr<JavaClass> LoadClass(const DataBuffer& classData, boost::intrusive_ptr<ObjectReference> pClassLoader = nullptr) JVMX_OVERRIDE;
+
+  std::shared_ptr<JavaClass> LoadClassFromSystemClassLoader(bool allowSystemClassLoader, const JavaString& className);
 
 private:
 

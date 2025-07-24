@@ -146,6 +146,8 @@ private:
   std::shared_ptr<FileSearchPathCollection> m_pFileSearchPathCollection;
   std::shared_ptr<StringPool> m_pStringPool;
   std::shared_ptr<ClassLoaderList> m_pClassLoaderList;
+
+  boost::intrusive_ptr<ObjectReference> m_pSystemClassLoader;
 };
 
 #endif // _VIRTUALMACHINE__H_

@@ -89,9 +89,6 @@ jobject JNICALL HelperVMClassLoader::java_lang_VMClassLoader_defineClass(
 
   auto pResult = pVirtualMachineState->CreateJavaLangClassFromClassName(pClass->GetName());
 
-  std::shared_ptr<ClassLoaderList> pClassLoaderList = GlobalCatalog::GetInstance().Get("ClassLoaderList");
-  pClassLoaderList->AddLoadedClass(pClassLoader, pClass);
-
 #if defined(_DEBUG)
   boost::intrusive_ptr<ObjectReference> pTypeNameStringObject = JNIEnvInternal::ConvertJObjectToObjectPointer(name);
   JavaString finalStringValue = HelperTypes::ExtractValueFromStringObject(pTypeNameStringObject);
@@ -162,7 +159,7 @@ jobject JNICALL HelperVMClassLoader::java_lang_VMClassLoader_loadClass(JNIEnv* p
   std::shared_ptr<JavaClass> pClass;
   try
   {
-    pClass = pVirtualMachineState->LoadClass(className);
+    pClass = pVirtualMachineState->LoadClass(className, false);
   }
   catch (FileDoesNotExistException)
   {

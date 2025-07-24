@@ -124,9 +124,8 @@ private:
 #endif // _DEBUG
 
 private:
-  char m_pValues[1];
-public:
 
+  char m_pValues[1] = { 0 };
 };
 
 #endif // _JAVAARRAY__H_
