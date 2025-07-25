@@ -32,6 +32,7 @@ public:
   virtual void Collect() JVMX_OVERRIDE;
 
   static void GetJavaLangClasses( std::vector<boost::intrusive_ptr<IJavaVariableType>> &roots );
+  static void GetStringPoolRoots(std::vector<boost::intrusive_ptr<IJavaVariableType>>& roots);
 
   virtual size_t GetHeapSize() const JVMX_OVERRIDE;
   virtual bool MustCollect() const JVMX_OVERRIDE;

@@ -21,9 +21,11 @@ public:
   static jarray JNICALL java_lang_VMClass_getDeclaredConstructors( JNIEnv *pEnv, jobject obj, jobject classObject, jboolean publicOnly );
   static jarray JNICALL java_lang_VMClass_getInterfaces( JNIEnv *pEnv, jobject obj, jobject classObject );
   static jobject JNICALL java_lang_VMClass_getSuperclass( JNIEnv *pEnv, jobject obj, jobject classObject );
+  static jboolean JNICALL java_lang_VMClass_isAssignableFrom(JNIEnv* pEnv, jobject obj, jclass callingClass, jclass classToCheck);
+  static jboolean JNICALL java_lang_VMClass_isInstance(JNIEnv* pEnv, jobject obj, jclass callingClass, jobject objectToCheck);
 
 private:
-  static boost::intrusive_ptr<JavaString> GetClassName( boost::intrusive_ptr<ObjectReference> pObject );
+  static boost::intrusive_ptr<JavaString> GetJavaLangClassName( boost::intrusive_ptr<ObjectReference> pObject );
   static size_t CountClassConstructors( std::shared_ptr<JavaClass> pClassFile );
 
   static boost::intrusive_ptr<ObjectReference> InitialiseNewConstructorObject( boost::intrusive_ptr<ObjectReference> pVMConstructor, IVirtualMachineState * pVirtualMachineState, std::shared_ptr<JavaClass> pConstructorClass, std::shared_ptr<MethodInfo> pConstructorToExecute );

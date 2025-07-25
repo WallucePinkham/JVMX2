@@ -12,6 +12,8 @@ union jvalue; // forward declaration
 class HelperTypes
 {
 public:
+  static JavaString ExtractValueFromStringObject(const ObjectReference* pStringObject);
+  static JavaString ExtractValueFromStringObject(const JavaObject* pStringObject);
   static JavaString ExtractValueFromStringObject( boost::intrusive_ptr<ObjectReference> pStringObject );
   static JavaString GetPackageNameFromClassName( const JavaString &className );
   static void ConvertJavaStringToArray( const boost::intrusive_ptr<ObjectReference> &pArray, const JavaString &string );

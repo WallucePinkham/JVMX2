@@ -60,12 +60,13 @@ enum class e_JavaOpCodes : uint16_t
   , LoadReferenceFromLocal_3 = 0x2d
 
   , LoadIntegerFromArray = 0x2e
-
+  , LoadLongFromArray = 0x2f
   , LoadFloatFromArray = 0x30
   , LoadDoubleFromArray = 0x31
   , LoadReferenceFromArray = 0x32
   , LoadByteOrBooleanFromArray = 0x33
   , LoadCharacterFromArray = 0x34
+  , LoadShortFromArray = 0x35
   , StoreLongInLocal = 0x37 //lstore
   , StoreFloatInLocal = 0x38
   , StoreDoubleInLocal = 0x39
@@ -92,13 +93,15 @@ enum class e_JavaOpCodes : uint16_t
   , StoreReferenceInLocal_2 = 0x4d
   , StoreReferenceInLocal_3 = 0x4e
   , StoreIntoIntArray = 0x4f
-
+  , StoreIntoLongArray = 0x50
   , StoreIntoFloatArray = 0x51
   , StoreIntoDoubleArray = 0x52
   , StoreIntoReferenceArray = 0x53
   , StoreIntoByteArray = 0x54
   , StoreIntoCharArray = 0x55
+  , StoreIntoShortArray = 0x56
   , PopOperandStack = 0x57
+  , PopOperandStack_2 = 0x58
   , DuplicateTopOperand = 0x59
   , DuplicateTopOperandx1 = 0x5a
   , DuplicateTopOperandx2 = 0x5b
@@ -191,6 +194,7 @@ enum class e_JavaOpCodes : uint16_t
   , InvokeSpecial = 0xb7
   , InvokeStatic = 0xb8
   , InvokeInterface = 0xb9
+    // TODO: 
   , New = 0xbb
   , NewArray = 0xbc
   , NewArrayOfReference = 0xbd
@@ -200,6 +204,7 @@ enum class e_JavaOpCodes : uint16_t
   , IsInstanceOf = 0xc1
   , MonitorEnter = 0xc2
   , MonitorExit = 0xc3
+  , Wide = 0xc4
   , NewMultiDimentionalArray = 0xc5
   , BranchIfNull = 0xc6
   , BranchIfNotNull = 0xc7

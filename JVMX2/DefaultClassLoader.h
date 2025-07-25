@@ -14,12 +14,20 @@ class CodeAttributeFactory; // Forward declaration.
 class DefaultClassLoader : public FileLoader
 {
 public:
+  static const JavaString c_ApplicationClassLoaderClassName;
+  static const JavaString c_LoadClassMethodName;
+  static const JavaString c_LoadClassMethodType;
+
+  static const JavaString c_GetClassLoaderMethodName;
+  static const JavaString c_GetClassLoaderMethodType;
+
+public:
   DefaultClassLoader();
 
   virtual ~DefaultClassLoader() JVMX_NOEXCEPT;
 
   virtual std::shared_ptr<JavaClass> LoadClass( const JVMX_CHAR_TYPE *pFileName, const JavaString &path = JavaString::EmptyString());
-  virtual std::shared_ptr<JavaClass> LoadClass( BigEndianStream stream );
+  virtual std::shared_ptr<JavaClass> LoadClass( BigEndianStream stream, boost::intrusive_ptr<ObjectReference> pClassLoader = nullptr);
 
   Stream ReadFileIntoStream( const JVMX_CHAR_TYPE * pFileName );
 
@@ -70,6 +78,9 @@ protected:
   virtual std::shared_ptr<ConstantPoolMethodReference> ReadMethodReference();
   virtual std::shared_ptr<ConstantPoolInterfaceMethodReference> ReadInterFaceMethodReference();
   virtual std::shared_ptr<ConstantPoolNameAndTypeDescriptor> ReadNameAndTypeDescriptor();
+  virtual std::shared_ptr<ConstantPoolInvokeDynamic> ReadInvokeDynamic();
+  virtual std::shared_ptr<ConstantPoolMethodHandle> ReadMethodHandle();
+  virtual std::shared_ptr<ConstantPoolMethodType> ReadMethodType();
 
   virtual ConstantPoolIndex ReadIndex();
 

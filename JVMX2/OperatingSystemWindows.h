@@ -33,6 +33,15 @@ public:
   virtual intptr_t GetProcessID() JVMX_OVERRIDE;
 
   virtual std::string GetHostName() JVMX_OVERRIDE;
+
+  virtual const char* GetPathSeparator() JVMX_OVERRIDE;
+  virtual const char* GetFileSeparator() JVMX_OVERRIDE;
+  virtual const char* GetLineSeparator() JVMX_OVERRIDE;
+
+  std::u16string GetCanonicalFormUtf16(const JVMX_WIDE_CHAR_TYPE* pRelativePath) JVMX_OVERRIDE;
+
+  virtual void GetInetAddrAnyIpV4(uint8_t pBytes[4]) JVMX_OVERRIDE;
+  virtual bool Ip4StringToBytes(const char* pIPAddress, uint8_t pBytes[4]) JVMX_OVERRIDE;
 };
 
 #endif // __OPERATINGSYSTEMWINDOWS_H__

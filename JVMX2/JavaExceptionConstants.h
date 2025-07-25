@@ -16,6 +16,8 @@ static const JVMX_ANSI_CHAR_TYPE *c_JavaInterruptedException = "java/lang/Interr
 static const JVMX_ANSI_CHAR_TYPE *c_JavaOutOfMemoryException = "java/lang/OutOfMemoryError";
 static const JVMX_ANSI_CHAR_TYPE *c_JavaArrayStoreException = "java/lang/ArrayStoreException";
 static const JVMX_ANSI_CHAR_TYPE *c_JavaNoSuchMethodErrorException = "java/lang/NoSuchMethodError";
-
+static const JVMX_ANSI_CHAR_TYPE* c_JavaClassFormatError = "java/lang/ClassFormatError";
+static const JVMX_ANSI_CHAR_TYPE* c_JavaUnknownHostException = "java/net/UnknownHostException";
+static const JVMX_ANSI_CHAR_TYPE* c_JavaFileNotFoundException = "java/io/FileNotFoundException";
 
 #endif // _JAVAEXCEPTIONCONSTANTS__H_

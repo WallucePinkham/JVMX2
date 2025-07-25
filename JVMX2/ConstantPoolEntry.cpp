@@ -99,6 +99,25 @@ ConstantPoolEntry::ConstantPoolEntry( std::shared_ptr<ConstantPoolNameAndTypeDes
   m_pValue = pRef;
 }
 
+ConstantPoolEntry::ConstantPoolEntry(std::shared_ptr<ConstantPoolInvokeDynamic> pRef)
+{
+  m_Type = e_ConstantPoolEntryTypeInvokeDynamicInfo;
+  m_pValue = pRef;
+}
+
+ConstantPoolEntry::ConstantPoolEntry(std::shared_ptr<ConstantPoolMethodHandle> pRef)
+{
+  m_Type = e_ConstantPoolEntryTypeMethodHandle;
+  m_pValue = pRef;
+}
+
+ConstantPoolEntry::ConstantPoolEntry(std::shared_ptr<ConstantPoolMethodType> pRef)
+{
+  m_Type = e_ConstantPoolEntryTypeMethodType;
+  m_pValue = pRef;
+}
+
+
 ConstantPoolEntry::ConstantPoolEntry( ConstantPoolNullEntry entry )
 {
   m_Type = e_ConstantPoolEntryTypeNullEntry;
