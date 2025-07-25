@@ -36,6 +36,7 @@
     <ClCompile Include="ClassAttributeSourceDebugExtension.cpp" />
     <ClCompile Include="ClassAttributeSourceFile.cpp" />
     <ClCompile Include="ClassAttributeSynthetic.cpp" />
+    <ClCompile Include="ClassLoaderList.cpp" />
     <ClCompile Include="CodeAttributeAnnotationDefault.cpp" />
     <ClCompile Include="CodeAttributeDeprecated.cpp" />
     <ClCompile Include="CodeAttributeExceptions.cpp" />
@@ -161,6 +162,7 @@
     <ClInclude Include="ClassAttributeSynthetic.h" />
     <ClInclude Include="ClassAttributeUnknown.h" />
     <ClInclude Include="ClassFactory.h" />
+    <ClInclude Include="ClassLoaderList.h" />
     <ClInclude Include="CodeAttributeAnnotationDefault.h" />
     <ClInclude Include="CodeAttributeDeprecated.h" />
     <ClInclude Include="CodeAttributeExceptions.h" />
@@ -319,6 +321,9 @@
     <ClInclude Include="VerificationTypeInfoUninitialised.h" />
     <ClInclude Include="VerificationTypeInfoUninitialisedThis.h" />
     <ClInclude Include="VirtualMachine.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
