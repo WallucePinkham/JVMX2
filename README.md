@@ -42,4 +42,4 @@ This project requires the [GNU Classpath](https://www.gnu.org/software/classpath
 
 ## Getting Started
 
-You can run `JVMX2 Tests/TestThreads.class`, for example, to test the JVM.
+You can run `JVMX2 -jar alltests.jar`, for example, to test the JVM.
