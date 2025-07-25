@@ -17,6 +17,9 @@
 #include "ConstantPoolInterfaceMethodReference.h"
 #include "ConstantPoolNameAndTypeDescriptor.h"
 #include "ConstantPoolNullEntry.h"
+#include "ConstantPoolInvokeDynamic.h"
+#include "ConstantPoolMethodHandle.h"
+#include "ConstantPoolMethodType.h"
 
 #include "ObjectReference.h"
 
@@ -57,6 +60,9 @@ public:
   explicit ConstantPoolEntry( std::shared_ptr<ConstantPoolMethodReference> pRef );
   explicit ConstantPoolEntry( std::shared_ptr<ConstantPoolInterfaceMethodReference> pRef );
   explicit ConstantPoolEntry( std::shared_ptr<ConstantPoolNameAndTypeDescriptor> pRef );
+  explicit ConstantPoolEntry( std::shared_ptr<ConstantPoolInvokeDynamic> pRef );
+  explicit ConstantPoolEntry( std::shared_ptr<ConstantPoolMethodHandle> pRef );
+  explicit ConstantPoolEntry(std::shared_ptr<ConstantPoolMethodType> pRef);
   explicit ConstantPoolEntry( ConstantPoolNullEntry entry );
 
   virtual ~ConstantPoolEntry() JVMX_NOEXCEPT;

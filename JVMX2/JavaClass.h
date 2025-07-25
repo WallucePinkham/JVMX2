@@ -46,11 +46,12 @@ class JavaClass
 
 protected:
   // It is assumed that the loader will create the ConstantPool object (using operator new) and pass it in.
-  // The JavaClassFile will then take ownership of the constant pool and it should be be accessed again without going through the
-  // class file.
+  // The JavaClassFile will then take ownership of the constant pool and it should NOT be be accessed again without going
+  // through the class file.
 
   // The default ClassLoader is indicated by passing a NULL pointer.
   JavaClass( uint16_t minorVersion, uint16_t majorVersion, std::shared_ptr<ConstantPool> pConstantPool, uint16_t accessFlags, ConstantPoolIndex thisClassIndex, ConstantPoolIndex superClassIndex, InterfaceInfoList intefaces, FieldInfoList fields, MethodInfoList methods, CodeAttributeList attributes, boost::intrusive_ptr<ObjectReference> pClassLoader );
+  JavaClass(e_JavaArrayTypes arrayType);
 
 public:
   JavaClass( const JavaClass &other );
@@ -103,6 +104,7 @@ public:
   virtual bool IsAbstract() const;
   virtual bool IsSynthetic() const;
   virtual bool IsAnnotation() const;
+  virtual bool IsArray() const;
   virtual bool IsEnum() const;
   virtual bool IsInitialsed() const;
   virtual bool IsInitialsing() const;

@@ -10,6 +10,7 @@ void NativeLibraryContainer::Add( std::shared_ptr<JavaNativeInterfaceLibrary> pL
   m_Libraries.push_back( pLibrary );
 }
 
+// TODO: Need to take care of type as well as name
 void *NativeLibraryContainer::FindFunction( const char *pName )
 {
   void *pFoundFunction = nullptr;

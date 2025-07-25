@@ -14,7 +14,10 @@ public:
   static jint JNICALL gnu_java_nio_VMChannel_stderr_fd( JNIEnv *pEnv, jobject obj );
 
   static void JNICALL gnu_java_nio_VMChannel_write( JNIEnv *pEnv, jobject obj, jint fd, jobject byteBufferSrc );
+  static jint JNICALL gnu_java_nio_VMChannel_read(JNIEnv* pEnv, jobject obj, jint fd, jobject byteBufferSrc);
   static void JNICALL gnu_java_nio_VMChannel_close( JNIEnv *pEnv, jobject obj, jint fd );
+  static jlong JNICALL gnu_java_nio_VMChannel_size(JNIEnv* pEnv, jobject obj, jint fd);
+  static void JNICALL gnu_java_nio_VMChannel_seek(JNIEnv* pEnv, jobject obj, jint fd, jlong pos);
   static jint JNICALL gnu_java_nio_VMChannel_open( JNIEnv *pEnv, jobject obj, jstring path, jint mode );
   
 

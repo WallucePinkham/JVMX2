@@ -3,6 +3,8 @@
 #include <functional>
 #include <codecvt>
 
+#include <boost/algorithm/string.hpp>
+
 #include "IndexOutOfBoundsException.h"
 #include "InvalidArgumentException.h"
 
@@ -49,6 +51,20 @@ JavaString::JavaString( const std::u16string &other ) JVMX_NOEXCEPT
 :
 m_Data( other )
 {
+}
+
+JavaString::JavaString(const JVMX_WIDE_CHAR_TYPE* other) JVMX_NOEXCEPT
+{
+    if (other == nullptr)
+    {
+        // Initialize with an empty string if the input is null
+        m_Data = boost::flyweight<std::u16string>(std::u16string());
+    }
+    else
+    {
+        // Initialize with the provided char16_t string
+        m_Data = boost::flyweight<std::u16string>(std::u16string(other));
+    }
 }
 
 JavaString::~JavaString() JVMX_NOEXCEPT
@@ -213,7 +229,7 @@ JavaString JavaString::Append( int32_t intVal ) const
 return JavaString( dataBuffer.GetByteLength(), dataBuffer.ToByteArray() );
 }*/
 
-std::u16string JavaString::ToUtf16String() const
+const std::u16string &JavaString::ToUtf16String() const
 {
   return m_Data;
 }
@@ -275,14 +291,37 @@ bool JavaString::EndsWith( const JVMX_WIDE_CHAR_TYPE *pStringToMatch ) const
   return false;
 }
 
+bool JavaString::StartsWith( const JVMX_WIDE_CHAR_TYPE *pStringToMatch ) const
+{
+  std::u16string temp( pStringToMatch );
+  auto pTempPos = temp.cbegin();
+  for ( auto pos = m_Data.get().cbegin(); pos != m_Data.get().cend(); ++ pos )
+  {
+    if ( *pos != *pTempPos )
+    {
+      return false;
+    }
+    ++ pTempPos;
+    if ( pTempPos == temp.cend() )
+    {
+      return true;
+    }
+  }
+  if ( pTempPos == temp.cend() )
+  {
+    return true;
+  }
+  return false;
+}
+
 JavaString JavaString::SubString( size_t offset ) const
 {
-  return JavaString::FromCString( m_Data.get().substr( offset ).c_str() );
+  return JavaString( m_Data.get().substr( offset ) );
 }
 
 JavaString JavaString::SubString( size_t offset, size_t numberOfCharacters ) const
 {
-  return JavaString::FromCString( m_Data.get().substr( offset, numberOfCharacters ).c_str() );
+  return JavaString( m_Data.get().substr( offset, numberOfCharacters ) );
 }
 
 bool JavaString::operator!=( const JavaString &other ) const
@@ -301,6 +340,13 @@ JavaString JavaString::ReplaceAll( char16_t param1, char16_t param2 ) const
   std::u16string result = m_Data;
   std::replace( result.begin(), result.end(), param1, param2 );
   return JavaString( std::u16string( result ) );
+}
+
+JavaString JavaString::TrimRight() const
+{
+  std::u16string result = m_Data;
+  boost::trim_right(result);
+  return JavaString(std::u16string(result));
 }
 
 bool JavaString::IsReferenceType() const
@@ -347,10 +393,10 @@ JavaString JavaString::FromArray( const JavaArray &array )
     char16_t ch = pChar->ToChar16();
 
     // We assume that the null character ends the string.
-    if ( u'\u0000' == ch )
+ /*   if ( u'\u0000' == ch )
     {
       break;
-    }
+    }*/
 
     result += ch;
   }

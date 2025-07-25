@@ -8,16 +8,19 @@
 //#include <wallaroo/part.h>
 //#include <wallaroo/catalog.h>
 
-#include <boost/program_options/variables_map.hpp>
 #include <boost/intrusive_ptr.hpp>
+#include <boost/program_options/variables_map.hpp>
 
 
+#include "CommandLineProcessor.h"
 #include "GlobalConstants.h"
-#include "JavaTypes.h"
 #include "include/jni.h"
+#include "JavaObject.h"
+#include "JavaTypes.h"
+#include "NativeLibraryContainer.h"
+#include "StringPool.h"
 #include "ThreadManager.h"
 #include "TypeParser.h"
-#include "NativeLibraryContainer.h"
 
 // Forward Declarations
 class IMemoryManager;
@@ -25,13 +28,14 @@ class IStackManager;
 class ILogger;
 class IVirtualMachineState;
 class IClassLibrary;
-class JavaObject;
+//class JavaObject;
 class JavaNativeInterface;
 class IJavaVariableType;
 class IGarbageCollector;
 class IExecutionEngine;
 class IJavaLangClassList;
 class FileSearchPathCollection;
+class ClassLoaderList;
 
 class VirtualMachine : public std::enable_shared_from_this<VirtualMachine>
 {
@@ -41,11 +45,18 @@ protected:
 public:
   static std::shared_ptr<VirtualMachine> Create();
 
-  void Initialise(const std::string& startingClassfile, const std::shared_ptr<IVirtualMachineState> &pInitialState );
-  void Run( const JVMX_CHAR_TYPE *pFileName, const std::shared_ptr<IVirtualMachineState> &pInitialState, bool userCode = true );
+  void Initialise(const std::string& startingClassfile, 
+                  const std::string &classPath,
+                  const std::vector<Property> &properties,
+                  const std::shared_ptr<IVirtualMachineState> &pInitialState );
+  void Run( const JavaString &fileName, const std::shared_ptr<IVirtualMachineState> &pInitialState, bool userCode = true );
+  void AddUrlSourceToSystemClassloader(const std::shared_ptr<IVirtualMachineState>& pInitialState, const JavaString& jarFileName, boost::intrusive_ptr<ObjectReference> pApplicationClassLoader);
+  void RunClassName(const JavaString& className, const std::shared_ptr<IVirtualMachineState>& pInitialState, const std::vector<std::string> &classArguments, bool userCode = true);
   void Stop( const std::shared_ptr<IVirtualMachineState> &pInitialState );
 
   std::shared_ptr<JavaNativeInterface> GetNativeInterface() const;
+
+  boost::intrusive_ptr<ObjectReference> GetSystemClassLoader() const;
 
   // jint JNI_CreateJavaVM( JavaVM **pvm, void **penv, void *vm_args ) { throw "Not Implemented yet." };
   // jint JNI_GetCreatedJavaVMs( JavaVM **vmBuf, jsize bufLen, jsize *nVMs );
@@ -60,10 +71,11 @@ public:
 public:
   static boost::intrusive_ptr<ObjectReference> GetPrimitiveClass( jstring str, IVirtualMachineState *pVirtualMachineState );
   static boost::intrusive_ptr<ObjectReference> GetPrimitiveClass( jchar chr, IVirtualMachineState *pVirtualMachineState );
+  static const char* GetPrimitiveClassName(const uint16_t primitiveType);
 
   static const char *GetClassNameFromType( JavaString finalStringValue );
 
-  static JavaString GetClassNameFromFileName( const JVMX_CHAR_TYPE *pFileName );
+  static JavaString GetClassNameFromFileName( const JavaString &fileName );
 
   void RegisterNativeMethods( std::shared_ptr<JavaNativeInterface> pJNI );
 
@@ -74,8 +86,11 @@ private:
 
   void InitialiseClass( const JVMX_CHAR_TYPE *pClassName, const std::shared_ptr<IVirtualMachineState> &pInitialState );
 
+  int GetMainClassFromJarFile(const JavaString& fileName, JavaString& mainClassName, DataBuffer& mainClassOuput);
+  int GetMainClassNameFromJarFile(const JavaString& fileName, JavaString& mainClassName);
+  void InitialiseUtf8Charset(const std::shared_ptr<IVirtualMachineState>& pInitialState);
+
 private:
-  static jobject JNICALL java_lang_VMClassLoader_getPrimitiveClass( JNIEnv *pEnv, jobject obj, jchar typeAsChar );
 
   static jobject JNICALL java_lang_VMSecurityManager_currentClassLoader( JNIEnv *pEnv, jobject obj );
 
@@ -92,8 +107,6 @@ private:
   static jarray JNICALL java_lang_reflect_VMConstructor_getParameterTypes( JNIEnv *pEnv, jobject obj );
   static jint JNICALL java_lang_reflect_VMConstructor_getModifiersInternal( JNIEnv *pEnv, jobject obj );
 
-  static jboolean JNICALL java_io_VMFile_isDirectory( JNIEnv *pEnv, jobject obj, jstring path );
-  static jboolean JNICALL java_io_VMFile_exists( JNIEnv *pEnv, jobject obj, jstring path );
 
 
   static jarray JNICALL gnu_classpath_VMStackWalker_getClassContext( JNIEnv *pEnv, jobject obj );
@@ -125,12 +138,16 @@ private:
   std::shared_ptr<IGarbageCollector> m_pGarbageCollector;
   std::shared_ptr<IClassLibrary> m_pRuntimeConstantPool;
   std::shared_ptr<IExecutionEngine> m_pEngine;
-  std::shared_ptr<JavaNativeInterface> m_pJNI;
+  std::shared_ptr<JavaNativeInterface> m_pJNI;  
   std::shared_ptr<IJavaLangClassList> m_pJavaLangClassList;
-  std::shared_ptr<IThreadManager> m_pThreadManager;
+  std::shared_ptr<IThreadManager> m_pThreadManager; 
   std::shared_ptr<NativeLibraryContainer> m_pNativeLibraryContainer;
   std::shared_ptr<IObjectRegistry> m_pObjectRegistry;
   std::shared_ptr<FileSearchPathCollection> m_pFileSearchPathCollection;
+  std::shared_ptr<StringPool> m_pStringPool;
+  std::shared_ptr<ClassLoaderList> m_pClassLoaderList;
+
+  boost::intrusive_ptr<ObjectReference> m_pSystemClassLoader;
 };
 
 #endif // _VIRTUALMACHINE__H_

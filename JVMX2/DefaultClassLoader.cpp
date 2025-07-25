@@ -19,10 +19,19 @@
 #include "ClassFactory.h"
 #include "HelperConversion.h"
 
+const JavaString DefaultClassLoader::c_ApplicationClassLoaderClassName = JavaString::FromCString("java/lang/ClassLoader");
+//const JavaString DefaultClassLoader::c_LoadClassMethodName = JavaString::FromCString(JVMX_T("defineClass"));
+const JavaString DefaultClassLoader::c_LoadClassMethodName = JavaString::FromCString(JVMX_T("loadClass"));
+//const JavaString DefaultClassLoader::c_LoadClassMethodType = JavaString::FromCString(JVMX_T("(Ljava/lang/String;[BII)Ljava/lang/Class;"));
+const JavaString DefaultClassLoader::c_LoadClassMethodType = JavaString::FromCString(JVMX_T("(Ljava/lang/String;)Ljava/lang/Class;"));
+const JavaString DefaultClassLoader::c_GetClassLoaderMethodName = JavaString::FromCString(JVMX_T("getSystemClassLoader"));
+const JavaString DefaultClassLoader::c_GetClassLoaderMethodType = JavaString::FromCString(JVMX_T("()Ljava/lang/ClassLoader;"));
+
 DefaultClassLoader::DefaultClassLoader()
   : m_pAttributeFactory( new CodeAttributeFactory )
   , m_fileStream( Stream::EmptyStream() )
-{}
+{
+}
 
 DefaultClassLoader::~DefaultClassLoader() JVMX_NOEXCEPT
 {
@@ -147,6 +156,18 @@ std::shared_ptr<ConstantPool> DefaultClassLoader::ReadConstantPoolTable( size_t 
         pPool->AddConstant( std::make_shared<ConstantPoolEntry>( ReadNameAndTypeDescriptor() ) );
         break;
 
+      case e_ConstantPoolEntryTypeInvokeDynamicInfo:
+        pPool->AddConstant(std::make_shared<ConstantPoolEntry>(ReadInvokeDynamic()));
+        break;
+
+      case e_ConstantPoolEntryTypeMethodHandle:
+        pPool->AddConstant(std::make_shared<ConstantPoolEntry>(ReadMethodHandle()));
+        break;
+
+      case e_ConstantPoolEntryTypeMethodType:
+        pPool->AddConstant(std::make_shared<ConstantPoolEntry>(ReadMethodType()));
+        break;
+
       default:
         throw UnsupportedTypeException( __FUNCTION__ " - Unsupported tag type read from constant pool." );
         break;
@@ -248,6 +269,29 @@ std::shared_ptr<ConstantPoolNameAndTypeDescriptor> DefaultClassLoader::ReadNameA
   ConstantPoolIndex typeIndex = ReadIndex();
 
   return std::make_shared<ConstantPoolNameAndTypeDescriptor>( nameIndex, typeIndex );
+}
+
+std::shared_ptr<ConstantPoolInvokeDynamic> DefaultClassLoader::ReadInvokeDynamic()
+{
+  ConstantPoolIndex bootstrapMethodAttrIndex = ReadIndex();
+  ConstantPoolIndex nameAndTypeIndex = ReadIndex();
+
+  return std::make_shared<ConstantPoolInvokeDynamic>(bootstrapMethodAttrIndex, nameAndTypeIndex);
+}
+
+std::shared_ptr<ConstantPoolMethodHandle> DefaultClassLoader::ReadMethodHandle()
+{
+  uint8_t referenceKind = m_fileStream.ReadUint8();
+  ConstantPoolIndex referenceIndex = ReadIndex();
+
+  return std::make_shared<ConstantPoolMethodHandle>(referenceKind, referenceIndex);
+}
+
+std::shared_ptr<ConstantPoolMethodType> DefaultClassLoader::ReadMethodType()
+{
+  ConstantPoolIndex descriptorIndex = ReadIndex();
+
+  return std::make_shared<ConstantPoolMethodType>(descriptorIndex);
 }
 
 ConstantPoolIndex DefaultClassLoader::ReadIndex()
@@ -462,7 +506,7 @@ Stream DefaultClassLoader::ReadFileIntoStream( const JVMX_CHAR_TYPE *pFileName )
   return result;
 }
 
-std::shared_ptr<JavaClass> DefaultClassLoader::LoadClass( BigEndianStream stream )
+std::shared_ptr<JavaClass> DefaultClassLoader::LoadClass( BigEndianStream stream, boost::intrusive_ptr<ObjectReference> pClassLoader )
 {
   m_fileStream = stream;
 
@@ -502,7 +546,7 @@ std::shared_ptr<JavaClass> DefaultClassLoader::LoadClass( BigEndianStream stream
   uint16_t attributeCount = ReadAttributeCount();
   CodeAttributeList attributes = ReadAttributes( *pConstantPool, attributeCount );
 
-  return ClassFactory::CreateClassFile( minorVersion, majorVersion, pConstantPool, accessFlags, thisClassIndex, superClassIndex, interfaces, fields, methods, attributes );
+  return ClassFactory::CreateClassFile( minorVersion, majorVersion, pConstantPool, accessFlags, thisClassIndex, superClassIndex, interfaces, fields, methods, attributes, pClassLoader );
 }
 
 //uint64_t DefaultClassLoader::ReadUint64()

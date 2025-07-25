@@ -14,6 +14,7 @@
 
 class JavaInteger;
 class JavaChar;
+class JavaByte;
 class ObjectReference;
 
 class JavaArray : protected IJavaVariableType
@@ -21,7 +22,7 @@ class JavaArray : protected IJavaVariableType
   friend class BasicVirtualMachineState;
 
 private:
-  JavaArray() {};
+  JavaArray() JVMX_NOEXCEPT {};
 
 public:
   explicit JavaArray( e_JavaArrayTypes type, size_t size );
@@ -53,6 +54,7 @@ public:
   static e_JavaArrayTypes ConvertTypeFromChar( char16_t charType );
 
   static boost::intrusive_ptr<ObjectReference> CreateFromCArray( /*std::shared_ptr<IMemoryManager> pMemoryManager,*/ const char *pBuffer );
+  static boost::intrusive_ptr<ObjectReference> CreateFromCArray( /*std::shared_ptr<IMemoryManager> pMemoryManager,*/ const uint8_t* pBuffer, size_t length);
 
   virtual IJavaVariableType *At( size_t index );
   virtual const IJavaVariableType *At( size_t index ) const;
@@ -61,10 +63,14 @@ public:
   void SetAt( const JavaInteger &index, const JavaInteger &value );
   void SetAt( const JavaInteger &index, const JavaChar &value );
   void SetAt( const JavaInteger &index, const IJavaVariableType *pValue );
+  void SetAt(const JavaInteger& index, const JavaByte& pValue);
+  void SetAt(const JavaInteger& index, JavaLong value);
 
   void SetAt( const uint32_t &index, const JavaInteger &value );
   void SetAt( const uint32_t &index, const JavaChar &value );
   void SetAt( const uint32_t &index, const IJavaVariableType *pValue );
+  void SetAt(const uint32_t& index, const JavaByte& value);
+  void SetAt(const uint32_t& index, JavaLong value);
 
   JavaString ConvertCharArrayToString() const;
   DataBuffer ConvertByteArrayToBuffer() const;
@@ -107,20 +113,19 @@ private:
 
 
 private:
-  e_JavaArrayTypes m_ContainedType;
-  size_t m_Size;
+  e_JavaArrayTypes m_ContainedType = e_JavaArrayTypes::Reference;
+  size_t m_Size = 0;
 
 private:
   std::shared_ptr<Lockable> m_pMonitor;
 
 #ifdef _DEBUG
-  size_t debugInitialLength;
+  size_t debugInitialLength = 0;
 #endif // _DEBUG
 
 private:
-  char m_pValues[1];
-public:
 
+  char m_pValues[1] = { 0 };
 };
 
 #endif // _JAVAARRAY__H_
