@@ -74,7 +74,9 @@ BasicVirtualMachineState::BasicVirtualMachineState(std::shared_ptr<VirtualMachin
   , m_isInterrupted(false)
   , m_NativeExecutionCount(0)
   , m_hasUserCodeStarted(hasUserCodeStarted)
+#ifdef _DEBUG
   , m_ThreadId(0)
+#endif // _DEBUG
 {
   m_CurrentRegisters.m_ProgramCounter = 0;
   m_CurrentRegisters.m_pCodeSegmentStart = nullptr;

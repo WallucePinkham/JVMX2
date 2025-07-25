@@ -4676,7 +4676,9 @@ void BasicExecutionEngine::ExecuteOpCodeIsInstanceOf( const std::shared_ptr<IVir
         return;
       }
 
+#ifdef _DEBUG
       BreakDebug("a", "a");
+#endif // _DEBUG
       // TODO: 
       // - TC and SC are reference types, and type SC can be cast to TC by these runtime rules.
     }
