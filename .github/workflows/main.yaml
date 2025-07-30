@@ -27,12 +27,12 @@ jobs:
       #   call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
       uses: ilammy/msvc-dev-cmd@v1
     - name: Build boost libraries
-      shell: cmd
+      #shell: cmd
+      # call "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
       run: |
-        call "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
         cd boost_1_67_0
-        call bootstrap.bat
-        call b2.exe address-model=32 architecture=x86
+        . ./bootstrap.bat
+        . ./b2.exe address-model=32 architecture=x86
     - name: Build with MSBuild
       run: |
         msbuild JVMX2.sln /p:Configuration=Release /p:Platform=x86
