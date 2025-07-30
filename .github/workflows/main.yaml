@@ -22,6 +22,11 @@ jobs:
       uses: microsoft/setup-msbuild@v1
       with:
         vs-version: '17.0'  # Specify the version of Visual Studio
+    - name: Build boost libraries
+      run: |
+        cd boost_1_67_0
+        bootstrap.bat
+        b2 --build-type=complete
     - name: Build with MSBuild
       run: |
         msbuild JVMX2.sln /p:Configuration=Release /p:Platform=x86
