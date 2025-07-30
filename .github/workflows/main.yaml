@@ -29,6 +29,7 @@ jobs:
     - name: Build boost libraries
       shell: cmd
       run: |
+        call "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
         cd boost_1_67_0
         call bootstrap.bat
         call b2.exe address-model=32 architecture=x86
