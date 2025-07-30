@@ -22,6 +22,10 @@ jobs:
       uses: microsoft/setup-msbuild@v1
       with:
         vs-version: '17.0'  # Specify the version of Visual Studio
+    - name: set MS Dev environment
+      # run: |
+      #   call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
+      uses: ilammy/msvc-dev-cmd@v1
     - name: Build boost libraries
       run: |
         dir boost_1_67_0  
