@@ -26,6 +26,17 @@ jobs:
       # run: |
       #   call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
       uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Cache Boost build
+      uses: actions/cache@v4
+      with:
+        path: |
+          boost_1_67_0/stage
+          boost_1_67_0/bin.v2
+        key: boost-1_67_0-${{ runner.os }}-${{ hashFiles('boost_1_67_0/**') }}
+        restore-keys: |
+          boost-1_67_0-${{ runner.os }}-      
+
     - name: Build boost libraries
       shell: cmd
       # call "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
@@ -37,6 +48,7 @@ jobs:
         cd boost_1_67_0
         call bootstrap.bat
         call b2.exe address-model=32 architecture=x86
+    
     - name: Build with MSBuild
       run: |
         msbuild JVMX2.sln /p:Configuration=Release /p:Platform=x86
