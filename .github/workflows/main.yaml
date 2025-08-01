@@ -29,6 +29,7 @@ jobs:
 
     - name: Cache Boost build
       uses: actions/cache@v4
+      if: always()
       with:
         path: |
           boost_1_67_0/stage
@@ -47,8 +48,8 @@ jobs:
         rem call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\vsdevcmd\ext\vcvars\vcvars140.bat"
         cd boost_1_67_0
         call bootstrap.bat
-        call b2.exe address-model=32 architecture=x86
-    
+        call --with-thread --with-date_time --with-filesystem --with-exception b2.exe address-model=32 architecture=x86 threading=multi link=static runtime-link=static 
+
     - name: Build with MSBuild
       run: |
         msbuild JVMX2.sln /p:Configuration=Release /p:Platform=x86
