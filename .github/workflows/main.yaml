@@ -48,7 +48,8 @@ jobs:
         rem call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\vsdevcmd\ext\vcvars\vcvars140.bat"
         cd boost_1_67_0
         call bootstrap.bat
-        call b2 --with-thread --with-date_time --with-filesystem --with-exception b2.exe address-model=32 architecture=x86 threading=multi link=static runtime-link=static 
+        rem Running B2...
+        call b2.exe --with-thread --with-date_time --with-filesystem --with-exception address-model=32 architecture=x86 threading=multi link=static runtime-link=static 
 
     - name: Build with MSBuild
       run: |
