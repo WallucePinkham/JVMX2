@@ -94,7 +94,7 @@ inline std::fpos_t streampos_to_fpos_t(std::streampos pos)
 {
 #  if defined (_CPPLIB_VER) || defined(__IBMCPP__)
    #if defined(_MSC_VER) && (_MSC_VER >= 1930)
-     return static_cast<std::streamoff>(sp);
+     return static_cast<std::streamoff>(pos);
    #else
      return pos.seekpos();
    #endif
