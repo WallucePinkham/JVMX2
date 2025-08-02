@@ -50,7 +50,7 @@ jobs:
         call bootstrap.bat
         echo Running B2...
         rem call b2.exe --with-thread --with-date_time --with-filesystem --with-exception address-model=32 architecture=x86 threading=multi link=static runtime-link=static 
-        call b2.exe --with-thread --with-date_time --with-filesystem --with-exception --with-context --with-chrono address-model=32 architecture=x86 threading=multi link=static runtime-link=static 
+        call b2.exe --with-thread --with-date_time --with-filesystem --with-exception --with-context --with-chrono address-model=32 architecture=x86 threading=multi 
 
     - name: Build with MSBuild
       run: |
