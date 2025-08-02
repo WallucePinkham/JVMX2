@@ -414,7 +414,7 @@
     <LibraryPath>C:\dev\JVMX2\boost_1_67_0\stage\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LibraryPath>C:\dev\JVMX2\boost_1_67_0\stage\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\boost_1_67_0\stage\lib;$(SolutionDir)\boost_1_67_0\stage\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
