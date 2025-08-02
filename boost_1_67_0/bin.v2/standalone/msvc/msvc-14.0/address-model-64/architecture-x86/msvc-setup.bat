@@ -1,0 +1,21 @@
+REM "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
+SET CommandPromptType=Native
+SET Framework40Version=v4.0
+SET FrameworkDir=C:\Windows\Microsoft.NET\Framework64
+SET FrameworkDIR64=C:\Windows\Microsoft.NET\Framework64
+SET FrameworkVersion=v4.0.30319
+SET FrameworkVersion64=v4.0.30319
+SET INCLUDE=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\INCLUDE;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\ATLMFC\INCLUDE;C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\ucrt;C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\shared;C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\um;C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\winrt;
+SET LIB=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\LIB\amd64;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\ATLMFC\LIB\amd64;C:\Program Files (x86)\Windows Kits\10\lib\10.0.22000.0\ucrt\x64;C:\Program Files (x86)\Windows Kits\10\lib\10.0.22000.0\um\x64;
+SET LIBPATH=C:\Windows\Microsoft.NET\Framework64\v4.0.30319;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\LIB\amd64;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\ATLMFC\LIB\amd64;C:\Program Files (x86)\Windows Kits\10\UnionMetadata;C:\Program Files (x86)\Windows Kits\10\References;\Microsoft.VCLibs\14.0\References\CommonConfiguration\neutral;
+SET Path=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\BIN\amd64;C:\Windows\Microsoft.NET\Framework64\v4.0.30319;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\Tools;C:\Program Files (x86)\HTML Help Workshop;C:\Program Files (x86)\HTML Help Workshop;C:\Program Files (x86)\Windows Kits\10\bin\x64;C:\Program Files (x86)\Windows Kits\10\bin\x86;C:\Python312\Scripts\;C:\Python312\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\ProgramData\chocolatey\bin;C:\Program Files\Git\cmd;C:\Program Files\dotnet\;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files\PowerShell\7\;C:\Users\Walluce\AppData\Local\Microsoft\WindowsApps;;C:\Users\Walluce\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Walluce\.dotnet\tools;C:\dev\JVMX2\boost_1_67_0\tools\build\BB\bin
+SET Platform=X64
+SET UCRTVersion=10.0.22000.0
+SET UniversalCRTSdkDir=C:\Program Files (x86)\Windows Kits\10\
+SET VCINSTALLDIR=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\
+SET VisualStudioVersion=14.0
+SET VSINSTALLDIR=C:\Program Files (x86)\Microsoft Visual Studio 14.0\
+SET WindowsLibPath=C:\Program Files (x86)\Windows Kits\10\UnionMetadata;C:\Program Files (x86)\Windows Kits\10\References
+SET WindowsSdkDir=C:\Program Files (x86)\Windows Kits\10\
+SET WindowsSDKLibVersion=10.0.22000.0\
+SET WindowsSDKVersion=10.0.22000.0\

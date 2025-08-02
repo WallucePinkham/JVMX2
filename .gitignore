@@ -31,6 +31,14 @@
 *.out
 *.app
 
+
+
 x64/
 Debug/
 Release/
+
+!boost_1_67_0/boost/preprocessor/debug/
+!boost_1_67_0/boost/preprocessor/debug/**
+!boost_1_67_0/boost/spirit/home/classic/debug/
+!boost_1_67_0/boost/spirit/home/classic/debug/**
+!boost_1_67_0/boost/**/debug/**
