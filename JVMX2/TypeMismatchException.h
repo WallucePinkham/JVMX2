@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __TYPEMISMATCHEXCEPTION_H__
 #define __TYPEMISMATCHEXCEPTION_H__

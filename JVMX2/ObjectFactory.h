@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _OBJECTFACTORY__H_
 #define _OBJECTFACTORY__H_
 

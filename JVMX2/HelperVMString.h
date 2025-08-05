@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _HELPERVMSTRING__H_
 #define _HELPERVMSTRING__H_

@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __CLASSATTRIBUTEINNERCLASSES_H__
 #define __CLASSATTRIBUTEINNERCLASSES_H__

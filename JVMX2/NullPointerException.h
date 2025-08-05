@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __NULLPOINTEREXCEPTION_H__
 #define __NULLPOINTEREXCEPTION_H__

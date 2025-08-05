@@ -1,5 +1,5 @@
+#pragma once
 
-// IThreadManager
 #ifndef _ITHREADMANAGER__H_
 #define _ITHREADMANAGER__H_
 

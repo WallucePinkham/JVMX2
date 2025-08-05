@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __JAVADOUBLE_H__
 #define __JAVADOUBLE_H__

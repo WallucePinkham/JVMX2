@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __CLASSATTRIBUTEUNKOWN_H__
 #define __CLASSATTRIBUTEUNKOWN_H__

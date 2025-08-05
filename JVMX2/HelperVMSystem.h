@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _HELPERVMSYSTEM__H_
 #define _HELPERVMSYSTEM__H_

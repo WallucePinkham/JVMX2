@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _JAVAEXCEPTIONCONSTANTS__H_
 #define _JAVAEXCEPTIONCONSTANTS__H_
 

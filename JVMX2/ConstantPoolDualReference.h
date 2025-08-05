@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __CONSTANTPOOLDUALREFERENCE_H__
 #define __CONSTANTPOOLDUALREFERENCE_H__

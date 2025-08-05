@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __FILEDOESNOTEXISTEXCEPTION_H__
 #define __FILEDOESNOTEXISTEXCEPTION_H__

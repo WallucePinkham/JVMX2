@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _JAVAARRAY__H_
 #define _JAVAARRAY__H_
 

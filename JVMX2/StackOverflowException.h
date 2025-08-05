@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _STACKOVERFLOWEXCEPTION__H_
 #define _STACKOVERFLOWEXCEPTION__H_

@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _JAVAOPCODES__H_
 #define _JAVAOPCODES__H_
 

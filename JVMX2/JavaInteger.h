@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef __JAVAINTEGER_H__
 #define __JAVAINTEGER_H__
 

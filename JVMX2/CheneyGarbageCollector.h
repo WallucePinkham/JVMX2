@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _CHENEYGARBAGECOLLECTOR__H_
 #define _CHENEYGARBAGECOLLECTOR__H_

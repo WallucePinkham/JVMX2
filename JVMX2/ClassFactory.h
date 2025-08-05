@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _CLASSFILEFACTORY__H_
 #define _CLASSFILEFACTORY__H_

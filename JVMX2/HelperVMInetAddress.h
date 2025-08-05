@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _HELPERVMINETADDRESS__H_
 #define _HELPERVMINETADDRESS__H_
 

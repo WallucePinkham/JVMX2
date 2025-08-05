@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _LOCALVARIABLETABLEENTRY__H_
 #define _LOCALVARIABLETABLEENTRY__H_

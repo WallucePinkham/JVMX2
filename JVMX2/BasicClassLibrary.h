@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _BasicClassLibrary__H_
 #define _BasicClassLibrary__H_

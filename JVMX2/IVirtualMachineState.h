@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _IVIRTUALMACHINESTATE__H_
 #define _IVIRTUALMACHINESTATE__H_
 

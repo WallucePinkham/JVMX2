@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _HELPERVMCHANNEL__H_
 #define _HELPERVMCHANNEL__H_

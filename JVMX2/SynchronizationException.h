@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __SYNCHRONIZATIONEXCEPTION_H__
 #define __SYNCHRONIZATIONEXCEPTION_H__

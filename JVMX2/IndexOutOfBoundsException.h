@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __INDEXOUTOFBOUNDSEXCEPTION_H__
 #define __INDEXOUTOFBOUNDSEXCEPTION_H__

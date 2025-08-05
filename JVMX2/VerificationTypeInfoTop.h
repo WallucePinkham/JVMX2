@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __VERIFICATIONTYPEINFOTOP_H__
 #define __VERIFICATIONTYPEINFOTOP_H__

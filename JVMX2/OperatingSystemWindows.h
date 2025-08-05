@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __OPERATINGSYSTEMWINDOWS_H__
 #define __OPERATINGSYSTEMWINDOWS_H__

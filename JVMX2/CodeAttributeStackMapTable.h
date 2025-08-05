@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __CODEATTRIBUTESTACKMAPTABLE_H__
 #define __CODEATTRIBUTESTACKMAPTABLE_H__

@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _INTERNALERROREXCEPTION__H_
 #define _INTERNALERROREXCEPTION__H_

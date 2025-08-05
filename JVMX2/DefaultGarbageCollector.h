@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _DEFAULTGARBAGECOLLECTOR__H_
 #define _DEFAULTGARBAGECOLLECTOR__H_
 

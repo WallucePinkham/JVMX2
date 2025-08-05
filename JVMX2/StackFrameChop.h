@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __STACKFRAMECHOP_H__
 #define __STACKFRAMECHOP_H__

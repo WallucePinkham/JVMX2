@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __CLASSATTRIBUTESOURCEFILE_H__
 #define __CLASSATTRIBUTESOURCEFILE_H__

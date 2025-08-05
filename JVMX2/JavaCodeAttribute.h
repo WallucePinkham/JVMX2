@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __JAVACODEATTRIBUTE_H__
 #define __JAVACODEATTRIBUTE_H__

@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __FILELOADER_H__
 #define __FILELOADER_H__

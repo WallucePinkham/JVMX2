@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _JNI_INTERNAL__H_
 #define _JNI_INTERNAL__H_

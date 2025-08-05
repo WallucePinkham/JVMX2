@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __STACKFRAMEFACTORY_H__
 #define __STACKFRAMEFACTORY_H__

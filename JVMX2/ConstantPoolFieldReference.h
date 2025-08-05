@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __CONSTANTPOOLFIELDREFERENCE_H__
 #define __CONSTANTPOOLFIELDREFERENCE_H__

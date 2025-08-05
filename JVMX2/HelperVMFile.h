@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _HELPEVMFILE__H_
 #define _HELPEVMFILE__H_
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _STRINGPOOL__H_
 #define _STRINGPOOL__H_
 

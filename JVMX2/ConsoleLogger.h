@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _CONSOLELOGGER__H_
 #define _CONSOLELOGGER__H_
 

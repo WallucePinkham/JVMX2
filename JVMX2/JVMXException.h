@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __JVMXEXCEPTION_H__
 #define __JVMXEXCEPTION_H__

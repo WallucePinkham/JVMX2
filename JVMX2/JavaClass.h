@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef __JAVACLASSFILE_H__
 #define __JAVACLASSFILE_H__
 

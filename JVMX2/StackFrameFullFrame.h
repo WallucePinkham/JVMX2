@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __STACKFRAMEFULLFRAME_H__
 #define __STACKFRAMEFULLFRAME_H__

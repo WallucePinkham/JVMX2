@@ -1,10 +1,11 @@
+#pragma once
 
 #ifndef _JAVAARRAYTYPES__H_
 #define _JAVAARRAYTYPES__H_
 
 enum class e_JavaArrayTypes : char16_t
 {
-  Boolean = 4
+    Boolean = 4
   , Char = 5
   , Float = 6
   , Double = 7

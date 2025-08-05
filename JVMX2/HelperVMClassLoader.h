@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _HELPEVMCLASSLOADER__H_
 #define _HELPEVMCLASSLOADER__H_
 

@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __CODEATTRIBUTEFACTORY_H__
 #define __CODEATTRIBUTEFACTORY_H__

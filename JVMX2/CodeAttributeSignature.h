@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __CODEATTRIBUTESIGNATURE_H__
 #define __CODEATTRIBUTESIGNATURE_H__

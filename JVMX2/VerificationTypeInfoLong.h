@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __VERIFICATIONTYPEINFOLONG_H__
 #define __VERIFICATIONTYPEINFOLONG_H__

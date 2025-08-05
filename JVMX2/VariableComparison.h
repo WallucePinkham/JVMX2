@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _VARIABLECOMPARISON__H_
 #define _VARIABLECOMPARISON__H_

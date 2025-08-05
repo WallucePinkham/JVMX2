@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _FORCEGARBAGECOLLECTION__H__
 #define _FORCEGARBAGECOLLECTION__H__

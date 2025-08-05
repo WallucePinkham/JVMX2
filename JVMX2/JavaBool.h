@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _JAVABOOL__H_
 #define _JAVABOOL__H_

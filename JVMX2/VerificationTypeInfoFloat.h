@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __VERIFICATIONTYPEINFOFLOAT_H__
 #define __VERIFICATIONTYPEINFOFLOAT_H__

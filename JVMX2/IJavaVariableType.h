@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __IJAVAVARIABLETYPE_H__
 #define __IJAVAVARIABLETYPE_H__

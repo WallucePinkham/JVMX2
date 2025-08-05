@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __JAVACLASSCONSTANTS_H__
 #define __JAVACLASSCONSTANTS_H__

@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __JAVAFLOAT_H__
 #define __JAVAFLOAT_H__

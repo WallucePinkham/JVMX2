@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _BASICSTACKMANAGER__H_
 #define _BASICSTACKMANAGER__H_
 

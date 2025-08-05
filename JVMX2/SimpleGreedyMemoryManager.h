@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _SIMPLEGREEDYMEMORYMANAGER__H_
 #define _SIMPLEGREEDYMEMORYMANAGER__H_

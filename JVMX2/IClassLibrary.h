@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _ICLASSLIBRARY__H_  
 #define _ICLASSLIBRARY__H_  
 

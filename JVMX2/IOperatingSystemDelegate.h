@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __IOPERATINGSYSTEMDELEGATE_H__
 #define __IOPERATINGSYSTEMDELEGATE_H__

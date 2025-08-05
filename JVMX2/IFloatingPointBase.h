@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _IFLOATINGPOINTBASE__H_
 #define _IFLOATINGPOINTBASE__H_
@@ -5,7 +6,7 @@
 #include "GlobalConstants.h"
 #include "IJavaVariableType.h"
 
-class IFloatingPointBase /*JVMX_ABSTRACT*/ : public IJavaVariableType
+class IFloatingPointBase : public IJavaVariableType
 {
 public:
   virtual ~IFloatingPointBase() {};

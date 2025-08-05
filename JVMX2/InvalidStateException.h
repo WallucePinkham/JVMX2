@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __INVALIDSTATEEXCEPTION_H__
 #define __INVALIDSTATEEXCEPTION_H__

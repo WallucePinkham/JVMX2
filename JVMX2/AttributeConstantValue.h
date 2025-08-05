@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __ATTRIBUTECONSTANTVALUE_H__
 #define __ATTRIBUTECONSTANTVALUE_H__

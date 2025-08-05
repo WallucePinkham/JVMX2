@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __JAVAFILELOADER_H__
 #define __JAVAFILELOADER_H__

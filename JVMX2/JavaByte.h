@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _JAVABYTE__H_
 #define _JAVABYTE__H_

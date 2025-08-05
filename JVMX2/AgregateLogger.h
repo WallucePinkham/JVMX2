@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _AGREGATELOGGER__H_
 #define _AGREGATELOGGER__H_
 

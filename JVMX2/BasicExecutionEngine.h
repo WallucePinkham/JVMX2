@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _BASICEXECUTIONENGINE__H_
 #define _BASICEXECUTIONENGINE__H_
 

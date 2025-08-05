@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _PARAMETERParameterAnnotationsEntry__H_
 #define _PARAMETERParameterAnnotationsEntry__H_

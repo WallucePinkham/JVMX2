@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _TYPEPARSER__H_
 #define _TYPEPARSER__H_
 

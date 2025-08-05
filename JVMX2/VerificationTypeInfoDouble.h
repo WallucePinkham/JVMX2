@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __VERIFICATIONTYPEINFODOUBLE_H__
 #define __VERIFICATIONTYPEINFODOUBLE_H__

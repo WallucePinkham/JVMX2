@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _ISTACKMANAGER__H_
 #define _ISTACKMANAGER__H_

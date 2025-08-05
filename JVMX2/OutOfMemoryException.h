@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __OUTOFMEMORYEXCEPTION_H__
 #define __OUTOFMEMORYEXCEPTION_H__
