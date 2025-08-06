@@ -21,5 +21,6 @@ static const JVMX_ANSI_CHAR_TYPE *c_JavaNoSuchMethodErrorException = "java/lang/
 static const JVMX_ANSI_CHAR_TYPE* c_JavaClassFormatError = "java/lang/ClassFormatError";
 static const JVMX_ANSI_CHAR_TYPE* c_JavaUnknownHostException = "java/net/UnknownHostException";
 static const JVMX_ANSI_CHAR_TYPE* c_JavaFileNotFoundException = "java/io/FileNotFoundException";
+static const JVMX_ANSI_CHAR_TYPE* c_JavaArithmeticException = "java/lang/ArithmeticException";
 
 #endif // _JAVAEXCEPTIONCONSTANTS__H_

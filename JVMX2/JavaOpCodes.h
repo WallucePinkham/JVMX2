@@ -123,10 +123,13 @@ enum class e_JavaOpCodes : uint16_t
   , FloatMultiply = 0x6a
   , DoubleMultiply = 0x6b
   , IntegerDivide = 0x6c
-
+  , LongDivide = 0x6d
   , FloatDivide = 0x6e
   , DoubleDivide = 0x6f
   , IntegerRemainder = 0x70
+  , LongRemainder = 0x71
+  , FloatRemainder = 0x72
+  , DoubleRemainder = 0x73
   , NegateInteger = 0x74
   , NegateDouble = 0x77
   , ShiftIntegerLeft = 0x78
