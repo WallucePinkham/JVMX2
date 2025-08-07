@@ -21,7 +21,7 @@ public class TestStringBuilder {
         check("After replace", sb.toString(), "Hi World");
 
         // Test length and capacity
-        check("Length", sb.length(), 7);
+        check("Length", sb.length(), 8);
         int initialCapacity = sb.capacity();
         System.out.println("Capacity: " + initialCapacity);
 
@@ -111,8 +111,8 @@ public class TestStringBuilder {
             largeSb.append("Line ").append(i).append(" |");
         }
         String first100 = largeSb.toString().substring(0, 100);
-        check("Large StringBuilder content (first 100 chars)", first100, "Line 0 |Line 1 |Line 2 |Line 3 |Line 4 |Line 5 |Line 6 |Line 7 |Line 8 |Line 9 |Line 10 |Line 11 |Line 12 |Line 13 |");
-        check("Large StringBuilder length", largeSb.length(), 70000);
+        check("Large StringBuilder content (first 100 chars)", first100, "Line 0 |Line 1 |Line 2 |Line 3 |Line 4 |Line 5 |Line 6 |Line 7 |Line 8 |Line 9 |Line 10 |Line 11 |Li");
+        check("Large StringBuilder length", largeSb.length(), 108890);
         System.out.println("Large StringBuilder capacity: " + largeSb.capacity());
 
         // Test StringBuilder with different initial capacity
