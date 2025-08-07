@@ -587,6 +587,10 @@ e_ImmediateReturnRequired BasicExecutionEngine::ProcessNextOpcode(const std::sha
     ExecuteOpCodeFloatRemainder(pVirtualMachineState);
     break;
 
+  case e_JavaOpCodes::DoubleRemainder:
+    ExecuteOpCodeDoubleRemainder(pVirtualMachineState);
+    break;
+
   case e_JavaOpCodes::NegateInteger:
     ExecuteOpCodeNegateInteger(pVirtualMachineState);
     break;

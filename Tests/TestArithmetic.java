@@ -28,7 +28,7 @@ public class TestArithmetic {
         double da = 3.14159, db = 2.71828;
         check("double: da + db", da + db, 5.85987);
         check("double: da - db", da - db, 0.42330999999999985);
-        check("double: da * db", da * db, da * db);
+        check("double: da * db", da * db, 8.5397212652);
         check("double: da / db", da / db, 1.1557271509925393);
         check("double: da % db", da % db, 0.42330999999999985);
 
@@ -98,6 +98,8 @@ public class TestArithmetic {
     private static void check(String label, float actual, float expected) {
         if (Float.isNaN(expected) && Float.isNaN(actual)) {
             System.out.println(ConsoleColors.GREEN + "SUCCESS: " + label + " == NaN" + ConsoleColors.RESET);
+        } else if (Float.isInfinite(expected) && Float.isInfinite(actual)) {
+            System.out.println(ConsoleColors.GREEN + "SUCCESS: " + label + " == Infinity" + ConsoleColors.RESET);
         } else if (Math.abs(actual - expected) < 1e-6) {
             System.out.println(ConsoleColors.GREEN + "SUCCESS: " + label + " == " + expected + ConsoleColors.RESET);
         } else {
@@ -108,6 +110,8 @@ public class TestArithmetic {
     private static void check(String label, double actual, double expected) {
         if (Double.isNaN(expected) && Double.isNaN(actual)) {
             System.out.println(ConsoleColors.GREEN + "SUCCESS: " + label + " == NaN" + ConsoleColors.RESET);
+        } else if (Double.isInfinite(expected) && Double.isInfinite(actual)) {
+            System.out.println(ConsoleColors.GREEN + "SUCCESS: " + label + " == Infinity" + ConsoleColors.RESET);
         } else if (Math.abs(actual - expected) < 1e-12) {
             System.out.println(ConsoleColors.GREEN + "SUCCESS: " + label + " == " + expected + ConsoleColors.RESET);
         } else {
