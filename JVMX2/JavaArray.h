@@ -21,14 +21,20 @@ class ObjectReference;
 
 class JavaArray : protected IJavaVariableType
 {
+  // Not really happy with this. There should be a single friend class that is allowed to create JavaArray instances.
   friend class BasicVirtualMachineState;
+  friend class HelperTypes;
+  friend class CheneyGarbageCollector;
 
 private:
   JavaArray() JVMX_NOEXCEPT {};
 
-public:
+protected:
+  // Only use this via HelperTypes::CreateArray(). Otherwise this will cause heap corruption. 
+  // It is expect to be created via placement new.
   explicit JavaArray( e_JavaArrayTypes type, size_t size );
 
+public:
   static size_t CalculateSizeInBytes( e_JavaArrayTypes type, size_t count );
   static size_t GetSizeOfValueType( e_JavaArrayTypes type );
 

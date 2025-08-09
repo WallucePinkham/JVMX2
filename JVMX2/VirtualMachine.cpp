@@ -355,7 +355,7 @@ void VirtualMachine::RunClassName(const JavaString& className,
     DataBuffer mainClassData = DataBuffer::EmptyBuffer();
     if (!className.EndsWith(JVMX_T(".jar")))
     {
-      throw NotImplementedException("Not implemented yet.");
+      return Run(className.Append(u".class"), pInitialState, true);
     }
 
     JavaString jarFileName = className;

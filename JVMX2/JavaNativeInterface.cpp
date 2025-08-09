@@ -36,7 +36,7 @@
 
 typedef void *JniMethodImplementation;
 
-const JavaString c_JavaNativeInterfaceInitialMethodString = JavaString::FromCString( "Java_" );
+const JavaString c_JavaNativeInterfaceInitialMethodString = JavaString( u"Java_" );
 
 JavaNativeInterface::JavaNativeInterface()
   : m_pExportedVM( nullptr )

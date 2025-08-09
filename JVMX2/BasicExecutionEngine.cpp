@@ -3424,6 +3424,7 @@ void BasicExecutionEngine::ExecuteOpCodeGetField(const std::shared_ptr<IVirtualM
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (pVirtualMachineState->HasUserCodeStarted())
   {
+    GetLogger()->LogDebug("Object (%s)", pObject->ToString().ToUtf8String().c_str());
     GetLogger()->LogDebug("Getting Field (%s) value (%s)", pFieldInfo->GetName()->ToUtf8String().c_str(), pFieldValue->ToString().ToUtf8String().c_str());
   }
 #endif // _DEBUG
@@ -3652,6 +3653,14 @@ void BasicExecutionEngine::ExecutedOpBranchIfIntegerGreatherThan(const std::shar
   int32_t value2 = GetIntegerFromOperandStack(pVirtualMachineState);
   int32_t value1 = GetIntegerFromOperandStack(pVirtualMachineState);
 
+#if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  if (pVirtualMachineState->HasUserCodeStarted())
+  {
+    GetLogger()->LogDebug("%s - Comparing integer values %ld and %ld and jumping to offset %d if %ld > %ld.", pVirtualMachineState->GetCurrentClassAndMethodName().ToUtf8String().c_str(), value1, value2, offset, value1, value2);
+  }
+#endif // _DEBUG
+
+
   if (value1 > value2)
   {
     AdjustProgramCounterByOffset(pVirtualMachineState, offset);
@@ -3664,6 +3673,13 @@ void BasicExecutionEngine::ExecutedOpBranchIfIntegerLessThanOrEqual(const std::s
 
   int32_t value2 = GetIntegerFromOperandStack(pVirtualMachineState);
   int32_t value1 = GetIntegerFromOperandStack(pVirtualMachineState);
+
+#if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  if (pVirtualMachineState->HasUserCodeStarted())
+  {
+    GetLogger()->LogDebug("%s - Comparing integer values %ld and %ld and jumping to offset %d if %ld <= %ld.", pVirtualMachineState->GetCurrentClassAndMethodName().ToUtf8String().c_str(), value1, value2, offset, value1, value2);
+  }
+#endif // _DEBUG
 
   if (value1 <= value2)
   {
