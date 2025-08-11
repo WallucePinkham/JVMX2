@@ -201,9 +201,7 @@ public:
   virtual void SetUserCodeStarted() JVMX_OVERRIDE;
   virtual bool HasUserCodeStarted() const JVMX_OVERRIDE;
 
-#ifdef _DEBUG
   virtual size_t GetOperandStackSize() JVMX_OVERRIDE;
-#endif // _DEBUG
 
   virtual void SetProperties(const std::string& classPath, const std::vector<Property>& properties) JVMX_OVERRIDE;
   virtual const std::string& GetClassPath() const JVMX_OVERRIDE;

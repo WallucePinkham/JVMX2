@@ -196,9 +196,7 @@ public:
   virtual void SetUserCodeStarted() JVMX_PURE;
   virtual bool HasUserCodeStarted() const JVMX_PURE;
 
-#ifdef _DEBUG
   virtual size_t GetOperandStackSize() JVMX_PURE;
-#endif // _DEBUG
 
   virtual void SetProperties(const std::string& classPath, const std::vector<Property>& properties) JVMX_PURE;
   virtual const std::string& GetClassPath() const JVMX_PURE;

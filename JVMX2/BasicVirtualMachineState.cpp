@@ -2180,12 +2180,10 @@ bool BasicVirtualMachineState::HasUserCodeStarted() const
   return m_hasUserCodeStarted;
 }
 
-#ifdef _DEBUG
 size_t BasicVirtualMachineState::GetOperandStackSize()
 {
   return m_OperandStack.size();
 }
-#endif // _DEBUG
 
 void BasicVirtualMachineState::SetProperties(const std::string& classPath, const std::vector<Property>& properties)
 {
