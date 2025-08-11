@@ -744,7 +744,7 @@ JavaString JavaArray::ToString() const
 
   std::basic_stringstream<char16_t> outputStream;
 
-  outputStream << buffer << "[";
+  outputStream << buffer << u"[";
 
   for ( size_t i = 0; i < m_Size; ++ i )
   {

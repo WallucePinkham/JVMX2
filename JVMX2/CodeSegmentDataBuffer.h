@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _CODESEGMENTDATABUFFER__H_
 #define _CODESEGMENTDATABUFFER__H_

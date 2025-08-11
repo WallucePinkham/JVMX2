@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _BASICEXECUTIONENGINE__H_
 #define _BASICEXECUTIONENGINE__H_
 
@@ -174,6 +176,10 @@ private:
   void ExecuteOpCodeReturnReference( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeReturnInteger( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeIntegerRemainder( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  void ExecuteOpCodeLongRemainder(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState);
+  void ExecuteOpCodeFloatRemainder(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState);
+  void ExecuteOpCodeDoubleRemainder(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState);
+  
   void ExecuteOpCodeStoreIntegerInLocal( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState, uint16_t localVariableIndex );
   void ExecuteOpCodeStoreIntegerInLocalWithIndex( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
 
@@ -219,6 +225,7 @@ private:
   e_IncreaseCallStackDepth ExecuteOpCodeInvokeInterfaceMethod( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodePushShortConstant( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeIntegerDivide( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  void ExecuteOpCodeLongDivide(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState);
   void ExecuteOpCodePushLong( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState, int64_t value );
   void ExecuteOpCodeLoadLongFromLocalWithIndex( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeLoadLongFromLocal( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState, uint16_t localVariableIndex );

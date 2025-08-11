@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _IMEMORYMANAGER__H_
 #define _IMEMORYMANAGER__H_

@@ -1,4 +1,3 @@
-
 #pragma once
 
 #ifndef __CONSTANTPOOLENTRY_H__

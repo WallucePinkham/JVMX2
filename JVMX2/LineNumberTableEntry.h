@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _LINENUMBERTABLEENTRY__H_
 #define _LINENUMBERTABLEENTRY__H_

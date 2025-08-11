@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _FILELOGGER__H_
 #define _FILELOGGER__H_
 

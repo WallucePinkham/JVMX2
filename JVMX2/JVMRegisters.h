@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef __JVMREGISTERS_H__
 #define __JVMREGISTERS_H__
 

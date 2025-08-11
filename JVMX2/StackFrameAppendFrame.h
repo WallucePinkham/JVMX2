@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __STACKFRAMEAPPENDFRAME_H__
 #define __STACKFRAMEAPPENDFRAME_H__

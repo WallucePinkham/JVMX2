@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _HELPERTYPES__H_
 #define _HELPERTYPES__H_
 

@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __EXCEPTIONTABLEENTRY_H__
 #define __EXCEPTIONTABLEENTRY_H__

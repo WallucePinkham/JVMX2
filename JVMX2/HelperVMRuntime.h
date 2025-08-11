@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _HELPERVMRUNTIME__H_
 #define _HELPERVMRUNTIME__H_

@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _IJAVALANGCLASSLIST__H_
 #define _IJAVALANGCLASSLIST__H_

@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _BIGENDIANSTREAM__H_
 #define _BIGENDIANSTREAM__H_

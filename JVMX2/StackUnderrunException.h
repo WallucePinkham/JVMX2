@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _STACKUNDERFLOWEXCEPTION__H_
 #define _STACKUNDERFLOWEXCEPTION__H_

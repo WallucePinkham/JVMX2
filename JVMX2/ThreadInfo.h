@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _THREADINFO__H_
 #define _THREADINFO__H_

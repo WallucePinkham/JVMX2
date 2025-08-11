@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _METHODINFO__H_
 #define _METHODINFO__H_
 

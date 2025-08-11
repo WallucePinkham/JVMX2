@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _JAVAOBJECT__H_
 #define _JAVAOBJECT__H_
 

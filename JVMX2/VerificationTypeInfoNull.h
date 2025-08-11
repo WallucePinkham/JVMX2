@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __VERIFICATIONTYPEINFONULL_H__
 #define __VERIFICATIONTYPEINFONULL_H__

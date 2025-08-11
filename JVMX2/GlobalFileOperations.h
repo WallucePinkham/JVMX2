@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef __GLOBAL_FILE_OPERATIONS_H__
 #define __GLOBAL_FILE_OPERATIONS_H__
 

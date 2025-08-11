@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _INTERFACEINFO__H_
 #define _INTERFACEINFO__H_

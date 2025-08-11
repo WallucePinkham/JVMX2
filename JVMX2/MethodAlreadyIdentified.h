@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _METHODALREADYIDENTIFIED__H__
 #define _METHODALREADYIDENTIFIED__H__

@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __JAVAATTRIBUTEUNKOWN_H__
 #define __JAVAATTRIBUTEUNKOWN_H__

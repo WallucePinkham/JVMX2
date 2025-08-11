@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _JAVARETURNADDRESS__H_
 #define _JAVARETURNADDRESS__H_

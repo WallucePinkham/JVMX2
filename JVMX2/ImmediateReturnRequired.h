@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _IMMEDIATERETURNREQUIRED__H__
 #define _IMMEDIATERETURNREQUIRED__H__
 

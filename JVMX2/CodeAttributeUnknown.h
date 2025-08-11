@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __CODEATTRIBUTEUNKOWN_H__
 #define __CODEATTRIBUTEUNKOWN_H__

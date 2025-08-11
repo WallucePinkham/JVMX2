@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _IGARBAGECOLLECTOR__H_
 #define _IGARBAGECOLLECTOR__H_

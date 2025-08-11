@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _HELPERVMDOUBLE__H_
 #define _HELPERVMDOUBLE__H_
 

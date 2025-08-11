@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __JAVALONG_H__
 #define __JAVALONG_H__

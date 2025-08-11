@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _FIELDINFO__H_
 #define _FIELDINFO__H_
 

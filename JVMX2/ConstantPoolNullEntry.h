@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _CONSTANTPOOLNULLENTRY__H_
 #define _CONSTANTPOOLNULLENTRY__H_

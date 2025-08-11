@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _CODEATTRIBUTEDEPRECATED__H_
 #define _CODEATTRIBUTEDEPRECATED__H_

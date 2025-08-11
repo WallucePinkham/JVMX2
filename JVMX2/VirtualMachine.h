@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _VIRTUALMACHINE__H_
 #define _VIRTUALMACHINE__H_
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _JAVANATIVEINTERFACE__H_
 #define _JAVANATIVEINTERFACE__H_
 

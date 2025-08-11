@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _HELPERVMCLASS__H_
 #define _HELPERVMCLASS__H_
 

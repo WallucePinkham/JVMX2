@@ -1951,6 +1951,42 @@ extern "C"
     throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
   }
 
+  void JNIEnvInternal::ArrayCopyInternal(IVirtualMachineState* pVirtualMachineState, JavaArray* pSrc, int length, int srcOffset, int destOffset, JavaArray* pDest)
+  {
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+      if (pVirtualMachineState->HasUserCodeStarted())
+      {
+        if (pSrc->GetContainedType() == e_JavaArrayTypes::Char && length < 50)
+        {
+          auto pLogger = pVirtualMachineState->GetLogger();
+          pLogger->LogDebug("Before ArrayCopy:");
+          pLogger->LogDebug("ArrayCopy: srcOff=%d, dstOff=%d, length=%d", srcOffset, destOffset, length);
+          pLogger->LogDebug("Src : %s", pSrc->ToString().ToUtf8String().c_str());
+          pLogger->LogDebug("Dest: %s", pDest->ToString().ToUtf8String().c_str());
+        }
+      }
+#endif // _DEBUG 
+
+      for (int i = 0; i < length; ++i)
+      {
+        pDest->SetAt(destOffset + i, pSrc->At(srcOffset + i));
+      }
+
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+      if (pVirtualMachineState->HasUserCodeStarted())
+      {
+        if (pSrc->GetContainedType() == e_JavaArrayTypes::Char && length < 50)
+        {
+          auto pLogger = pVirtualMachineState->GetLogger();
+          pLogger->LogDebug("After ArrayCopy:");
+          pLogger->LogDebug("ArrayCopy: srcOff=%d, dstOff=%d, length=%d", srcOffset, destOffset, length);
+          pLogger->LogDebug("Src : %s", pSrc->ToString().ToUtf8String().c_str());
+          pLogger->LogDebug("Dest: %s", pDest->ToString().ToUtf8String().c_str());
+        }
+      }
+#endif // _DEBUG 
+  }
+
   JNIEXPORT void JNICALL JNIEnvInternal::JVMX_arraycopy( JNIEnv *pEnv, jobject obj, jobject src, int srcOffset, jobject dest, int destOffset, int length )
   {
     if ( 0 == length )
@@ -1985,25 +2021,45 @@ extern "C"
     try
     {
       auto pDest = pDestination->GetContainedArray();
-      auto pSrc = pSource->GetContainedArray();
-      for ( int i = 0; i < length; ++ i )
-      {
-        pDest->SetAt( destOffset + i, pSrc->At( srcOffset + i ) );
-      }
+      auto pSrc = pSource->GetContainedArray();   
 
-#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
-      if (pVirtualMachineState->HasUserCodeStarted())
+      bool isOverlapping = (src == dest) && (srcOffset < destOffset + length) && (destOffset < srcOffset + length);
+
+      JavaArray* pTmp = nullptr;
+      uint8_t* pTempData = nullptr;
+      if (isOverlapping)
       {
-        if (pSrc->GetContainedType() == e_JavaArrayTypes::Char && length < 50)
+        //auto pTmpArray = pVirtualMachineState->CreateArray(pSrc->GetContainedType(), pSrc->GetNumberOfElements());
+        //pTmp = pTmpArray->GetContainedArray();
+        auto size = JavaArray::CalculateSizeInBytes(pSrc->GetContainedType(), pSrc->GetNumberOfElements());
+        pTempData = new uint8_t[size+sizeof(JavaArray)];
+        pTmp = reinterpret_cast<JavaArray*> (new (pTempData) JavaArray(pSrc->GetContainedType(), pSrc->GetNumberOfElements()));
+        pTmp->CloneOther(pSrc);
+        pSrc = pTmp; // Use the temporary array for copying
+      }
+      
+      try {
+
+        ArrayCopyInternal(pVirtualMachineState, pSrc, length, srcOffset, destOffset, pDest);
+      }
+      catch (...)
+      {
+        if (nullptr != pTmp)
         {
-          auto pLogger = pVirtualMachineState->GetLogger();
-          pLogger->LogDebug("ArrayCopy: srcOff=%d, dstOff=%d, length=%d", srcOffset, destOffset, length);
-          pLogger->LogDebug("Source: %s", pSrc->ToString().ToUtf8String().c_str());
-          pLogger->LogDebug("Dest: %s", pDest->ToString().ToUtf8String().c_str());
+          pTmp->~JavaArray(); // Call destructor to clean up
+          delete [] pTempData;
+          pTempData = nullptr;
+          pTmp = nullptr;
         }
       }
-#endif // _DEBUG 
 
+      if (nullptr != pTmp)
+      {
+        pTmp->~JavaArray(); // Call destructor to clean up
+        delete [] pTempData;
+        pTempData = nullptr;
+        pTmp = nullptr;
+      }
     }
     catch ( IndexOutOfBoundsException & )
     {

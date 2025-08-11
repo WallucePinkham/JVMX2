@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __ATTRIBUTECODE_H__
 #define __ATTRIBUTECODE_H__

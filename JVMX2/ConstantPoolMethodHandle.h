@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef __CONSTANTPOOL_METHODHANDLE_H__
 #define __CONSTANTPOOL_METHODHANDLE_H__
 

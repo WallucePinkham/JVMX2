@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _JAVACLASSREFERENCE__H_
 #define _JAVACLASSREFERENCE__H_

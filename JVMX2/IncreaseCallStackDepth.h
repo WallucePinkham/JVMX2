@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _INCREASECALLSTACKDEPTH__H_
 #define _INCREASECALLSTACKDEPTH__H_
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _HELPERCLASSES__H_
 #define _HELPERCLASSES__H_
 

@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _JNI_INTERNAL__H_
 #define _JNI_INTERNAL__H_
@@ -359,6 +360,9 @@ extern "C" {
     static const JavaString GetNameFromFieldID( jfieldID fieldID );
 
   private:
+    static void ArrayCopyInternal(IVirtualMachineState* pVirtualMachineState, JavaArray* pSrc, int length, int srcOffset, int destOffset, JavaArray* pDest);
+
+  private:
     struct MethodKey
     {
       MethodKey( jclass clazz, const JavaString &name, const JavaString &signature )
@@ -391,5 +395,7 @@ extern "C" {
 
 // Creating a Free Function, for internal use only, that is not Extern "C"
 boost::intrusive_ptr<IJavaVariableType> CreateJavaVariableFromJValue( jvalue arg, boost::intrusive_ptr<JavaString> type );
+
+void ArrayCopyInternal(IVirtualMachineState* pVirtualMachineState, JavaArray* pSrc, int length, int srcOffset, int destOffset, JavaArray* pDest);
 
 #endif // _JNI_INTERNAL__H_

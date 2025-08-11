@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __CODEATTRIBUTEEXCEPTIONS_H__
 #define __CODEATTRIBUTEEXCEPTIONS_H__

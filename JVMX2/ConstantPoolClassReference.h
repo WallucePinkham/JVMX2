@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __CONSTANTPOOLCLASSREFERENCE_H__
 #define __CONSTANTPOOLCLASSREFERENCE_H__

@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _MALLOCFREEMEMORYMANAGER__H_
 #define _MALLOCFREEMEMORYMANAGER__H_
 

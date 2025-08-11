@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __CLASSATTRIBUTESYNTHETIC_H__
 #define __CLASSATTRIBUTESYNTHETIC_H__

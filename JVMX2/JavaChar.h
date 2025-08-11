@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _JAVACHAR__H_
 #define _JAVACHAR__H_

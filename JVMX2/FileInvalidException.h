@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __FILEINVALIDEXCEPTION_H__
 #define __FILEINVALIDEXCEPTION_H__

@@ -185,7 +185,7 @@ JavaString JavaChar::ToString() const
     value = '.';
   }
 
-  return JavaString::FromChar( value );
+  return JavaString::FromWChar( value );
 }
 
 bool JavaChar::IsNull() const

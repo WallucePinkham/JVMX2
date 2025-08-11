@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _COMMANDDLINE_PROCESSOR__H_
 #define _COMMANDDLINE_PROCESSOR__H_
 

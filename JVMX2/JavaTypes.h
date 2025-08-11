@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __JAVATYPES_H__
 #define __JAVATYPES_H__

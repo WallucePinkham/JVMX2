@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _HELPERVMTHREAD__H_
 #define _HELPERVMTHREAD__H_
 

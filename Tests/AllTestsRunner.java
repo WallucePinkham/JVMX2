@@ -25,6 +25,21 @@ public class AllTestsRunner {
             System.out.println("Caught unhandled exception: " + t);
         }
 
+        System.out.println("Running TestArithmetic...");
+        TestArithmetic.main(new String[0]);
+
+        System.out.println("Running TestControlFlow...");
+        TestControlFlow.main(new String[0]);
+
+        System.out.println("Running TestObjectCreation...");
+        TestObjectCreation.main(new String[0]);
+
+        // System.out.println("Running TestString...");
+        // TestString.main(new String[0]);
+
+        System.out.println("Running TestStringBuilder...");
+        TestStringBuilder.main(new String[0]);        
+
         System.out.println("All tests finished.");
     }
 }

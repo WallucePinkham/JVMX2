@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __INVALIDARGUMENTEXCEPTION_H__
 #define __INVALIDARGUMENTEXCEPTION_H__

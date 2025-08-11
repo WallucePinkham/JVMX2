@@ -24,11 +24,12 @@ std::wstring HelperConversion::ConvertUtf16StringToWideString( const char16_t *p
 
 std::string HelperConversion::ConvertUtf16StringToUtf8String( const char16_t *pFileName )
 {
-#if _MSC_VER == 1900
+#if WCHAR_MAX == 0xFFFF
+//#if _MSC_VER == 1900
   std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> convertToUtf8;
   return convertToUtf8.to_bytes( reinterpret_cast<const wchar_t *>(pFileName) );
 #else
-  std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convertToUtf8;
+  static std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convertToUtf8;
   return convertToUtf8.to_bytes( pFileName );
 #endif
 }

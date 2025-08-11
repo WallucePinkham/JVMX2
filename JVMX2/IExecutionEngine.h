@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _IEXECUTIONENGINE__H_
 #define _IEXECUTIONENGINE__H_
 

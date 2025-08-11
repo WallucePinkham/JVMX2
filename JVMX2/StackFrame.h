@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __STACKMAPFRAME_H__
 #define __STACKMAPFRAME_H__

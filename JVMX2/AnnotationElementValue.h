@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _ANNOTATIONELEMENTVALUE__H_
 #define _ANNOTATIONELEMENTVALUE__H_

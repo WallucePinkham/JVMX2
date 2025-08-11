@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _JAVASHORT__H_
 #define _JAVASHORT__H_

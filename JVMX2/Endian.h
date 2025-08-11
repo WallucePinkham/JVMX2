@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __ENDIAN_H__
 #define __ENDIAN_H__

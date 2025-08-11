@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _ILOGGER__H_
 #define _ILOGGER__H_

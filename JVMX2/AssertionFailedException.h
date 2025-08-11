@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __ASSERTIONFAILEDEXCEPTION_H__
 #define __ASSERTIONFAILEDEXCEPTION_H__

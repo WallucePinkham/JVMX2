@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef __OSFUNCTIONS_H__
 #define __OSFUNCTIONS_H__

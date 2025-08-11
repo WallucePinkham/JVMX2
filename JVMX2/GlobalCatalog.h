@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _GLOBALCATALOG__H_
 #define _GLOBALCATALOG__H_

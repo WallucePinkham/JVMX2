@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef _HELPERCONVERSION__H_
 #define _HELPERCONVERSION__H_
