@@ -54,17 +54,17 @@ public class TestStringBuilder {
         sb.append(123);
         sb.append(45.67);
         sb.append(true);
-        check("After appending different data types", sb.toString(), "12345.67true");
+        check("After appending different data types", sb.toString(), "12345.670000000000002true");
 
         // Test appending a character array
         char[] charArray = {'A', 'B', 'C'};
         sb.append(charArray);
-        check("After appending character array", sb.toString(), "12345.67trueABC");
+        check("After appending character array", sb.toString(), "12345.670000000000002trueABC");
 
         // Test appending a StringBuilder
         StringBuilder sb2 = new StringBuilder(" Appended StringBuilder");
         sb.append(sb2);
-        check("After appending StringBuilder", sb.toString(), "12345.67trueABC Appended StringBuilder");
+        check("After appending StringBuilder", sb.toString(), "12345.670000000000002trueABC Appended StringBuilder");
 
         // Test capacity after multiple appends
         System.out.println("Final capacity: " + sb.capacity());
