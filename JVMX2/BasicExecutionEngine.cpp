@@ -4176,13 +4176,26 @@ void BasicExecutionEngine::ExecuteOpCodeLoadCharacterFromArray(const std::shared
 
   JVMX_ASSERT(pArray->GetContainedArray()->GetContainedType() == e_JavaArrayTypes::Char);
 
-  const JavaChar* pChar = dynamic_cast<const JavaChar*>(pArray->GetContainedArray()->At(index));
-  if (nullptr == pChar)
+  if (pArray->GetContainedArray()->GetNumberOfElements() <= index)
   {
-    throw InvalidStateException(__FUNCTION__ " - Could not convert from array contained type to char.");
+    HelperClasses::ThrowJavaException(pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException);
+    return;
   }
 
-  pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromChar(*pChar)));
+  if (pArray->GetContainedArray()->GetNumberOfElements() == 0)
+  {
+    HelperClasses::ThrowJavaException(pVirtualMachineState, c_JavaArrayIndexOutOfBoundsException);
+    return;
+  }
+
+  if (pArray->GetContainedArray()->GetContainedType() != e_JavaArrayTypes::Char)
+  {
+    throw InvalidStateException(__FUNCTION__ " - Expected array of characters.");
+  }
+
+  JavaChar chr = pArray->GetContainedArray()->CharAt(index);
+
+  pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromChar(chr)));
 }
 
 std::pair< boost::intrusive_ptr<ObjectReference>, uint32_t> BasicExecutionEngine::LoadFromArrayInternal(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
@@ -5798,22 +5811,23 @@ void BasicExecutionEngine::ExecuteOpCodeLoadByteOrBooleanFromArray(const std::sh
     throw InvalidStateException(__FUNCTION__ " - Expected boolean or byte in the array.");
   }
 
-  IJavaVariableType* pArrayValueAtIndex = pArray->GetContainedArray()->At(pIndex->ToHostInt32());
-  JVMX_ASSERT(pArrayValueAtIndex->IsIntegerCompatible());
-
-  if (e_JavaVariableTypes::Bool == pArrayValueAtIndex->GetVariableType())
+  if (e_JavaArrayTypes::Boolean == pArray->GetContainedArray()->GetContainedType())
   {
-    JavaBool* pValueAsBool = dynamic_cast<JavaBool*>(pArrayValueAtIndex);
-    boost::intrusive_ptr<JavaInteger> valueAsInt = new JavaInteger(JavaInteger::FromHostInt32(pValueAsBool->ToBool() ? 1 : 0));
+    JavaBool pValueAsBool = pArray->GetContainedArray()->BoolAt(pIndex->ToHostInt32());
+    boost::intrusive_ptr<JavaInteger> valueAsInt = new JavaInteger(JavaInteger::FromHostInt32(pValueAsBool.ToBool() ? 1 : 0));
 
     pVirtualMachineState->PushOperand(valueAsInt);
   }
-  else
+  else if (e_JavaArrayTypes::Byte == pArray->GetContainedArray()->GetContainedType())
   {
-    JavaByte* pValueAsByte = dynamic_cast<JavaByte*>(pArrayValueAtIndex);
-    boost::intrusive_ptr<JavaInteger> valueAsInt = new JavaInteger(JavaInteger::FromHostInt32(static_cast<int32_t>(pValueAsByte->ToHostInt8())));
+    JavaByte pValueAsByte = pArray->GetContainedArray()->ByteAt(pIndex->ToHostInt32());
+    boost::intrusive_ptr<JavaInteger> valueAsInt = new JavaInteger(JavaInteger::FromHostInt32(pValueAsByte.ToHostInt8()));
 
     pVirtualMachineState->PushOperand(valueAsInt);
+  }
+  else 
+  {
+    throw InvalidStateException(__FUNCTION__ " - Expected boolean or byte in the array.");
   }
 }
 

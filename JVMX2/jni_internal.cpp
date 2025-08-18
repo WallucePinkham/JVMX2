@@ -1969,7 +1969,18 @@ extern "C"
 
       for (int i = 0; i < length; ++i)
       {
-        pDest->SetAt(destOffset + i, pSrc->At(srcOffset + i));
+        if (pSrc->GetContainedType() == e_JavaArrayTypes::Char)
+        {
+          pDest->SetAt(destOffset + i, pSrc->CharAt(srcOffset + i));
+        }
+        else if (pSrc->GetContainedType() == e_JavaArrayTypes::Byte)
+        {
+          pDest->SetAt(destOffset + i, pSrc->ByteAt(srcOffset + i));
+        }
+        else
+        {
+          pDest->SetAt(destOffset + i, pSrc->At(srcOffset + i));
+        }
       }
 
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)

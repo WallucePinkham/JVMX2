@@ -17,76 +17,69 @@
 
 #include "JavaArray.h"
 
-JavaArray::JavaArray( /*std::shared_ptr<IMemoryManager> pMemoryManager,*/ e_JavaArrayTypes type, size_t size )
-  : m_ContainedType( type )
-  , m_Size( size )
-  , m_pMonitor( new Lockable )
-    //, m_pValues( size, TypeParser::GetDefaultValue( type ) )
+JavaArray::JavaArray( /*std::shared_ptr<IMemoryManager> pMemoryManager,*/ e_JavaArrayTypes type, size_t size)
+  : m_ContainedType(type)
+  , m_Size(size)
+  , m_pMonitor(new Lockable)
+  //, m_pValues( size, TypeParser::GetDefaultValue( type ) )
 #ifdef _DEBUG
-  , debugInitialLength( size )
+  , debugInitialLength(size)
 #endif // _DEBUG
 {
-#ifdef _DEBUG
-  if ( 0 == size )
-  {
-    int i = 20;
-  }
-#endif // _DEBUG
-
   Initialise();
 
   DebugAssert();
 }
 
-size_t JavaArray::CalculateSizeInBytes( e_JavaArrayTypes type, size_t count )
+size_t JavaArray::CalculateSizeInBytes(e_JavaArrayTypes type, size_t count)
 {
-  size_t sizeOfType = GetSizeOfValueType( type );
+  size_t sizeOfType = GetSizeOfValueType(type);
   return sizeOfType * count;
 }
 
-size_t JavaArray::GetSizeOfValueType( e_JavaArrayTypes type )
+size_t JavaArray::GetSizeOfValueType(e_JavaArrayTypes type)
 {
-  switch ( type )
+  switch (type)
   {
-    case e_JavaArrayTypes::Boolean:
-      return sizeof( JavaBool );
-      break;
+  case e_JavaArrayTypes::Boolean:
+    return sizeof(JavaBool);
+    break;
 
-    case e_JavaArrayTypes::Char:
-      return sizeof( JavaChar );
-      break;
+  case e_JavaArrayTypes::Char:
+    return sizeof(char16_t);
+    break;
 
-    case e_JavaArrayTypes::Float:
-      return sizeof( JavaFloat );
-      break;
+  case e_JavaArrayTypes::Float:
+    return sizeof(JavaFloat);
+    break;
 
-    case e_JavaArrayTypes::Double:
-      return sizeof( JavaDouble );
-      break;
+  case e_JavaArrayTypes::Double:
+    return sizeof(JavaDouble);
+    break;
 
-    case e_JavaArrayTypes::Byte:
-      return sizeof( JavaByte );
-      break;
+  case e_JavaArrayTypes::Byte:
+    return sizeof(uint8_t);
+    break;
 
-    case e_JavaArrayTypes::Short:
-      return sizeof( JavaShort );
-      break;
+  case e_JavaArrayTypes::Short:
+    return sizeof(JavaShort);
+    break;
 
-    case e_JavaArrayTypes::Integer:
-      return sizeof( JavaInteger );
-      break;
+  case e_JavaArrayTypes::Integer:
+    return sizeof(JavaInteger);
+    break;
 
-    case e_JavaArrayTypes::Long:
-      return sizeof( JavaLong );
-      break;
+  case e_JavaArrayTypes::Long:
+    return sizeof(JavaLong);
+    break;
 
-    case e_JavaArrayTypes::Reference:
-      return sizeof( ObjectReference );
-      break;
+  case e_JavaArrayTypes::Reference:
+    return sizeof(ObjectReference);
+    break;
 
-    default:
-      throw InvalidStateException( __FUNCTION__ " - Unknown type." );
-      break;
+  default:
+    throw InvalidStateException(__FUNCTION__ " - Unknown type.");
+    break;
   }
 
   return 0;
@@ -95,10 +88,13 @@ size_t JavaArray::GetSizeOfValueType( e_JavaArrayTypes type )
 JavaArray::~JavaArray()
 {
 
-  for ( size_t i = 0; i < m_Size; ++ i )
+  for (size_t i = 0; i < m_Size; ++i)
   {
-    IJavaVariableType *pValue = GetValueAtIndex( i );
-    pValue->~IJavaVariableType();
+    if (m_ContainedType != e_JavaArrayTypes::Char && m_ContainedType != e_JavaArrayTypes::Byte)
+    {
+      IJavaVariableType* pValue = GetValueAtIndex(i);
+      pValue->~IJavaVariableType();
+    }
   }
 }
 
@@ -113,12 +109,12 @@ JavaArray::~JavaArray()
 //   DebugAssert();
 // }
 
-void JavaArray::operator delete ( void *pObject ) throw()
+void JavaArray::operator delete (void* pObject) throw()
 {
   //ObjectFactory::FreeArray( pObject );
 }
 
-void JavaArray::operator delete ( void *pObject, void * ) throw()
+void JavaArray::operator delete (void* pObject, void*) throw()
 {
   //ObjectFactory::FreeArray( pObject );
 }
@@ -129,51 +125,48 @@ e_JavaVariableTypes JavaArray::GetVariableType() const
   return e_JavaVariableTypes::Array;
 }
 
-bool JavaArray::operator==( const JavaArray &other ) const
+bool JavaArray::operator==(const JavaArray& other) const
 {
   DebugAssert();
-  return m_ContainedType == other.m_ContainedType && memcmp( m_pValues, other.m_pValues, CalculateSizeInBytes( m_ContainedType, m_Size ) );
+  return m_ContainedType == other.m_ContainedType && memcmp(m_pValues, other.m_pValues, CalculateSizeInBytes(m_ContainedType, m_Size));
 }
 
-bool JavaArray::operator==( const IJavaVariableType &other ) const
+bool JavaArray::operator==(const IJavaVariableType& other) const
 {
   DebugAssert();
 
-  if ( GetVariableType() != other.GetVariableType() )
+  if (GetVariableType() != other.GetVariableType())
   {
     return false;
   }
 
-  JVMX_ASSERT( nullptr != dynamic_cast<const ObjectReference *>( &other ) );
-  return *this == *( dynamic_cast<const ObjectReference *>( &other )->GetContainedArray() );
+  JVMX_ASSERT(nullptr != dynamic_cast<const ObjectReference*>(&other));
+  return *this == *(dynamic_cast<const ObjectReference*>(&other)->GetContainedArray());
 }
 
-IJavaVariableType *JavaArray::At( size_t index )
+
+
+IJavaVariableType* JavaArray::At(size_t index)
 {
-  DebugAssert();
-
-  if ( index > m_Size )
-  {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed into array." );
-  }
-
-  DebugAssert();
 #ifdef _DEBUG
-  if ( GetValueAtIndex( index )->GetVariableType() == e_JavaVariableTypes::Object )
+  if (m_ContainedType == e_JavaArrayTypes::Char || m_ContainedType == e_JavaArrayTypes::Byte)
   {
-    if ( reinterpret_cast<ObjectReference *>( GetValueAtIndex( index ) )->ToJObject() == ( void * )5079 )
-    {
-      int x = 0;
-    }
+    throw InvalidStateException(__FUNCTION__ " - Cannot use At() for char/byte arrays. Use CharAt()/ByteAt() instead.");
   }
-#endif // _DEBUG
+#endif
 
-  return GetValueAtIndex( index );
+  DebugAssert();
+
+  ValidateIndex(index);
+
+  DebugAssert();
+
+  return GetValueAtIndex(index);
 }
 
-const IJavaVariableType *JavaArray::At( size_t index ) const
+const IJavaVariableType* JavaArray::At(size_t index) const
 {
-  return const_cast<JavaArray *>( this )->At( index );
+  return const_cast<JavaArray*>(this)->At(index);
 }
 
 size_t JavaArray::GetNumberOfElements() const
@@ -184,12 +177,12 @@ size_t JavaArray::GetNumberOfElements() const
   return m_Size;
 }
 
-bool JavaArray::operator<( const IJavaVariableType &other ) const
+bool JavaArray::operator<(const IJavaVariableType& other) const
 {
-  if ( GetVariableType() == other.GetVariableType() )
+  if (GetVariableType() == other.GetVariableType())
   {
-    JVMX_ASSERT( nullptr != dynamic_cast<const ObjectReference *>( &other ) );
-    return *this < *( dynamic_cast<const ObjectReference *>( &other )->GetContainedArray() );
+    JVMX_ASSERT(nullptr != dynamic_cast<const ObjectReference*>(&other));
+    return *this < *(dynamic_cast<const ObjectReference*>(&other)->GetContainedArray());
   }
 
   DebugAssert();
@@ -197,20 +190,20 @@ bool JavaArray::operator<( const IJavaVariableType &other ) const
   return false;
 }
 
-bool JavaArray::operator<( const JavaArray &other ) const
+bool JavaArray::operator<(const JavaArray& other) const
 {
   DebugAssert();
 
-  if ( m_ContainedType < other.m_ContainedType )
+  if (m_ContainedType < other.m_ContainedType)
   {
     return true;
   }
 
-  for ( size_t i = 0; i < m_Size && i < other.m_Size; ++ i )
+  for (size_t i = 0; i < m_Size && i < other.m_Size; ++i)
   {
     //if ( *reinterpret_cast<IJavaVariableType *> (m_pValues[i * GetSizeOfValueType( m_ContainedType )]) < *reinterpret_cast<IJavaVariableType *> (other.m_pValues[ i * GetSizeOfValueType( m_ContainedType ) ] ) )
 
-    if ( *At( i ) < *other.At( i ) )
+    if (*At(i) < *other.At(i))
     {
       return true;
     }
@@ -226,20 +219,20 @@ e_JavaArrayTypes JavaArray::GetContainedType() const
   return m_ContainedType;
 }
 
-void JavaArray::SetAt( const JavaInteger &index, const JavaInteger &value )
+void JavaArray::SetAt(const JavaInteger& index, const JavaInteger& value)
 {
   DebugAssert();
 
-  SetAt( index.ToHostInt32(), value );
+  SetAt(index.ToHostInt32(), value);
 
   DebugAssert();
 }
 
-void JavaArray::SetAt( const JavaInteger &index, const JavaChar &value )
+void JavaArray::SetAt(const JavaInteger& index, const JavaChar& value)
 {
   DebugAssert();
 
-  SetAt( index.ToHostInt32(), value );
+  SetAt(index.ToHostInt32(), value);
 
   DebugAssert();
 }
@@ -261,64 +254,156 @@ void JavaArray::SetAt(const JavaInteger& index, JavaLong value)
 }
 
 
-void JavaArray::SetAt( const JavaInteger &index, const IJavaVariableType *pValue )
+void JavaArray::SetAt(const JavaInteger& index, const IJavaVariableType* pValue)
 {
   DebugAssert();
 
-  SetAt( index.ToHostInt32(), pValue );
+  SetAt(index.ToHostInt32(), pValue);
 
   DebugAssert();
 }
 
-void JavaArray::SetAt( const uint32_t &index, const JavaInteger &value )
+bool IsIntegerCompatible(e_JavaArrayTypes type)
 {
-  if ( !AreTypesCompatible( m_ContainedType, e_JavaArrayTypes::Integer ) )
+  switch (type)
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Array Types are not compatible." );
+  case e_JavaArrayTypes::Boolean:
+  case e_JavaArrayTypes::Byte:
+  case e_JavaArrayTypes::Short:
+  case e_JavaArrayTypes::Integer:
+  case e_JavaArrayTypes::Long:
+  case e_JavaArrayTypes::Char:
+    return true;
+  default:
+    return false;
+  }
+}
+
+e_JavaArrayTypes VariableTypeToArrayType(e_JavaVariableTypes type)
+{
+  switch (type)
+  {
+  case e_JavaVariableTypes::Bool:
+    return e_JavaArrayTypes::Boolean;
+  case e_JavaVariableTypes::Char:
+    return e_JavaArrayTypes::Char;
+  case e_JavaVariableTypes::Float:
+    return e_JavaArrayTypes::Float;
+  case e_JavaVariableTypes::Double:
+    return e_JavaArrayTypes::Double;
+  case e_JavaVariableTypes::Byte:
+    return e_JavaArrayTypes::Byte;
+  case e_JavaVariableTypes::Short:
+    return e_JavaArrayTypes::Short;
+  case e_JavaVariableTypes::Integer:
+    return e_JavaArrayTypes::Integer;
+  case e_JavaVariableTypes::Long:
+    return e_JavaArrayTypes::Long;
+  case e_JavaVariableTypes::Object:
+  case e_JavaVariableTypes::Array:
+  case e_JavaVariableTypes::ClassReference:
+  case e_JavaVariableTypes::NullReference:
+    return e_JavaArrayTypes::Reference;
+  default:
+    throw UnsupportedTypeException(__FUNCTION__ " - Unsupported variable type.");
+  }
+}
+
+e_JavaVariableTypes ArrayTypeToVariableType(e_JavaArrayTypes type)
+{
+  switch (type)
+  {
+  case e_JavaArrayTypes::Boolean:
+    return e_JavaVariableTypes::Bool;
+  case e_JavaArrayTypes::Char:
+    return e_JavaVariableTypes::Char;
+  case e_JavaArrayTypes::Float:
+    return e_JavaVariableTypes::Float;
+  case e_JavaArrayTypes::Double:
+    return e_JavaVariableTypes::Double;
+  case e_JavaArrayTypes::Byte:
+    return e_JavaVariableTypes::Byte;
+  case e_JavaArrayTypes::Short:
+    return e_JavaVariableTypes::Short;
+  case e_JavaArrayTypes::Integer:
+    return e_JavaVariableTypes::Integer;
+  case e_JavaArrayTypes::Long:
+    return e_JavaVariableTypes::Long;
+  case e_JavaArrayTypes::Reference:
+    return e_JavaVariableTypes::Object;
+  default:
+    throw UnsupportedTypeException(__FUNCTION__ " - Unsupported array type.");
+  }
+}
+
+void JavaArray::SetAt(const uint32_t& index, const JavaInteger& value)
+{
+  if (!AreTypesCompatible(m_ContainedType, e_JavaArrayTypes::Integer))
+  {
+    throw InvalidArgumentException(__FUNCTION__ " - Array Types are not compatible.");
   }
 
-  if ( index < 0 )
-  {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in. Less than zero." );
-  }
+  ValidateIndex(index);
 
-  if ( index >= m_Size )
+  if (m_ContainedType != VariableTypeToArrayType(value.GetVariableType()) &&
+    ::IsIntegerCompatible(m_ContainedType))
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in." );
-  }
+    auto pInteger = TypeParser::UpCastToInteger(&value);
+    auto result = TypeParser::DownCastFromInteger(pInteger, ArrayTypeToVariableType(m_ContainedType));
 
-  if ( GetValueAtIndex( 0 )->GetVariableType() != value.GetVariableType() &&
-       GetValueAtIndex( 0 )->IsIntegerCompatible() )
-  {
-    auto pInteger = TypeParser::UpCastToInteger( &value );
-    auto result = TypeParser::DownCastFromInteger( pInteger, GetValueAtIndex( 0 )->GetVariableType() );
-
-    InternalSetValue( index, result.get() );
+    if (m_ContainedType == e_JavaArrayTypes::Char)
+    {
+      SetAt(index, *(boost::dynamic_pointer_cast<JavaChar>(result)));
+    }
+    else if (m_ContainedType == e_JavaArrayTypes::Byte)
+    {
+      SetAt(index, *(boost::dynamic_pointer_cast<JavaByte>(result)));
+    }
+    //else if (m_ContainedType == e_JavaArrayTypes::Long)
+    //{
+    //  SetAt(index, *(boost::dynamic_pointer_cast<JavaLong>(result)));
+    //}
+    //else if (m_ContainedType == e_JavaArrayTypes::Boolean)
+    //{
+    //  SetAt(index, *(boost::dynamic_pointer_cast<JavaBool>(result)));
+    //}
+    else
+    {
+      InternalSetValue(index, result.get());
+    }
   }
   else
   {
-    InternalSetValue( index, &value );
+    InternalSetValue(index, &value);
   }
 }
 
-void JavaArray::SetAt( const uint32_t &index, const JavaChar &value )
+void JavaArray::ValidateIndex(const uint32_t& index)
 {
-  if ( m_ContainedType != e_JavaArrayTypes::Char )
+  if (index < 0)
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Trying to add characters to an array that does not contain characters." );
+    throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in. Less than zero.");
   }
 
-  if ( index < 0 )
+  if (index > m_Size)
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in. Less than zero." );
+    throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in.");
+  }
+}
+
+void JavaArray::SetAt(const uint32_t& index, const JavaChar& value)
+{
+  if (m_ContainedType != e_JavaArrayTypes::Char)
+  {
+    throw InvalidArgumentException(__FUNCTION__ " - Trying to add characters to an array that does not contain characters.");
   }
 
-  if ( index > m_Size )
-  {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in." );
-  }
+  ValidateIndex(index);
 
-  InternalSetValue( index, &value );
+  char* pCharValue = m_pValues + sizeof(char16_t) * index;
+  reinterpret_cast<char16_t*>(pCharValue)[0] = value.ToChar16();
+
+  //InternalSetValue( index, &value );
 }
 
 void JavaArray::SetAt(const uint32_t& index, const JavaByte& value)
@@ -328,17 +413,10 @@ void JavaArray::SetAt(const uint32_t& index, const JavaByte& value)
     throw InvalidArgumentException(__FUNCTION__ " - Trying to add byte to an array that does not contain bytes.");
   }
 
-  if (index < 0)
-  {
-    throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in. Less than zero.");
-  }
+  ValidateIndex(index);
 
-  if (index > m_Size)
-  {
-    throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in.");
-  }
-
-  InternalSetValue(index, &value);
+  char* pCharValue = m_pValues + sizeof(uint8_t) * index;
+  reinterpret_cast<uint8_t*>(pCharValue)[0] = value.ToHostInt8();
 }
 
 void JavaArray::SetAt(const uint32_t& index, JavaLong value)
@@ -348,47 +426,31 @@ void JavaArray::SetAt(const uint32_t& index, JavaLong value)
     throw InvalidArgumentException(__FUNCTION__ " - Trying to add long to an array that does not contain longs.");
   }
 
-  if (index < 0)
-  {
-    throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in. Less than zero.");
-  }
-
-  if (index > m_Size)
-  {
-    throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in.");
-  }
+  ValidateIndex(index);
 
   InternalSetValue(index, &value);
 }
 
-void JavaArray::SetAt( const uint32_t &index, const IJavaVariableType *pValue )
+void JavaArray::SetAt(const uint32_t& index, const IJavaVariableType* pValue)
 {
-  if ( !AreTypesCompatible( m_ContainedType, pValue->GetVariableType() ) )
+  if (!AreTypesCompatible(m_ContainedType, pValue->GetVariableType()))
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Trying to add array element types are incompatible." );
+    throw InvalidArgumentException(__FUNCTION__ " - Trying to add array element types are incompatible.");
   }
 
-  if ( index < 0 )
-  {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in. Less than zero." );
-  }
+  ValidateIndex(index);
 
-  if ( index > m_Size )
+  if (GetValueAtIndex(0)->GetVariableType() != pValue->GetVariableType() &&
+    GetValueAtIndex(0)->IsIntegerCompatible() && pValue->IsIntegerCompatible())
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in." );
-  }
+    auto pInteger = TypeParser::UpCastToInteger(pValue);
+    auto result = TypeParser::DownCastFromInteger(pInteger, GetValueAtIndex(0)->GetVariableType());
 
-  if ( GetValueAtIndex( 0 )->GetVariableType() != pValue->GetVariableType() &&
-       GetValueAtIndex( 0 )->IsIntegerCompatible() && pValue->IsIntegerCompatible() )
-  {
-    auto pInteger = TypeParser::UpCastToInteger( pValue );
-    auto result = TypeParser::DownCastFromInteger( pInteger, GetValueAtIndex( 0 )->GetVariableType() );
-
-    InternalSetValue( index, result.get() );
+    InternalSetValue(index, result.get());
   }
   else
   {
-    InternalSetValue( index, pValue );
+    InternalSetValue(index, pValue);
   }
 
 }
@@ -408,317 +470,362 @@ JavaString JavaArray::ConvertCharArrayToString() const
     }
 
     return result;*/
-  return JavaString::FromArray( *this );
+  return JavaString::FromArray(*this);
 }
 
 JavaString JavaArray::ConvertByteArrayToString() const
 {
-  if ( m_ContainedType != e_JavaArrayTypes::Byte )
+  if (m_ContainedType != e_JavaArrayTypes::Byte)
   {
-    throw InvalidStateException( __FUNCTION__ " - Array does not contain Bytes." );
+    throw InvalidStateException(__FUNCTION__ " - Array does not contain Bytes.");
   }
 
-  JavaString result = JavaString::EmptyString();
-
-  char *pBuffer = new char[ m_Size + 1 ]; // +1 for terminator
+  char* pBuffer = new char[m_Size + 1]; // +1 for terminator
 
   try
   {
     int i = 0;
 
     //for ( auto it = m_pValues.begin(); it != m_pValues.end(); ++ it )
-    for ( size_t index = 0; index < m_Size; ++ index )
+    for (size_t index = 0; index < m_Size; ++index)
     {
-      char chr = reinterpret_cast<const JavaByte *>( GetValueAtIndex( index ) )->ToHostInt8();
-      pBuffer[ i++ ] = chr;
+      char chr =  static_cast<char>(ByteAt(index).ToHostInt8());
+      pBuffer[i++] = chr;
 
       // Exit after we have appended the null character.
-      if ( '\0' == chr )
+      if ('\0' == chr)
       {
         break;
       }
     }
 
-    pBuffer[ i ] = '\0';
+    pBuffer[i] = '\0';
 
-    result = result.Append( JavaString::FromCString( pBuffer ) );
+    JavaString result = JavaString::FromCString(pBuffer);
 
     delete[] pBuffer;
     pBuffer = nullptr;
   }
-  catch ( ... )
+  catch (...)
   {
     delete[] pBuffer;
   }
 
-  return result;
+  return JavaString::EmptyString();
 }
 
 void JavaArray::Initialise()
 {
   DebugAssert();
 
-  for ( size_t i = 0; i < m_Size; ++ i )
+  for (size_t i = 0; i < m_Size; ++i)
   {
-    IJavaVariableType *pValue = GetValueAtIndex( i );
     //*pValue = *TypeParser::GetDefaultValue( m_ContainedType );
 
-    switch ( m_ContainedType )
+    switch (m_ContainedType)
     {
-      case e_JavaArrayTypes::Boolean:
-        new ( pValue ) JavaBool( JavaBool::FromDefault() );
-        break;
+    case e_JavaArrayTypes::Boolean:
+    {
+      IJavaVariableType* pValue = GetValueAtIndex(i);
+      new (pValue) JavaBool(JavaBool::FromDefault());
+    }
+    break;
 
-      case e_JavaArrayTypes::Char:
-        new ( pValue ) JavaChar( JavaChar::DefaultChar() );
-        break;
+    case e_JavaArrayTypes::Char:
+    {
+      char* pCharValue = m_pValues + GetSizeOfValueType(e_JavaArrayTypes::Char) * i;
+      reinterpret_cast<char16_t*>(pCharValue)[0] = 0;
+    }
+    break;
 
-      case e_JavaArrayTypes::Float:
-        new ( pValue ) JavaFloat( JavaFloat::FromDefault() );
-        break;
+    case e_JavaArrayTypes::Float:
+    {
+      IJavaVariableType* pValue = GetValueAtIndex(i);
+      new (pValue) JavaFloat(JavaFloat::FromDefault());
+    }
+    break;
 
-      case e_JavaArrayTypes::Double:
-        new ( pValue ) JavaDouble( JavaDouble::FromDefault() );
-        break;
+    case e_JavaArrayTypes::Double:
+    {
+      IJavaVariableType* pValue = GetValueAtIndex(i);
+      new (pValue) JavaDouble(JavaDouble::FromDefault());
+    }
+    break;
 
-      case e_JavaArrayTypes::Byte:
-        new ( pValue ) JavaByte( JavaByte::FromDefault() );
-        break;
+    case e_JavaArrayTypes::Byte:
+    {
+      char* pCharValue = m_pValues + GetSizeOfValueType(e_JavaArrayTypes::Byte) * i;
+      reinterpret_cast<uint8_t*>(pCharValue)[0] = 0;
+    }
+    break;
 
-      case e_JavaArrayTypes::Short:
-        new ( pValue ) JavaShort( JavaShort::FromDefault() );
-        break;
+    case e_JavaArrayTypes::Short:
+    {
+      IJavaVariableType* pValue = GetValueAtIndex(i);
+      new (pValue) JavaShort(JavaShort::FromDefault());
+    }
+    break;
 
-      case e_JavaArrayTypes::Integer:
-        new ( pValue ) JavaInteger( JavaInteger::FromDefault() );
-        break;
+    case e_JavaArrayTypes::Integer:
+    {
+      IJavaVariableType* pValue = GetValueAtIndex(i);
+      new (pValue) JavaInteger(JavaInteger::FromDefault());
+    }
+    break;
 
-      case e_JavaArrayTypes::Long:
-        new ( pValue ) JavaLong( JavaLong::FromDefault() );
-        break;
+    case e_JavaArrayTypes::Long:
+    {
+      IJavaVariableType* pValue = GetValueAtIndex(i);
+      new (pValue) JavaLong(JavaLong::FromDefault());
+    }
+    break;
 
-      case e_JavaArrayTypes::Reference:
-        new ( pValue ) ObjectReference( nullptr );
-        break;
+    case e_JavaArrayTypes::Reference:
+    {
+      IJavaVariableType* pValue = GetValueAtIndex(i);
+      new (pValue) ObjectReference(nullptr);
+    }
+    break;
 
-      default:
-        throw InvalidArgumentException( __FUNCTION__ " - Unknown type." );
-        break;
+    default:
+      throw InvalidArgumentException(__FUNCTION__ " - Unknown type.");
+      break;
     }
   }
 
   DebugAssert();
 }
 
-IJavaVariableType *JavaArray::GetValueAtIndex( size_t i )
+IJavaVariableType* JavaArray::GetValueAtIndex(size_t i)
 {
-  char *pValue = m_pValues + ( GetSizeOfValueType( m_ContainedType ) * i );
-  JVMX_ASSERT( pValue >= m_pValues && pValue < m_pValues + CalculateSizeInBytes( m_ContainedType, m_Size ) );
-  return reinterpret_cast<IJavaVariableType *>( pValue );
+  if (m_ContainedType == e_JavaArrayTypes::Char || m_ContainedType == e_JavaArrayTypes::Byte)
+  {
+    throw InvalidStateException(__FUNCTION__ " - Cannot use GetValueAtIndex() for char/byte arrays. Use CharAt()/ByteAt() instead.");
+  }
+
+  char* pValue = m_pValues + (GetSizeOfValueType(m_ContainedType) * i);
+  JVMX_ASSERT(pValue >= m_pValues && pValue < m_pValues + CalculateSizeInBytes(m_ContainedType, m_Size));
+  return reinterpret_cast<IJavaVariableType*>(pValue);
 }
 
-const IJavaVariableType *JavaArray::GetValueAtIndex( size_t i ) const
+const IJavaVariableType* JavaArray::GetValueAtIndex(size_t i) const
 {
-  const char *pValue = m_pValues + ( GetSizeOfValueType( m_ContainedType ) * i );
-  JVMX_ASSERT( pValue >= m_pValues && pValue < m_pValues + CalculateSizeInBytes( m_ContainedType, m_Size ) );
+  if (m_ContainedType == e_JavaArrayTypes::Char || m_ContainedType == e_JavaArrayTypes::Byte)
+  {
+    throw InvalidStateException(__FUNCTION__ " - Cannot use GetValueAtIndex() for char/byte arrays. Use CharAt()/ByteAt() instead.");
+  }
 
-  return reinterpret_cast<const IJavaVariableType *>( pValue );
+  const char* pValue = m_pValues + (GetSizeOfValueType(m_ContainedType) * i);
+  JVMX_ASSERT(pValue >= m_pValues && pValue < m_pValues + CalculateSizeInBytes(m_ContainedType, m_Size));
+
+  return reinterpret_cast<const IJavaVariableType*>(pValue);
 }
 
-std::shared_ptr<Lockable> JavaArray::MonitorEnter( const char *pFunctionName )
+std::shared_ptr<Lockable> JavaArray::MonitorEnter(const char* pFunctionName)
 {
-  m_pMonitor->Lock( pFunctionName );
+  m_pMonitor->Lock(pFunctionName);
   return m_pMonitor;
 }
 
-void JavaArray::MonitorExit( const char *pFunctionName )
+void JavaArray::MonitorExit(const char* pFunctionName)
 {
-  m_pMonitor->Unlock( pFunctionName );
+  m_pMonitor->Unlock(pFunctionName);
 }
 
-void JavaArray::CloneOther( const JavaArray *pObjectToClone )
+void JavaArray::CloneOther(const JavaArray* pObjectToClone)
 {
-  JVMX_ASSERT( m_ContainedType == pObjectToClone->m_ContainedType );
+  JVMX_ASSERT(m_ContainedType == pObjectToClone->m_ContainedType);
 
-  if ( m_ContainedType != pObjectToClone->m_ContainedType )
+  if (m_ContainedType != pObjectToClone->m_ContainedType)
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Contained types do not match." );
+    throw InvalidArgumentException(__FUNCTION__ " - Contained types do not match.");
   }
 
-  JVMX_ASSERT( pObjectToClone->m_Size == m_Size );
+  JVMX_ASSERT(pObjectToClone->m_Size == m_Size);
 
-  for ( uint32_t i = 0; i < pObjectToClone->GetNumberOfElements(); ++ i )
+  for (uint32_t i = 0; i < pObjectToClone->GetNumberOfElements(); ++i)
   {
-    SetAt( JavaInteger::FromHostInt32( i ), pObjectToClone->At( i ) );
+    if (m_ContainedType == e_JavaArrayTypes::Char)
+    {
+      SetAt(JavaInteger::FromHostInt32(i), pObjectToClone->CharAt(i));
+    }
+    else if (m_ContainedType == e_JavaArrayTypes::Byte)
+    {
+      SetAt(JavaInteger::FromHostInt32(i), pObjectToClone->ByteAt(i));
+    }
+    else
+    {
+      SetAt(JavaInteger::FromHostInt32(i), pObjectToClone->At(i));
+    }
+
   }
 }
 
-void JavaArray::DeepClone( const JavaArray *pObjectToClone )
+void JavaArray::DeepClone(const JavaArray* pObjectToClone)
 {
-  CloneOther( pObjectToClone );
+  CloneOther(pObjectToClone);
 
   m_pMonitor = pObjectToClone->m_pMonitor;
 }
 
-bool JavaArray::AreTypesCompatible( e_JavaArrayTypes arrayType, e_JavaVariableTypes variableType )
+bool JavaArray::AreTypesCompatible(e_JavaArrayTypes arrayType, e_JavaVariableTypes variableType)
 {
-  switch ( arrayType )
+  switch (arrayType)
   {
-    case e_JavaArrayTypes::Boolean:
-      return variableType == e_JavaVariableTypes::Bool;
-      break;
+  case e_JavaArrayTypes::Boolean:
+    return variableType == e_JavaVariableTypes::Bool;
+    break;
 
-    case e_JavaArrayTypes::Char:
-      return variableType == e_JavaVariableTypes::Char;
-      break;
+  case e_JavaArrayTypes::Char:
+    return variableType == e_JavaVariableTypes::Char;
+    break;
 
-    case e_JavaArrayTypes::Float:
-      return variableType == e_JavaVariableTypes::Float;
-      break;
+  case e_JavaArrayTypes::Float:
+    return variableType == e_JavaVariableTypes::Float;
+    break;
 
-    case e_JavaArrayTypes::Double:
-      return variableType == e_JavaVariableTypes::Double;
-      break;
+  case e_JavaArrayTypes::Double:
+    return variableType == e_JavaVariableTypes::Double;
+    break;
 
-    case e_JavaArrayTypes::Byte:
-      return variableType == e_JavaVariableTypes::Byte;
-      break;
+  case e_JavaArrayTypes::Byte:
+    return variableType == e_JavaVariableTypes::Byte;
+    break;
 
-    case e_JavaArrayTypes::Short:
-      return variableType == e_JavaVariableTypes::Short;
-      break;
+  case e_JavaArrayTypes::Short:
+    return variableType == e_JavaVariableTypes::Short;
+    break;
 
-    case e_JavaArrayTypes::Integer:
-      //return variableType == e_JavaVariableTypes::Integer;
-      return IsTypeIntegerCompatible( variableType );
-      break;
+  case e_JavaArrayTypes::Integer:
+    //return variableType == e_JavaVariableTypes::Integer;
+    return IsTypeIntegerCompatible(variableType);
+    break;
 
-    case e_JavaArrayTypes::Long:
-      return variableType == e_JavaVariableTypes::Long;
-      break;
+  case e_JavaArrayTypes::Long:
+    return variableType == e_JavaVariableTypes::Long;
+    break;
 
-    case e_JavaArrayTypes::Reference:
-      return IsVariableOfReferenceType( variableType );
-      break;
+  case e_JavaArrayTypes::Reference:
+    return IsVariableOfReferenceType(variableType);
+    break;
 
-    default:
-      break;
+  default:
+    break;
   }
 
   return false;
 }
 
-bool JavaArray::AreTypesCompatible( e_JavaArrayTypes arrayType, e_JavaArrayTypes variableType )
+bool JavaArray::AreTypesCompatible(e_JavaArrayTypes arrayType, e_JavaArrayTypes variableType)
 {
-  switch ( arrayType )
+  switch (arrayType)
   {
-    case e_JavaArrayTypes::Boolean:
-      return variableType == e_JavaArrayTypes::Boolean || variableType == e_JavaArrayTypes::Integer;
-      break;
+  case e_JavaArrayTypes::Boolean:
+    return variableType == e_JavaArrayTypes::Boolean || variableType == e_JavaArrayTypes::Integer;
+    break;
 
-    case e_JavaArrayTypes::Char:
-      return variableType == e_JavaArrayTypes::Char || variableType == e_JavaArrayTypes::Integer;
-      break;
+  case e_JavaArrayTypes::Char:
+    return variableType == e_JavaArrayTypes::Char || variableType == e_JavaArrayTypes::Integer;
+    break;
 
-    case e_JavaArrayTypes::Float:
-      return variableType == e_JavaArrayTypes::Float;
-      break;
+  case e_JavaArrayTypes::Float:
+    return variableType == e_JavaArrayTypes::Float;
+    break;
 
-    case e_JavaArrayTypes::Double:
-      return variableType == e_JavaArrayTypes::Double;
-      break;
+  case e_JavaArrayTypes::Double:
+    return variableType == e_JavaArrayTypes::Double;
+    break;
 
-    case e_JavaArrayTypes::Byte:
-      return variableType == e_JavaArrayTypes::Byte || variableType == e_JavaArrayTypes::Integer;
-      break;
+  case e_JavaArrayTypes::Byte:
+    return variableType == e_JavaArrayTypes::Byte || variableType == e_JavaArrayTypes::Integer;
+    break;
 
-    case e_JavaArrayTypes::Short:
-      return variableType == e_JavaArrayTypes::Short || variableType == e_JavaArrayTypes::Integer;
-      break;
+  case e_JavaArrayTypes::Short:
+    return variableType == e_JavaArrayTypes::Short || variableType == e_JavaArrayTypes::Integer;
+    break;
 
-    case e_JavaArrayTypes::Integer:
-      return IsTypeIntegerCompatible( variableType );
+  case e_JavaArrayTypes::Integer:
+    return IsTypeIntegerCompatible(variableType);
 
-      break;
+    break;
 
-    case e_JavaArrayTypes::Long:
-      return variableType == e_JavaArrayTypes::Long;
-      break;
+  case e_JavaArrayTypes::Long:
+    return variableType == e_JavaArrayTypes::Long;
+    break;
 
-    case e_JavaArrayTypes::Reference:
-      return variableType == e_JavaArrayTypes::Reference;
-      break;
+  case e_JavaArrayTypes::Reference:
+    return variableType == e_JavaArrayTypes::Reference;
+    break;
   }
 
   return false;
 }
 
-bool JavaArray::IsVariableOfReferenceType( e_JavaVariableTypes variableType )
+bool JavaArray::IsVariableOfReferenceType(e_JavaVariableTypes variableType)
 {
-  return ( e_JavaVariableTypes::Object == variableType ) || ( e_JavaVariableTypes::Array == variableType ) || ( e_JavaVariableTypes::ClassReference == variableType ) || ( e_JavaVariableTypes::NullReference == variableType ) || ( e_JavaVariableTypes::ReturnAddress == variableType );
+  return (e_JavaVariableTypes::Object == variableType) || (e_JavaVariableTypes::Array == variableType) || (e_JavaVariableTypes::ClassReference == variableType) || (e_JavaVariableTypes::NullReference == variableType) || (e_JavaVariableTypes::ReturnAddress == variableType);
 }
 
 DataBuffer JavaArray::ConvertByteArrayToBuffer() const
 {
-  if ( m_ContainedType != e_JavaArrayTypes::Byte )
+  if (m_ContainedType != e_JavaArrayTypes::Byte)
   {
-    throw InvalidStateException( __FUNCTION__ " - Array does not contain Bytes." );
+    throw InvalidStateException(__FUNCTION__ " - Array does not contain Bytes.");
   }
 
   DataBuffer result = DataBuffer::EmptyBuffer();
-  for ( size_t i = 0; i < m_Size; ++ i )
+  for (size_t i = 0; i < m_Size; ++i)
   {
-    const IJavaVariableType *pValue = GetValueAtIndex( i );
-    uint8_t byteValue = dynamic_cast<const JavaByte *>( pValue )->ToHostInt8();
-    result = result.AppendUint8( byteValue );
+    uint8_t byteValue = ByteAt(i).ToHostInt8();
+    result = result.AppendUint8(byteValue);
   }
 
   return result;
 }
 
-e_JavaArrayTypes JavaArray::ConvertTypeFromChar( char16_t charType )
+e_JavaArrayTypes JavaArray::ConvertTypeFromChar(char16_t charType)
 {
-  switch ( charType )
+  switch (charType)
   {
-    case c_JavaTypeSpecifierByte:
-      return e_JavaArrayTypes::Byte;
-      break;
+  case c_JavaTypeSpecifierByte:
+    return e_JavaArrayTypes::Byte;
+    break;
 
-    case c_JavaTypeSpecifierChar:
-      return e_JavaArrayTypes::Char;
-      break;
+  case c_JavaTypeSpecifierChar:
+    return e_JavaArrayTypes::Char;
+    break;
 
-    case c_JavaTypeSpecifierInteger:
-      return e_JavaArrayTypes::Integer;
-      break;
+  case c_JavaTypeSpecifierInteger:
+    return e_JavaArrayTypes::Integer;
+    break;
 
-    case c_JavaTypeSpecifierShort:
-      return e_JavaArrayTypes::Short;
-      break;
+  case c_JavaTypeSpecifierShort:
+    return e_JavaArrayTypes::Short;
+    break;
 
-    case c_JavaTypeSpecifierBool:
-      return e_JavaArrayTypes::Boolean;
-      break;
+  case c_JavaTypeSpecifierBool:
+    return e_JavaArrayTypes::Boolean;
+    break;
 
-    case c_JavaTypeSpecifierFloat:
-      return e_JavaArrayTypes::Float;
-      break;
+  case c_JavaTypeSpecifierFloat:
+    return e_JavaArrayTypes::Float;
+    break;
 
-    case c_JavaTypeSpecifierDouble:
-      return e_JavaArrayTypes::Double;
-      break;
+  case c_JavaTypeSpecifierDouble:
+    return e_JavaArrayTypes::Double;
+    break;
 
-    case c_JavaTypeSpecifierLong:
-      return e_JavaArrayTypes::Long;
-      break;
+  case c_JavaTypeSpecifierLong:
+    return e_JavaArrayTypes::Long;
+    break;
 
-    case c_JavaTypeSpecifierReference:
-      return e_JavaArrayTypes::Reference;
-      break;
+  case c_JavaTypeSpecifierReference:
+    return e_JavaArrayTypes::Reference;
+    break;
 
-    default:
-      throw UnsupportedTypeException( __FUNCTION__ " - Unknown type found." );
-      break;
+  default:
+    throw UnsupportedTypeException(__FUNCTION__ " - Unknown type found.");
+    break;
   }
 }
 
@@ -739,29 +846,41 @@ JavaString JavaArray::ToString() const
   DebugAssert();
   int count = 0;
 
-  char buffer[ 38 ] = { 0 };
-  _snprintf( buffer, 37, "(%d)", m_Size );
+  char buffer[38] = { 0 };
+  _snprintf(buffer, 37, "(%d)", m_Size);
 
   std::basic_stringstream<char16_t> outputStream;
 
   outputStream << buffer << u"[";
 
-  for ( size_t i = 0; i < m_Size; ++ i )
+  for (size_t i = 0; i < m_Size; ++i)
   {
-    const IJavaVariableType *pValue = GetValueAtIndex( i );
-    outputStream << pValue->ToString().ToCharacterArray();
-    if ( i != m_Size )
+    if (m_ContainedType == e_JavaArrayTypes::Char)
+    {
+      outputStream << CharAt(i).ToString().ToCharacterArray();
+    }
+    else if (m_ContainedType == e_JavaArrayTypes::Byte)
+    {
+      outputStream << ByteAt(i).ToString().ToCharacterArray();
+    }
+    else 
+    {
+      const IJavaVariableType* pValue = GetValueAtIndex(i);
+      outputStream << pValue->ToString().ToCharacterArray();
+    }
+
+    if (i != m_Size)
     {
       outputStream << u", ";
     }
 
-    if ( count > 20 )
+    if (count > 20)
     {
       outputStream << u"...";
       break;
     }
 
-    ++ count;
+    ++count;
   }
 
   DebugAssert();
@@ -774,13 +893,13 @@ void JavaArray::DebugAssert() const
 {
 #ifdef _DEBUG
   //if ( m_Values.size() != debugInitialLength ) __asm int 3;
-  JVMX_ASSERT( m_Size == debugInitialLength );
+  JVMX_ASSERT(m_Size == debugInitialLength);
 #endif // _DEBUG
 }
 
-void JavaArray::InternalSetValue( size_t index, const IJavaVariableType *pFinalValue )
+void JavaArray::InternalSetValue(size_t index, const IJavaVariableType* pFinalValue)
 {
-  IJavaVariableType *pValue = GetValueAtIndex( index );
+  IJavaVariableType* pValue = GetValueAtIndex(index);
   *pValue = *pFinalValue;
 
   DebugAssert();
@@ -824,62 +943,62 @@ bool JavaArray::IsNull() const
 //   return pConvertedValue;
 // }
 
-bool JavaArray::IsTypeIntegerCompatible( e_JavaArrayTypes variableType )
+bool JavaArray::IsTypeIntegerCompatible(e_JavaArrayTypes variableType)
 {
   return variableType == e_JavaArrayTypes::Short || variableType == e_JavaArrayTypes::Integer || variableType == e_JavaArrayTypes::Char || variableType == e_JavaArrayTypes::Boolean || variableType == e_JavaArrayTypes::Byte;
 }
 
-bool JavaArray::IsTypeIntegerCompatible( e_JavaVariableTypes variableType )
+bool JavaArray::IsTypeIntegerCompatible(e_JavaVariableTypes variableType)
 {
   return variableType == e_JavaVariableTypes::Short || variableType == e_JavaVariableTypes::Integer || variableType == e_JavaVariableTypes::Char || variableType == e_JavaVariableTypes::Bool || variableType == e_JavaVariableTypes::Byte;
 }
 
-boost::intrusive_ptr<IJavaVariableType> JavaArray::ConvertIntegerTypeForArrayStorage( const JavaInteger &value ) const
+boost::intrusive_ptr<IJavaVariableType> JavaArray::ConvertIntegerTypeForArrayStorage(const JavaInteger& value) const
 {
   boost::intrusive_ptr<IJavaVariableType> pFinalValue = nullptr;
 
-  switch ( m_ContainedType )
+  switch (m_ContainedType)
   {
-    case e_JavaArrayTypes::Boolean:
-      pFinalValue = value.ToBool();
-      break;
+  case e_JavaArrayTypes::Boolean:
+    pFinalValue = value.ToBool();
+    break;
 
-    case e_JavaArrayTypes::Char:
-      pFinalValue = value.ToChar();
-      break;
+  case e_JavaArrayTypes::Char:
+    pFinalValue = value.ToChar();
+    break;
 
-    case e_JavaArrayTypes::Byte:
-      pFinalValue = value.ToByte();
-      break;
+  case e_JavaArrayTypes::Byte:
+    pFinalValue = value.ToByte();
+    break;
 
-    case e_JavaArrayTypes::Short:
-      pFinalValue = value.ToShort();
-      break;
+  case e_JavaArrayTypes::Short:
+    pFinalValue = value.ToShort();
+    break;
 
-    case e_JavaArrayTypes::Integer:
-      pFinalValue = new JavaInteger( value );
-      break;
+  case e_JavaArrayTypes::Integer:
+    pFinalValue = new JavaInteger(value);
+    break;
 
-    default:
-      JVMX_ASSERT( false );
-      throw InvalidArgumentException( __FUNCTION__ " - Array Types are not compatible. This should have been caught before." );
-      break;
+  default:
+    JVMX_ASSERT(false);
+    throw InvalidArgumentException(__FUNCTION__ " - Array Types are not compatible. This should have been caught before.");
+    break;
   }
 
   return pFinalValue;
 }
-// 
 
-boost::intrusive_ptr<ObjectReference> JavaArray::CreateFromCArray( /*std::shared_ptr<IMemoryManager> pMemoryManager,*/ const char *pBuffer )
+
+boost::intrusive_ptr<ObjectReference> JavaArray::CreateFromCArray( /*std::shared_ptr<IMemoryManager> pMemoryManager,*/ const char* pBuffer)
 {
-  std::shared_ptr<IThreadManager> pThreadManager = GlobalCatalog::GetInstance().Get( "ThreadManager" );
+  std::shared_ptr<IThreadManager> pThreadManager = GlobalCatalog::GetInstance().Get("ThreadManager");
 
-  size_t length = strlen( pBuffer );
-  boost::intrusive_ptr<ObjectReference> pResult = pThreadManager->GetCurrentThreadState()->CreateArray( e_JavaArrayTypes::Char, length );
+  size_t length = strlen(pBuffer);
+  boost::intrusive_ptr<ObjectReference> pResult = pThreadManager->GetCurrentThreadState()->CreateArray(e_JavaArrayTypes::Char, length);
   //boost::intrusive_ptr<ObjectReference> pResult = new JavaArray( /*pMemoryManager, */e_JavaArrayTypes::Char, length );
-  for ( size_t i = 0; i < length; ++ i )
+  for (size_t i = 0; i < length; ++i)
   {
-    pResult->GetContainedArray()->SetAt( static_cast<uint32_t>( i ), JavaChar::FromCChar( pBuffer[ i ] ) );
+    pResult->GetContainedArray()->SetAt(static_cast<uint32_t>(i), JavaChar::FromCChar(pBuffer[i]));
   }
 
   return pResult;
@@ -897,4 +1016,30 @@ boost::intrusive_ptr<ObjectReference> JavaArray::CreateFromCArray(const uint8_t*
   }
 
   return pResult;
+}
+
+JavaChar JavaArray::CharAt(size_t index) const
+{
+  const char* charPtr = m_pValues + (sizeof(char16_t) * index);
+  return JavaChar::FromChar16(*reinterpret_cast<const char16_t*>(charPtr));
+}
+
+JavaByte JavaArray::ByteAt(size_t index) const
+{
+  const char* bytePtr = m_pValues + (sizeof(uint8_t) * index);
+  return JavaByte::FromHostInt8(*reinterpret_cast<const uint8_t*>(bytePtr));
+}
+
+JavaBool JavaArray::BoolAt(size_t index) const
+{
+  const IJavaVariableType *pVar = At(index);
+  if (pVar->GetVariableType() != e_JavaVariableTypes::Bool)
+  {
+    throw InvalidArgumentException(__FUNCTION__ " - Trying to get a boolean value from an array that does not contain booleans.");
+  }
+
+  return JavaBool(*reinterpret_cast<const JavaBool*>(pVar));
+
+  //const char* boolPtr = m_pValues + (sizeof(uint8_t) * index);
+  //return JavaBool::FromBool(*reinterpret_cast<const uint8_t*>(boolPtr) > 0 ? true : false);
 }

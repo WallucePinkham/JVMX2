@@ -389,8 +389,8 @@ JavaString JavaString::FromArray( const JavaArray &array )
   std::u16string result;
   for ( size_t i = 0; i < array.GetNumberOfElements(); ++ i )
   {
-    const JavaChar *pChar = dynamic_cast<const JavaChar *>( array.At( i ) );
-    char16_t ch = pChar->ToChar16();
+    const JavaChar chr( array.CharAt( i ) );
+    char16_t ch = chr.ToChar16();
 
     // We assume that the null character ends the string.
  /*   if ( u'\u0000' == ch )

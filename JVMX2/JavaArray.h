@@ -17,6 +17,7 @@
 class JavaInteger;
 class JavaChar;
 class JavaByte;
+class JavaBool;
 class ObjectReference;
 
 class JavaArray : protected IJavaVariableType
@@ -62,6 +63,10 @@ public:
   static boost::intrusive_ptr<ObjectReference> CreateFromCArray( /*std::shared_ptr<IMemoryManager> pMemoryManager,*/ const char *pBuffer );
   static boost::intrusive_ptr<ObjectReference> CreateFromCArray( /*std::shared_ptr<IMemoryManager> pMemoryManager,*/ const uint8_t* pBuffer, size_t length);
 
+  virtual JavaChar CharAt(size_t index) const;
+  virtual JavaByte ByteAt(size_t index) const;
+  virtual JavaBool BoolAt(size_t index) const;
+
   virtual IJavaVariableType *At( size_t index );
   virtual const IJavaVariableType *At( size_t index ) const;
   virtual size_t GetNumberOfElements() const;
@@ -70,6 +75,7 @@ public:
   void SetAt( const JavaInteger &index, const JavaChar &value );
   void SetAt( const JavaInteger &index, const IJavaVariableType *pValue );
   void SetAt(const JavaInteger& index, const JavaByte& pValue);
+  //void SetAt(const JavaInteger& index, const JavaBool& pValue);
   void SetAt(const JavaInteger& index, JavaLong value);
 
   void SetAt( const uint32_t &index, const JavaInteger &value );
@@ -101,6 +107,7 @@ private:
 
   void DebugAssert() const;
   void InternalSetValue( const size_t index, const IJavaVariableType *pFinalValue );
+  void ValidateIndex(const uint32_t& index);
 
 
 
