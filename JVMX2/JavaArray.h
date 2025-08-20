@@ -74,14 +74,15 @@ public:
   void SetAt( const JavaInteger &index, const JavaInteger &value );
   void SetAt( const JavaInteger &index, const JavaChar &value );
   void SetAt( const JavaInteger &index, const IJavaVariableType *pValue );
-  void SetAt(const JavaInteger& index, const JavaByte& pValue);
-  //void SetAt(const JavaInteger& index, const JavaBool& pValue);
+  void SetAt(const JavaInteger& index, const JavaByte& value);
+  void SetAt(const JavaInteger& index, const JavaBool& value);
   void SetAt(const JavaInteger& index, JavaLong value);
 
   void SetAt( const uint32_t &index, const JavaInteger &value );
   void SetAt( const uint32_t &index, const JavaChar &value );
   void SetAt( const uint32_t &index, const IJavaVariableType *pValue );
   void SetAt(const uint32_t& index, const JavaByte& value);
+  void SetAt(const uint32_t& index, const JavaBool& value);
   void SetAt(const uint32_t& index, JavaLong value);
 
   JavaString ConvertCharArrayToString() const;
@@ -107,7 +108,7 @@ private:
 
   void DebugAssert() const;
   void InternalSetValue( const size_t index, const IJavaVariableType *pFinalValue );
-  void ValidateIndex(const uint32_t& index);
+  void ValidateIndex(const uint32_t& index) const;
 
 
 

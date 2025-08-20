@@ -42,7 +42,7 @@ size_t JavaArray::GetSizeOfValueType(e_JavaArrayTypes type)
   switch (type)
   {
   case e_JavaArrayTypes::Boolean:
-    return sizeof(JavaBool);
+    return sizeof(uint8_t);
     break;
 
   case e_JavaArrayTypes::Char:
@@ -90,7 +90,7 @@ JavaArray::~JavaArray()
 
   for (size_t i = 0; i < m_Size; ++i)
   {
-    if (m_ContainedType != e_JavaArrayTypes::Char && m_ContainedType != e_JavaArrayTypes::Byte)
+    if (m_ContainedType != e_JavaArrayTypes::Char && m_ContainedType != e_JavaArrayTypes::Byte && m_ContainedType != e_JavaArrayTypes::Boolean)
     {
       IJavaVariableType* pValue = GetValueAtIndex(i);
       pValue->~IJavaVariableType();
@@ -149,9 +149,9 @@ bool JavaArray::operator==(const IJavaVariableType& other) const
 IJavaVariableType* JavaArray::At(size_t index)
 {
 #ifdef _DEBUG
-  if (m_ContainedType == e_JavaArrayTypes::Char || m_ContainedType == e_JavaArrayTypes::Byte)
+  if (m_ContainedType == e_JavaArrayTypes::Char || m_ContainedType == e_JavaArrayTypes::Byte || m_ContainedType == e_JavaArrayTypes::Boolean)
   {
-    throw InvalidStateException(__FUNCTION__ " - Cannot use At() for char/byte arrays. Use CharAt()/ByteAt() instead.");
+    throw InvalidStateException(__FUNCTION__ " - Cannot use At() for char/byte/boolean arrays. Use CharAt()/ByteAt()/BoolAt() instead.");
   }
 #endif
 
@@ -243,6 +243,13 @@ void JavaArray::SetAt(const JavaInteger& index, const JavaByte& value)
 
   SetAt(index.ToHostInt32(), value);
 
+  DebugAssert();
+}
+
+void JavaArray::SetAt(const JavaInteger& index, const JavaBool& pValue)
+{
+  DebugAssert();
+  SetAt(index.ToHostInt32(), pValue);
   DebugAssert();
 }
 
@@ -363,10 +370,10 @@ void JavaArray::SetAt(const uint32_t& index, const JavaInteger& value)
     //{
     //  SetAt(index, *(boost::dynamic_pointer_cast<JavaLong>(result)));
     //}
-    //else if (m_ContainedType == e_JavaArrayTypes::Boolean)
-    //{
-    //  SetAt(index, *(boost::dynamic_pointer_cast<JavaBool>(result)));
-    //}
+    else if (m_ContainedType == e_JavaArrayTypes::Boolean)
+    {
+      SetAt(index, *(boost::dynamic_pointer_cast<JavaBool>(result)));
+    }
     else
     {
       InternalSetValue(index, result.get());
@@ -378,7 +385,7 @@ void JavaArray::SetAt(const uint32_t& index, const JavaInteger& value)
   }
 }
 
-void JavaArray::ValidateIndex(const uint32_t& index)
+void JavaArray::ValidateIndex(const uint32_t& index) const
 {
   if (index < 0)
   {
@@ -417,6 +424,18 @@ void JavaArray::SetAt(const uint32_t& index, const JavaByte& value)
 
   char* pCharValue = m_pValues + sizeof(uint8_t) * index;
   reinterpret_cast<uint8_t*>(pCharValue)[0] = value.ToHostInt8();
+}
+
+void JavaArray::SetAt(const uint32_t& index, const JavaBool& value)
+{
+  if (m_ContainedType != e_JavaArrayTypes::Boolean)
+  {
+    throw InvalidArgumentException(__FUNCTION__ " - Trying to add boolean to an array that does not contain booleans.");
+  }
+
+  ValidateIndex(index);
+  char* pCharValue = m_pValues + sizeof(uint8_t) * index;
+  reinterpret_cast<uint8_t*>(pCharValue)[0] = value.ToBool() ? 1 : 0;
 }
 
 void JavaArray::SetAt(const uint32_t& index, JavaLong value)
@@ -505,6 +524,8 @@ JavaString JavaArray::ConvertByteArrayToString() const
 
     delete[] pBuffer;
     pBuffer = nullptr;
+
+    return result;
   }
   catch (...)
   {
@@ -526,8 +547,8 @@ void JavaArray::Initialise()
     {
     case e_JavaArrayTypes::Boolean:
     {
-      IJavaVariableType* pValue = GetValueAtIndex(i);
-      new (pValue) JavaBool(JavaBool::FromDefault());
+      char* pCharValue = m_pValues + GetSizeOfValueType(e_JavaArrayTypes::Boolean) * i;
+      reinterpret_cast<uint8_t*>(pCharValue)[0] = 0;
     }
     break;
 
@@ -598,9 +619,9 @@ void JavaArray::Initialise()
 
 IJavaVariableType* JavaArray::GetValueAtIndex(size_t i)
 {
-  if (m_ContainedType == e_JavaArrayTypes::Char || m_ContainedType == e_JavaArrayTypes::Byte)
+  if (m_ContainedType == e_JavaArrayTypes::Char || m_ContainedType == e_JavaArrayTypes::Byte || m_ContainedType == e_JavaArrayTypes::Boolean)
   {
-    throw InvalidStateException(__FUNCTION__ " - Cannot use GetValueAtIndex() for char/byte arrays. Use CharAt()/ByteAt() instead.");
+    throw InvalidStateException(__FUNCTION__ " - Cannot use GetValueAtIndex() for char/byte/boolean arrays. Use CharAt()/ByteAt()/BoolAt() instead.");
   }
 
   char* pValue = m_pValues + (GetSizeOfValueType(m_ContainedType) * i);
@@ -1020,26 +1041,39 @@ boost::intrusive_ptr<ObjectReference> JavaArray::CreateFromCArray(const uint8_t*
 
 JavaChar JavaArray::CharAt(size_t index) const
 {
+  ValidateIndex(index);
+
+  if (m_ContainedType != e_JavaArrayTypes::Char)
+  {
+    throw InvalidArgumentException(__FUNCTION__ " - Trying to get a character from an array that does not contain characters.");
+  }
+
   const char* charPtr = m_pValues + (sizeof(char16_t) * index);
   return JavaChar::FromChar16(*reinterpret_cast<const char16_t*>(charPtr));
 }
 
 JavaByte JavaArray::ByteAt(size_t index) const
 {
+  ValidateIndex(index);
+
+  if (m_ContainedType != e_JavaArrayTypes::Byte)
+  {
+    throw InvalidArgumentException(__FUNCTION__ " - Trying to get a byte from an array that does not contain bytes.");
+  }
+
   const char* bytePtr = m_pValues + (sizeof(uint8_t) * index);
   return JavaByte::FromHostInt8(*reinterpret_cast<const uint8_t*>(bytePtr));
 }
 
 JavaBool JavaArray::BoolAt(size_t index) const
 {
-  const IJavaVariableType *pVar = At(index);
-  if (pVar->GetVariableType() != e_JavaVariableTypes::Bool)
+  ValidateIndex(index);
+
+  if (m_ContainedType != e_JavaArrayTypes::Boolean)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Trying to get a boolean value from an array that does not contain booleans.");
+    throw InvalidArgumentException(__FUNCTION__ " - Trying to get a boolean from an array that does not contain booleans.");
   }
 
-  return JavaBool(*reinterpret_cast<const JavaBool*>(pVar));
-
-  //const char* boolPtr = m_pValues + (sizeof(uint8_t) * index);
-  //return JavaBool::FromBool(*reinterpret_cast<const uint8_t*>(boolPtr) > 0 ? true : false);
+  const char* boolPtr = m_pValues + (sizeof(uint8_t) * index);
+  return JavaBool::FromBool(*reinterpret_cast<const uint8_t*>(boolPtr) > 0 ? true : false);
 }
