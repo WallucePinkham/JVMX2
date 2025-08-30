@@ -1,4 +1,3 @@
-
 #include "InvalidStateException.h"
 
 #include "GlobalCatalog.h"
@@ -6,6 +5,16 @@
 #include "ILogger.h"
 
 #include "HelperTypes.h"
+
+#include "JavaArray.h"
+#include "JavaByteArray.h"
+#include "JavaCharArray.h"
+#include "JavaBooleanArray.h"
+#include "JavaIntegerArray.h"
+#include "JavaShortArray.h"
+#include "JavaLongArray.h"
+#include "JavaFloatArray.h"
+#include "JavaDoubleArray.h"
 
 JavaString HelperTypes::ExtractValueFromStringObject(const JavaObject* pStringObject)
 {
@@ -203,9 +212,50 @@ boost::intrusive_ptr<ObjectReference> HelperTypes::CreateArray( e_JavaArrayTypes
 
   std::shared_ptr<IGarbageCollector> pGC = GlobalCatalog::GetInstance().Get( "GarbageCollector" );
 
+  // allocate raw memory for the array object plus element storage (placement new will construct the concrete object in this memory)
   JavaArray *pObjectMemory = reinterpret_cast<JavaArray *>( pGC->AllocateArray( sizeof( JavaArray ) + JavaArray::CalculateSizeInBytes( type, size ) ) );
-  JavaArray *pArray = new ( pObjectMemory ) JavaArray( type, size );
 
+  // placement-new the appropriate concrete subclass so virtual hooks work
+  JavaArray *pArray = nullptr;
+  switch (type)
+  {
+  case e_JavaArrayTypes::Byte:
+    pArray = new ( pObjectMemory ) JavaByteArray( size );
+    break;
+
+  case e_JavaArrayTypes::Char:
+    pArray = new ( pObjectMemory ) JavaCharArray( size );
+    break;
+
+  case e_JavaArrayTypes::Boolean:
+    pArray = new ( pObjectMemory ) JavaBooleanArray( size );
+    break;
+
+  case e_JavaArrayTypes::Integer:
+    pArray = new ( pObjectMemory ) JavaIntegerArray( size );
+    break;
+
+  case e_JavaArrayTypes::Short:
+    pArray = new ( pObjectMemory ) JavaShortArray( size );
+    break;
+
+  case e_JavaArrayTypes::Long:
+    pArray = new ( pObjectMemory ) JavaLongArray( size );
+    break;
+
+  case e_JavaArrayTypes::Float:
+    pArray = new ( pObjectMemory ) JavaFloatArray( size );
+    break;
+
+  case e_JavaArrayTypes::Double:
+    pArray = new ( pObjectMemory ) JavaDoubleArray( size );
+    break;
+
+  case e_JavaArrayTypes::Reference:
+  default:
+    pArray = new ( pObjectMemory ) JavaArray( type, size );
+    break;
+  }
 
   std::shared_ptr<IObjectRegistry> pObjectRegistry = GlobalCatalog::GetInstance().Get( "ObjectRegistry" );
   boost::intrusive_ptr<ObjectReference> ref = new ObjectReference( pObjectRegistry->AddObject( pArray ) );

@@ -17,11 +17,10 @@
 
 #include "JavaArray.h"
 
-JavaArray::JavaArray( /*std::shared_ptr<IMemoryManager> pMemoryManager,*/ e_JavaArrayTypes type, size_t size)
+JavaArray::JavaArray(e_JavaArrayTypes type, size_t size)
   : m_ContainedType(type)
   , m_Size(size)
   , m_pMonitor(new Lockable)
-  //, m_pValues( size, TypeParser::GetDefaultValue( type ) )
 #ifdef _DEBUG
   , debugInitialLength(size)
 #endif // _DEBUG
@@ -50,11 +49,11 @@ size_t JavaArray::GetSizeOfValueType(e_JavaArrayTypes type)
     break;
 
   case e_JavaArrayTypes::Float:
-    return sizeof(JavaFloat);
+    return sizeof(float);
     break;
 
   case e_JavaArrayTypes::Double:
-    return sizeof(JavaDouble);
+    return sizeof(double);
     break;
 
   case e_JavaArrayTypes::Byte:
@@ -62,15 +61,15 @@ size_t JavaArray::GetSizeOfValueType(e_JavaArrayTypes type)
     break;
 
   case e_JavaArrayTypes::Short:
-    return sizeof(JavaShort);
+    return sizeof(int16_t);
     break;
 
   case e_JavaArrayTypes::Integer:
-    return sizeof(JavaInteger);
+    return sizeof(int32_t);
     break;
 
   case e_JavaArrayTypes::Long:
-    return sizeof(JavaLong);
+    return sizeof(int64_t);
     break;
 
   case e_JavaArrayTypes::Reference:
@@ -109,12 +108,12 @@ JavaArray::~JavaArray()
 //   DebugAssert();
 // }
 
-void JavaArray::operator delete (void* pObject) throw()
+void JavaArray::operator delete (void* pObject) JVMX_NOEXCEPT
 {
   //ObjectFactory::FreeArray( pObject );
 }
 
-void JavaArray::operator delete (void* pObject, void*) throw()
+void JavaArray::operator delete (void* pObject, void*) JVMX_NOEXCEPT
 {
   //ObjectFactory::FreeArray( pObject );
 }
@@ -407,7 +406,7 @@ void JavaArray::SetAt(const uint32_t& index, const JavaChar& value)
 
   ValidateIndex(index);
 
-  char* pCharValue = m_pValues + sizeof(char16_t) * index;
+  char* pCharValue = m_pValues + (sizeof(char16_t) * index);
   reinterpret_cast<char16_t*>(pCharValue)[0] = value.ToChar16();
 
   //InternalSetValue( index, &value );
@@ -438,7 +437,7 @@ void JavaArray::SetAt(const uint32_t& index, const JavaBool& value)
   reinterpret_cast<uint8_t*>(pCharValue)[0] = value.ToBool() ? 1 : 0;
 }
 
-void JavaArray::SetAt(const uint32_t& index, JavaLong value)
+void JavaArray::SetAt(const uint32_t& index, const JavaLong &value)
 {
   if (m_ContainedType != e_JavaArrayTypes::Long)
   {
@@ -449,6 +448,56 @@ void JavaArray::SetAt(const uint32_t& index, JavaLong value)
 
   InternalSetValue(index, &value);
 }
+
+void JavaArray::SetAt(const uint32_t& index, const JavaDouble& value)
+{
+  if (m_ContainedType != e_JavaArrayTypes::Double)
+  {
+    throw InvalidArgumentException(__FUNCTION__ " - Trying to add double to an array that does not contain doubles.");
+  }
+
+  ValidateIndex(index);
+
+  InternalSetValue(index, &value);
+}
+
+void JavaArray::SetAt(const uint32_t& index, const JavaFloat& value)
+{
+  if (m_ContainedType != e_JavaArrayTypes::Float)
+  {
+    throw InvalidArgumentException(__FUNCTION__ " - Trying to add float to an array that does not contain floats.");
+  }
+
+  ValidateIndex(index);
+
+  InternalSetValue(index, &value);
+}
+
+void JavaArray::SetAt(const uint32_t& index, const JavaShort& value)
+{
+  if (m_ContainedType != e_JavaArrayTypes::Short)
+  {
+    throw InvalidArgumentException(__FUNCTION__ " - Trying to add short to an array that does not contain shorts.");
+  }
+
+  ValidateIndex(index);
+
+  InternalSetValue(index, &value);
+}
+
+//void JavaArray::SetAt(const uint32_t& index, const ObjectReference& value)
+//{
+//  if (m_ContainedType != e_JavaArrayTypes::Reference)
+//  {
+//    throw InvalidArgumentException(__FUNCTION__ " - Trying to add object to an array that does not contain objects.");
+//  }
+//
+//  ValidateIndex(index);
+//
+//  InternalSetValue(index, &value);
+//}
+
+
 
 void JavaArray::SetAt(const uint32_t& index, const IJavaVariableType* pValue)
 {
@@ -561,15 +610,15 @@ void JavaArray::Initialise()
 
     case e_JavaArrayTypes::Float:
     {
-      IJavaVariableType* pValue = GetValueAtIndex(i);
-      new (pValue) JavaFloat(JavaFloat::FromDefault());
+      char* pCharValue = m_pValues + GetSizeOfValueType(e_JavaArrayTypes::Float) * i;
+      reinterpret_cast<float*>(pCharValue)[0] = 0.0f;
     }
     break;
 
     case e_JavaArrayTypes::Double:
     {
-      IJavaVariableType* pValue = GetValueAtIndex(i);
-      new (pValue) JavaDouble(JavaDouble::FromDefault());
+      char* pCharValue = m_pValues + GetSizeOfValueType(e_JavaArrayTypes::Double) * i;
+      reinterpret_cast<double*>(pCharValue)[0] = 0.0;
     }
     break;
 
@@ -582,22 +631,22 @@ void JavaArray::Initialise()
 
     case e_JavaArrayTypes::Short:
     {
-      IJavaVariableType* pValue = GetValueAtIndex(i);
-      new (pValue) JavaShort(JavaShort::FromDefault());
+      char* pCharValue = m_pValues + GetSizeOfValueType(e_JavaArrayTypes::Short) * i;
+      reinterpret_cast<int16_t*>(pCharValue)[0] = 0;
     }
     break;
 
     case e_JavaArrayTypes::Integer:
     {
-      IJavaVariableType* pValue = GetValueAtIndex(i);
-      new (pValue) JavaInteger(JavaInteger::FromDefault());
+      char* pCharValue = m_pValues + GetSizeOfValueType(e_JavaArrayTypes::Integer) * i;
+      reinterpret_cast<int32_t*>(pCharValue)[0] = 0;
     }
     break;
 
     case e_JavaArrayTypes::Long:
     {
-      IJavaVariableType* pValue = GetValueAtIndex(i);
-      new (pValue) JavaLong(JavaLong::FromDefault());
+      char* pCharValue = m_pValues + GetSizeOfValueType(e_JavaArrayTypes::Long) * i;
+      reinterpret_cast<int64_t*>(pCharValue)[0] = 0;
     }
     break;
 
@@ -619,9 +668,9 @@ void JavaArray::Initialise()
 
 IJavaVariableType* JavaArray::GetValueAtIndex(size_t i)
 {
-  if (m_ContainedType == e_JavaArrayTypes::Char || m_ContainedType == e_JavaArrayTypes::Byte || m_ContainedType == e_JavaArrayTypes::Boolean)
+  if (m_ContainedType != e_JavaArrayTypes::Reference)
   {
-    throw InvalidStateException(__FUNCTION__ " - Cannot use GetValueAtIndex() for char/byte/boolean arrays. Use CharAt()/ByteAt()/BoolAt() instead.");
+    throw InvalidStateException(__FUNCTION__ " - Cannot use GetValueAtIndex() for arrays of primitive types. Use CharAt()/ByteAt()/BoolAt(), etc. instead.");
   }
 
   char* pValue = m_pValues + (GetSizeOfValueType(m_ContainedType) * i);
@@ -631,9 +680,9 @@ IJavaVariableType* JavaArray::GetValueAtIndex(size_t i)
 
 const IJavaVariableType* JavaArray::GetValueAtIndex(size_t i) const
 {
-  if (m_ContainedType == e_JavaArrayTypes::Char || m_ContainedType == e_JavaArrayTypes::Byte)
+  if (m_ContainedType != e_JavaArrayTypes::Reference)
   {
-    throw InvalidStateException(__FUNCTION__ " - Cannot use GetValueAtIndex() for char/byte arrays. Use CharAt()/ByteAt() instead.");
+    throw InvalidStateException(__FUNCTION__ " - Cannot use GetValueAtIndex() for arrays of primitive types. Use CharAt()/ByteAt()/BoolAt(), etc. instead.");
   }
 
   const char* pValue = m_pValues + (GetSizeOfValueType(m_ContainedType) * i);
@@ -660,6 +709,11 @@ void JavaArray::CloneOther(const JavaArray* pObjectToClone)
   if (m_ContainedType != pObjectToClone->m_ContainedType)
   {
     throw InvalidArgumentException(__FUNCTION__ " - Contained types do not match.");
+  }
+
+  if (m_ContainedType != e_JavaArrayTypes::Reference)
+  {
+    throw InvalidStateException(__FUNCTION__ " - Expected Derived class to handle this.");
   }
 
   JVMX_ASSERT(pObjectToClone->m_Size == m_Size);
