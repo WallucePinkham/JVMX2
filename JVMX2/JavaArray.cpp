@@ -50,11 +50,11 @@ size_t JavaArray::GetSizeOfValueType(e_JavaArrayTypes type)
     break;
 
   case e_JavaArrayTypes::Float:
-    return sizeof(JavaFloat);
+    return sizeof(float);
     break;
 
   case e_JavaArrayTypes::Double:
-    return sizeof(JavaDouble);
+    return sizeof(double);
     break;
 
   case e_JavaArrayTypes::Byte:
@@ -149,9 +149,13 @@ bool JavaArray::operator==(const IJavaVariableType& other) const
 IJavaVariableType* JavaArray::At(size_t index)
 {
 #ifdef _DEBUG
-  if (m_ContainedType == e_JavaArrayTypes::Char || m_ContainedType == e_JavaArrayTypes::Byte || m_ContainedType == e_JavaArrayTypes::Boolean)
+  if (m_ContainedType == e_JavaArrayTypes::Char ||
+    m_ContainedType == e_JavaArrayTypes::Byte ||
+    m_ContainedType == e_JavaArrayTypes::Boolean ||
+    m_ContainedType == e_JavaArrayTypes::Float ||
+    m_ContainedType == e_JavaArrayTypes::Double)
   {
-    throw InvalidStateException(__FUNCTION__ " - Cannot use At() for char/byte/boolean arrays. Use CharAt()/ByteAt()/BoolAt() instead.");
+    throw InvalidStateException(__FUNCTION__ " - Cannot use At() for char/byte/boolean/float/double/ arrays. Use CharAt()/ByteAt()/BoolAt()/FloatAt()/DoubleAt() instead.");
   }
 #endif
 
@@ -260,6 +264,19 @@ void JavaArray::SetAt(const JavaInteger& index, JavaLong value)
   DebugAssert();
 }
 
+void JavaArray::SetAt(const JavaInteger& index, const JavaFloat& value)
+{
+  DebugAssert();
+  SetAt(index.ToHostInt32(), value);
+  DebugAssert();
+}
+
+void JavaArray::SetAt(const JavaInteger& index, const JavaDouble& value)
+{
+  DebugAssert();
+  SetAt(index.ToHostInt32(), value);
+  DebugAssert();
+}
 
 void JavaArray::SetAt(const JavaInteger& index, const IJavaVariableType* pValue)
 {
@@ -366,6 +383,14 @@ void JavaArray::SetAt(const uint32_t& index, const JavaInteger& value)
     {
       SetAt(index, *(boost::dynamic_pointer_cast<JavaByte>(result)));
     }
+    else if (m_ContainedType == e_JavaArrayTypes::Float)
+    {
+      SetAt(index, *(boost::dynamic_pointer_cast<JavaFloat>(result)));
+    }
+    else if (m_ContainedType == e_JavaArrayTypes::Double)
+    {
+      SetAt(index, *(boost::dynamic_pointer_cast<JavaDouble>(result)));
+    }
     //else if (m_ContainedType == e_JavaArrayTypes::Long)
     //{
     //  SetAt(index, *(boost::dynamic_pointer_cast<JavaLong>(result)));
@@ -374,6 +399,14 @@ void JavaArray::SetAt(const uint32_t& index, const JavaInteger& value)
     {
       SetAt(index, *(boost::dynamic_pointer_cast<JavaBool>(result)));
     }
+    //else if (m_ContainedType == e_JavaArrayTypes::Short)
+    //{
+    //  InternalSetValue(index, result.get());
+    //}
+    //else if (m_ContainedType == e_JavaArrayTypes::Integer)
+    //{
+    //  InternalSetValue(index, result.get());
+    //}
     else
     {
       InternalSetValue(index, result.get());
@@ -436,6 +469,32 @@ void JavaArray::SetAt(const uint32_t& index, const JavaBool& value)
   ValidateIndex(index);
   char* pCharValue = m_pValues + sizeof(uint8_t) * index;
   reinterpret_cast<uint8_t*>(pCharValue)[0] = value.ToBool() ? 1 : 0;
+}
+
+void JavaArray::SetAt(const uint32_t& index, const JavaFloat& value)
+{
+  if (m_ContainedType != e_JavaArrayTypes::Float)
+  {
+    throw InvalidArgumentException(__FUNCTION__ " - Trying to add float to an array that does not contain floats.");
+  }
+
+  ValidateIndex(index);
+
+  char* pCharValue = m_pValues + sizeof(float) * index;
+  *reinterpret_cast<float*>(pCharValue) = value.ToHostFloat();
+}
+
+void JavaArray::SetAt(const uint32_t& index, const JavaDouble& value)
+{
+  if (m_ContainedType != e_JavaArrayTypes::Double)
+  {
+    throw InvalidArgumentException(__FUNCTION__ " - Trying to add double to an array that does not contain doubles.");
+  }
+
+  ValidateIndex(index);
+
+  char* pCharValue = m_pValues + sizeof(double) * index;
+  *reinterpret_cast<double*>(pCharValue) = value.ToHostDouble();
 }
 
 void JavaArray::SetAt(const uint32_t& index, JavaLong value)
@@ -508,7 +567,7 @@ JavaString JavaArray::ConvertByteArrayToString() const
     //for ( auto it = m_pValues.begin(); it != m_pValues.end(); ++ it )
     for (size_t index = 0; index < m_Size; ++index)
     {
-      char chr =  static_cast<char>(ByteAt(index).ToHostInt8());
+      char chr = static_cast<char>(ByteAt(index).ToHostInt8());
       pBuffer[i++] = chr;
 
       // Exit after we have appended the null character.
@@ -539,6 +598,8 @@ void JavaArray::Initialise()
 {
   DebugAssert();
 
+  size_t sizeOfValue = GetSizeOfValueType(m_ContainedType);
+
   for (size_t i = 0; i < m_Size; ++i)
   {
     //*pValue = *TypeParser::GetDefaultValue( m_ContainedType );
@@ -547,35 +608,35 @@ void JavaArray::Initialise()
     {
     case e_JavaArrayTypes::Boolean:
     {
-      char* pCharValue = m_pValues + GetSizeOfValueType(e_JavaArrayTypes::Boolean) * i;
+      char* pCharValue = m_pValues + sizeOfValue * i;
       reinterpret_cast<uint8_t*>(pCharValue)[0] = 0;
     }
     break;
 
     case e_JavaArrayTypes::Char:
     {
-      char* pCharValue = m_pValues + GetSizeOfValueType(e_JavaArrayTypes::Char) * i;
+      char* pCharValue = m_pValues + sizeOfValue * i;
       reinterpret_cast<char16_t*>(pCharValue)[0] = 0;
     }
     break;
 
     case e_JavaArrayTypes::Float:
     {
-      IJavaVariableType* pValue = GetValueAtIndex(i);
-      new (pValue) JavaFloat(JavaFloat::FromDefault());
+      char* pFloatValue = m_pValues + sizeOfValue * i;
+      reinterpret_cast<float*>(pFloatValue)[0] = 0.0f;
     }
     break;
 
     case e_JavaArrayTypes::Double:
     {
-      IJavaVariableType* pValue = GetValueAtIndex(i);
-      new (pValue) JavaDouble(JavaDouble::FromDefault());
+      char* pDoubleValue = m_pValues + sizeOfValue * i;
+      reinterpret_cast<double*>(pDoubleValue)[0] = 0.0;
     }
     break;
 
     case e_JavaArrayTypes::Byte:
     {
-      char* pCharValue = m_pValues + GetSizeOfValueType(e_JavaArrayTypes::Byte) * i;
+      char* pCharValue = m_pValues + sizeOfValue * i;
       reinterpret_cast<uint8_t*>(pCharValue)[0] = 0;
     }
     break;
@@ -619,9 +680,14 @@ void JavaArray::Initialise()
 
 IJavaVariableType* JavaArray::GetValueAtIndex(size_t i)
 {
-  if (m_ContainedType == e_JavaArrayTypes::Char || m_ContainedType == e_JavaArrayTypes::Byte || m_ContainedType == e_JavaArrayTypes::Boolean)
+  if (m_ContainedType == e_JavaArrayTypes::Char ||
+      m_ContainedType == e_JavaArrayTypes::Byte ||
+      m_ContainedType == e_JavaArrayTypes::Boolean ||
+      m_ContainedType == e_JavaArrayTypes::Float ||
+      m_ContainedType == e_JavaArrayTypes::Double
+    )
   {
-    throw InvalidStateException(__FUNCTION__ " - Cannot use GetValueAtIndex() for char/byte/boolean arrays. Use CharAt()/ByteAt()/BoolAt() instead.");
+    throw InvalidStateException(__FUNCTION__ " - Cannot use GetValueAtIndex() for char/byte/boolean/float/double arrays. Use CharAt()/ByteAt()/BoolAt()/FloatAt()/DoubleAt() instead.");
   }
 
   char* pValue = m_pValues + (GetSizeOfValueType(m_ContainedType) * i);
@@ -631,9 +697,14 @@ IJavaVariableType* JavaArray::GetValueAtIndex(size_t i)
 
 const IJavaVariableType* JavaArray::GetValueAtIndex(size_t i) const
 {
-  if (m_ContainedType == e_JavaArrayTypes::Char || m_ContainedType == e_JavaArrayTypes::Byte)
+  if (m_ContainedType == e_JavaArrayTypes::Char || 
+      m_ContainedType == e_JavaArrayTypes::Byte ||
+      m_ContainedType == e_JavaArrayTypes::Boolean ||
+      m_ContainedType == e_JavaArrayTypes::Float ||
+      m_ContainedType == e_JavaArrayTypes::Double
+    )
   {
-    throw InvalidStateException(__FUNCTION__ " - Cannot use GetValueAtIndex() for char/byte arrays. Use CharAt()/ByteAt() instead.");
+    throw InvalidStateException(__FUNCTION__ " - Cannot use GetValueAtIndex() for char/byte/boolean/float/double arrays. Use CharAt()/ByteAt()/BoolAt()/FloatAt()/DoubleAt() instead.");
   }
 
   const char* pValue = m_pValues + (GetSizeOfValueType(m_ContainedType) * i);
@@ -673,6 +744,18 @@ void JavaArray::CloneOther(const JavaArray* pObjectToClone)
     else if (m_ContainedType == e_JavaArrayTypes::Byte)
     {
       SetAt(JavaInteger::FromHostInt32(i), pObjectToClone->ByteAt(i));
+    }
+    else if (m_ContainedType == e_JavaArrayTypes::Boolean)
+    {
+      SetAt(JavaInteger::FromHostInt32(i), pObjectToClone->BoolAt(i));
+    }
+    else if (m_ContainedType == e_JavaArrayTypes::Float)
+    {
+      SetAt(JavaInteger::FromHostInt32(i), pObjectToClone->FloatAt(i));
+    }
+    else if (m_ContainedType == e_JavaArrayTypes::Double)
+    {
+      SetAt(JavaInteger::FromHostInt32(i), pObjectToClone->DoubleAt(i));
     }
     else
     {
@@ -884,7 +967,7 @@ JavaString JavaArray::ToString() const
     {
       outputStream << ByteAt(i).ToString().ToCharacterArray();
     }
-    else 
+    else
     {
       const IJavaVariableType* pValue = GetValueAtIndex(i);
       outputStream << pValue->ToString().ToCharacterArray();
@@ -1076,4 +1159,30 @@ JavaBool JavaArray::BoolAt(size_t index) const
 
   const char* boolPtr = m_pValues + (sizeof(uint8_t) * index);
   return JavaBool::FromBool(*reinterpret_cast<const uint8_t*>(boolPtr) > 0 ? true : false);
+}
+
+JavaFloat JavaArray::FloatAt(size_t index) const
+{
+  ValidateIndex(index);
+
+  if (m_ContainedType != e_JavaArrayTypes::Float)
+  {
+    throw InvalidArgumentException(__FUNCTION__ " - Trying to get a float from an array that does not contain floats.");
+  }
+
+  const char* floatPtr = m_pValues + (sizeof(float) * index);
+  return JavaFloat::FromHostFloat(*reinterpret_cast<const float*>(floatPtr));
+}
+
+JavaDouble JavaArray::DoubleAt(size_t index) const
+{
+  ValidateIndex(index);
+
+  if (m_ContainedType != e_JavaArrayTypes::Double)
+  {
+    throw InvalidArgumentException(__FUNCTION__ " - Trying to get a double from an array that does not contain doubles.");
+  }
+
+  const char* doublePtr = m_pValues + (sizeof(double) * index);
+  return JavaDouble::FromHostDouble(*reinterpret_cast<const double*>(doublePtr));
 }
