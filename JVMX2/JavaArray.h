@@ -18,6 +18,8 @@ class JavaInteger;
 class JavaChar;
 class JavaByte;
 class JavaBool;
+class JavaShort;
+class JavaLong;
 class ObjectReference;
 
 class JavaArray : protected IJavaVariableType
@@ -68,6 +70,9 @@ public:
   virtual JavaBool BoolAt(size_t index) const;
   virtual JavaFloat FloatAt(size_t index) const;
   virtual JavaDouble DoubleAt(size_t index) const;
+  virtual JavaInteger IntegerAt(size_t index) const;
+  virtual JavaShort ShortAt(size_t index) const;
+  virtual JavaLong LongAt(size_t index) const;
 
   virtual IJavaVariableType *At( size_t index );
   virtual const IJavaVariableType *At( size_t index ) const;
@@ -81,6 +86,7 @@ public:
   void SetAt(const JavaInteger& index, JavaLong value);
   void SetAt(const JavaInteger& index, const JavaFloat& value);
   void SetAt(const JavaInteger& index, const JavaDouble& value);
+  void SetAt(const JavaInteger& index, const JavaShort& value);
 
   void SetAt( const uint32_t &index, const JavaInteger &value );
   void SetAt( const uint32_t &index, const JavaChar &value );
@@ -90,6 +96,7 @@ public:
   void SetAt(const uint32_t& index, const JavaFloat& value);
   void SetAt(const uint32_t& index, const JavaDouble& value);
   void SetAt(const uint32_t& index, JavaLong value);
+  void SetAt(const uint32_t& index, JavaShort value);
 
   JavaString ConvertCharArrayToString() const;
   DataBuffer ConvertByteArrayToBuffer() const;
@@ -114,7 +121,7 @@ private:
 
   void DebugAssert() const;
   void InternalSetValue( const size_t index, const IJavaVariableType *pFinalValue );
-  void ValidateIndex(const uint32_t& index) const;
+  inline void ValidateIndex(const uint32_t& index) const;
 
 
 
