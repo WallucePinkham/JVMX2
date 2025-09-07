@@ -90,7 +90,7 @@ JavaArray::~JavaArray()
 
   for (size_t i = 0; i < m_Size; ++i)
   {
-    if (m_ContainedType != e_JavaArrayTypes::Char && m_ContainedType != e_JavaArrayTypes::Byte && m_ContainedType != e_JavaArrayTypes::Boolean)
+    if (m_ContainedType == e_JavaArrayTypes::Reference)
     {
       IJavaVariableType* pValue = GetValueAtIndex(i);
       pValue->~IJavaVariableType();
@@ -408,18 +408,20 @@ void JavaArray::SetAt(const uint32_t& index, const JavaInteger& value)
     {
       SetAt(index, *(boost::dynamic_pointer_cast<JavaShort>(result)));
     }
-    else if (m_ContainedType == e_JavaArrayTypes::Integer)
-    {
-      SetAt(index, *(boost::dynamic_pointer_cast<JavaInteger>(result)));
-    }
     else
     {
-      InternalSetValue(index, result.get());
+      throw InvalidStateException(__FUNCTION__ " - Unknown type.");
     }
+    //else
+    //{
+    //  char* pCharValue = m_pValues + sizeof(int32_t) * index;
+    //  reinterpret_cast<int32_t*>(pCharValue)[0] = value.ToHostInt32();
+    //}
   }
   else
   {
-    InternalSetValue(index, &value);
+    char* pCharValue = m_pValues + sizeof(int32_t) * index;
+    reinterpret_cast<int32_t*>(pCharValue)[0] = value.ToHostInt32();
   }
 }
 
@@ -511,7 +513,8 @@ void JavaArray::SetAt(const uint32_t& index, JavaLong value)
 
   ValidateIndex(index);
 
-  InternalSetValue(index, &value);
+  char* pCharValue = m_pValues + sizeof(int64_t) * index;
+  *reinterpret_cast<int64_t*>(pCharValue) = value.ToHostInt64();
 }
 
 void JavaArray::SetAt(const uint32_t& index, JavaShort value)
@@ -523,7 +526,8 @@ void JavaArray::SetAt(const uint32_t& index, JavaShort value)
 
   ValidateIndex(index);
   
-  InternalSetValue(index, &value);
+  char* pCharValue = m_pValues + sizeof(int16_t) * index;
+  *reinterpret_cast<int16_t*>(pCharValue) = value.ToHostInt16();
 }
 
 void JavaArray::SetAt(const uint32_t& index, const IJavaVariableType* pValue)

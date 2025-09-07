@@ -4263,14 +4263,9 @@ void BasicExecutionEngine::ExecuteOpCodeLoadShortFromArray(const std::shared_ptr
 
   JVMX_ASSERT(pArray->GetContainedArray()->GetContainedType() == e_JavaArrayTypes::Short);
 
-  const JavaShort* pShort = dynamic_cast<const JavaShort*>(pArray->GetContainedArray()->At(index));
-  if (nullptr == pShort)
-  {
-    throw InvalidStateException(__FUNCTION__ " - Could not convert from array contained type to char.");
-  }
+  const JavaShort shortVal = pArray->GetContainedArray()->ShortAt(index);
 
-  pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(pShort->ToHostInt16())));
-
+  pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(shortVal.ToHostInt16())));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeLoadFloatFromLocalWithIndex(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
@@ -6667,13 +6662,9 @@ void BasicExecutionEngine::ExecuteOpCodeLoadIntegerFromArray(const std::shared_p
 
   JVMX_ASSERT(pArray->GetContainedArray()->GetContainedType() == e_JavaArrayTypes::Integer);
 
-  const JavaInteger* pResult = dynamic_cast<const JavaInteger*>(pArray->GetContainedArray()->At(pIndex->ToHostInt32()));
-  if (nullptr == pResult)
-  {
-    throw InvalidStateException(__FUNCTION__ " - Could not convert from array contained type to integer.");
-  }
+  JavaInteger pResult = pArray->GetContainedArray()->IntegerAt(pIndex->ToHostInt32());
 
-  pVirtualMachineState->PushOperand(new JavaInteger(*pResult));
+  pVirtualMachineState->PushOperand(new JavaInteger(pResult));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeLoadLongFromArray(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
@@ -6690,13 +6681,9 @@ void BasicExecutionEngine::ExecuteOpCodeLoadLongFromArray(const std::shared_ptr<
 
   JVMX_ASSERT(pArray->GetContainedArray()->GetContainedType() == e_JavaArrayTypes::Long);
 
-  const JavaLong* pLong = dynamic_cast<const JavaLong*>(pArray->GetContainedArray()->At(index));
-  if (nullptr == pLong)
-  {
-    throw InvalidStateException(__FUNCTION__ " - Could not convert from array contained type to char.");
-  }
+  const JavaLong longVal = pArray->GetContainedArray()->LongAt(index);
 
-  pVirtualMachineState->PushOperand(new JavaLong(*pLong));
+  pVirtualMachineState->PushOperand(new JavaLong(longVal));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeReturnFloat(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
