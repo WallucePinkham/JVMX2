@@ -42,7 +42,8 @@ jobs:
       shell: cmd
       # call "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
       run: |
-        call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86 && set VS150COMNTOOLS=%VS170COMNTOOLS% && cd boost_1_67_0 && call bootstrap.bat && call b2.exe toolset=msvc address-model=32 architecture=x86 threading=multi 
+        rem call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86 && set VS150COMNTOOLS=%VS170COMNTOOLS% && cd boost_1_67_0 && call bootstrap.bat && call b2.exe toolset=msvc address-model=32 architecture=x86 threading=multi
+        call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86 && cd boost_1_67_0 && call bootstrap.bat && echo Running B2... && call b2.exe address-model=32 architecture=x86 threading=multi 
     - name: Build with MSBuild
       run: |
         msbuild JVMX2.sln /p:Configuration=Release /p:Platform=x86
