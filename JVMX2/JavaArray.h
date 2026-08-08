@@ -89,6 +89,7 @@ public:
   void MonitorExit( const char *pFunctionName );
 
   void CloneOther( const JavaArray *pObjectToClone );
+  void CopyRangeFrom(const JavaArray* pSourceArray, size_t sourceIndex, size_t destIndex, size_t length);
 
   // ONLY TO BE USED FOR GARBAGE COLLECTION
   void DeepClone( const JavaArray *pObjectToClone );
@@ -120,7 +121,7 @@ private:
 
 private:
   e_JavaArrayTypes m_ContainedType = e_JavaArrayTypes::Reference;
-  size_t m_Size = 0;
+  size_t m_size = 0;
 
 private:
   std::shared_ptr<Lockable> m_pMonitor;
@@ -135,3 +136,4 @@ private:
 };
 
 #endif // _JAVAARRAY__H_
+
