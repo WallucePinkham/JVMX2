@@ -32,19 +32,49 @@ jobs:
       if: always()
       with:
         path: |
-          boost_1_67_0/stage
-          boost_1_67_0/bin.v2
-        key: boost-1_67_0-${{ runner.os }}-${{ hashFiles('boost_1_67_0/**') }}
+          boost_1_78_0/stage
+          boost_1_78_0/bin.v2
+        key: boost-1_78_0-${{ runner.os }}-${{ hashFiles('boost_1_78_0/**') }}
         restore-keys: |
-          boost-1_67_0-${{ runner.os }}-      
+          boost-1_78_0-${{ runner.os }}-  
 
     - name: Build boost libraries
       shell: cmd
       # call "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
       run: |
-        rem call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86 && set VS150COMNTOOLS=%VS170COMNTOOLS% && cd boost_1_67_0 && call bootstrap.bat && call b2.exe toolset=msvc address-model=32 architecture=x86 threading=multi
-        call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86 && cd boost_1_67_0 && call bootstrap.bat && echo Running B2... && call b2.exe address-model=32 architecture=x86 threading=multi 
+        rem call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86 && set VS150COMNTOOLS=%VS170COMNTOOLS% && cd boost_1_78_0 && call bootstrap.bat && call b2.exe toolset=msvc address-model=32 architecture=x86 threading=multi
+        call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86 && cd boost_1_78_0 && call bootstrap.bat && echo Running B2... && call b2.exe address-model=32 architecture=x86 threading=multi 
+
+
     - name: Build with MSBuild
       run: |
         msbuild JVMX2.sln /p:Configuration=Release /p:Platform=x86
- 
+  
+
+
+        # - name: Cache Boost binaries
+    #   uses: actions/cache@v4
+    #   with:
+    #     path: boost_1_78_0
+    #     key: boost-1_78_0-msvc-x86-${{ runner.os }}
+
+    # - name: Download Boost (if not cached)
+    #   if: steps.cache.outputs.cache-hit != 'true'
+    #   run: |
+    #     $BoostUrl = "https://archives.boost.io/release/1.78.0/binaries/boost_1_78_0-bin-msvc-all-32-64.7z"
+    #     $BoostZip = "boost_1_78_0.7z"
+    #     $BoostPath = "boost_1_78_0"
+        
+    #     # Download the archive
+    #     Invoke-WebRequest -Uri $BoostUrl -OutFile $BoostZip
+        
+    #     # Extract using 7zip (pre-installed on windows-latest)
+    #     7z x $BoostZip -o"$BoostPath"
+        
+    #     echo "BOOST_ROOT=$BoostPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+    # - name: Build with MSBuild
+    #   run: |
+    #     msbuild JVMX2.sln /p:Configuration=Release /p:Platform=x86 `
+    #       /p:BoostIncludeDir="boost_1_78_0\include" `
+    #       /p:BoostLibDir="boost_1_78_0\lib"    
