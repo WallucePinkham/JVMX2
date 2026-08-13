@@ -43,7 +43,7 @@ jobs:
       # call "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
       run: |
         rem call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86 && set VS150COMNTOOLS=%VS170COMNTOOLS% && cd boost_1_78_0 && call bootstrap.bat && call b2.exe toolset=msvc address-model=32 architecture=x86 threading=multi
-        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86 && cd boost_1_78_0 && echo Calling Bootstrap && call bootstrap.bat && echo Running B2... && call b2.exe -d+2 address-model=32 architecture=x86 threading=multi 
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86 && cd boost_1_78_0 && echo Calling Bootstrap && call bootstrap.bat && echo Running B2... && call b2.exe -d+2 toolset=msvc address-model=32 architecture=x86 threading=multi 
 
     - name: Build with MSBuild
       run: |
