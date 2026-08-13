@@ -41,35 +41,35 @@ jobs:
     - name: Build boost libraries
       shell: cmd
       # call "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
-      # run: |
-      #   rem call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86 && set VS150COMNTOOLS=%VS170COMNTOOLS% && cd boost_1_78_0 && call bootstrap.bat && call b2.exe toolset=msvc address-model=32 architecture=x86 threading=multi
-      #   call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86 && cd boost_1_78_0 && echo Calling Bootstrap && call bootstrap.bat && echo Running B2... && call b2.exe -d+2 toolset=msvc address-model=32 architecture=x86 threading=multi 
-
       run: |
-        rem diagnostics: confirm compiler and environment
-        echo === WHERE CL ===
-        where cl || echo "NO cl on PATH"
-        echo === CL VERSION ===
-        cl /Bv || echo "cl /Bv failed"
-        echo === VS ENV VARS ===
-        echo VSCMD_ARG_TGT_ARCH=%VSCMD_ARG_TGT_ARCH%
-        echo VSINSTALLDIR=%VSINSTALLDIR%
-        echo VCToolsInstallDir=%VCToolsInstallDir%
-        echo VCToolsVersion=%VCToolsVersion%
-        echo PATH=%PATH:;=& echo ;%   rem prints PATH one entry per line for readability
+        rem call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86 && set VS150COMNTOOLS=%VS170COMNTOOLS% && cd boost_1_78_0 && call bootstrap.bat && call b2.exe toolset=msvc address-model=32 architecture=x86 threading=multi
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64_x86 && cd boost_1_78_0 && echo Calling Bootstrap && call bootstrap.bat && echo Running B2... && call b2.exe -d+2 toolset=msvc address-model=32 architecture=x86 threading=multi 
 
-        rem run bootstrap and show generated wrapper (if any)
-        cd boost_1_78_0
-        call bootstrap.bat vc143 || echo "bootstrap returned non-zero"
-        echo === GENERATED MSVC-SETUP (if present) ===
-        if exist bin.v2\standalone\msvc\msvc-14.3\address-model-32\architecture-x86\msvc-setup.bat (
-          type bin.v2\standalone\msvc\msvc-14.3\address-model-32\architecture-x86\msvc-setup.bat
-        ) else (
-          echo "msvc-setup.bat not found"
-        )
+      # run: |
+      #   rem diagnostics: confirm compiler and environment
+      #   echo === WHERE CL ===
+      #   where cl || echo "NO cl on PATH"
+      #   echo === CL VERSION ===
+      #   cl /Bv || echo "cl /Bv failed"
+      #   echo === VS ENV VARS ===
+      #   echo VSCMD_ARG_TGT_ARCH=%VSCMD_ARG_TGT_ARCH%
+      #   echo VSINSTALLDIR=%VSINSTALLDIR%
+      #   echo VCToolsInstallDir=%VCToolsInstallDir%
+      #   echo VCToolsVersion=%VCToolsVersion%
+      #   echo PATH=%PATH:;=& echo ;%   rem prints PATH one entry per line for readability
 
-        rem run b2 with verbose debug output so we can see what it calls
-        .\b2.exe -d+4 address-model=32 architecture=x86 threading=multi
+      #   rem run bootstrap and show generated wrapper (if any)
+      #   cd boost_1_78_0
+      #   call bootstrap.bat vc143 || echo "bootstrap returned non-zero"
+      #   echo === GENERATED MSVC-SETUP (if present) ===
+      #   if exist bin.v2\standalone\msvc\msvc-14.3\address-model-32\architecture-x86\msvc-setup.bat (
+      #     type bin.v2\standalone\msvc\msvc-14.3\address-model-32\architecture-x86\msvc-setup.bat
+      #   ) else (
+      #     echo "msvc-setup.bat not found"
+      #   )
+
+      #   rem run b2 with verbose debug output so we can see what it calls
+      #   .\b2.exe -d+4 address-model=32 architecture=x86 threading=multi
 
     - name: Build with MSBuild
       run: |
