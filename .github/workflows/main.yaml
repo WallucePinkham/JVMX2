@@ -36,7 +36,7 @@ jobs:
           restore-keys: |
             boost-${{ env.BOOST_DIR }}-${{ runner.os }}-
 
-      - name: Diagnostics (no vcvars)
+      - name: Diagnostics
         shell: cmd
         run: |
           echo === where cl ===
@@ -46,14 +46,15 @@ jobs:
           echo === vswhere info ===
           "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -products * -latest -format text -property installationPath
 
-      - name: Build Boost (vcvarsall + bootstrap + b2 on same command line)
+      - name: Build boost libraries
         shell: cmd
         run: |
           for /f "delims=" %%I in ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') do set "VS_INSTALL=%%I"
           if not defined VS_INSTALL (
             echo "vswhere failed to locate Visual Studio" & exit /b 1
           )
-          call "%VS_INSTALL%\VC\Auxiliary\Build\vcvarsall.bat" amd64_x86 && cd %GITHUB_WORKSPACE%\%BOOST_DIR% && call bootstrap.bat && call b2.exe toolset=%VS_TOOLSET% address-model=32 architecture=x86 threading=multi -j%NUMBER_OF_PROCESSORS% stage
+          rem initialize MSVC for x86 builds and run bootstrap + b2 on the same line so vcvars env is present
+          call "%VS_INSTALL%\VC\Auxiliary\Build\vcvarsall.bat" amd64_x86 && pushd "%GITHUB_WORKSPACE%\boost_1_78_0" && call bootstrap.bat && call b2.exe toolset=msvc-14.3 address-model=32 architecture=x86 threading=multi -j%NUMBER_OF_PROCESSORS% stage && popd
 
       - name: Build with MSBuild
         shell: cmd
