@@ -1,105 +1,61 @@
 on:
   push:
     branches:
-    - main
-    - feature/*
-
+      - main
+      - feature/*
   pull_request:
     branches:
-    - main
-    - feature/*
-
+      - main
+      - feature/*
   workflow_dispatch:
 
 jobs:
   my_job:
     name: CI
     runs-on: windows-2022
+    env:
+      BOOST_DIR: boost_1_78_0
+      BOOST_CACHE_VERSION: v1
+      VS_TOOLSET: msvc-14.3
 
     steps:
-    - uses: actions/checkout@v4 
-    - name: Set up Visual Studio
-      uses: microsoft/setup-msbuild@v1
-      with:
-        vs-version: '17.0'  # Specify the version of Visual Studio
-    - name: set MS Dev environment
-      # run: |
-      #   call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
-      uses: ilammy/msvc-dev-cmd@v1
+      - uses: actions/checkout@v4
 
-    - name: Cache Boost build
-      uses: actions/cache@v4
-      if: always()
-      with:
-        path: |
-          boost_1_78_0/stage
-          boost_1_78_0/bin.v2
-        key: boost-1_78_0-${{ runner.os }}-${{ hashFiles('boost_1_78_0/**') }}
-        restore-keys: |
-          boost-1_78_0-${{ runner.os }}-  
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1
+        with:
+          vs-version: '17.0'
 
-    - name: Build boost libraries
-      shell: cmd
-      # call "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
-      run: |
-        rem call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86 && set VS150COMNTOOLS=%VS170COMNTOOLS% && cd boost_1_78_0 && call bootstrap.bat && call b2.exe toolset=msvc address-model=32 architecture=x86 threading=multi
-        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64_x86 && cd boost_1_78_0 && echo Calling Bootstrap && call bootstrap.bat && echo Running B2... && call b2.exe -d+2 toolset=msvc address-model=32 architecture=x86 threading=multi 
+      - name: Cache Boost build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.BOOST_DIR }}/stage
+            ${{ env.BOOST_DIR }}/bin.v2
+          key: boost-${{ env.BOOST_DIR }}-${{ runner.os }}-${{ env.BOOST_CACHE_VERSION }}
+          restore-keys: |
+            boost-${{ env.BOOST_DIR }}-${{ runner.os }}-
 
-      # run: |
-      #   rem diagnostics: confirm compiler and environment
-      #   echo === WHERE CL ===
-      #   where cl || echo "NO cl on PATH"
-      #   echo === CL VERSION ===
-      #   cl /Bv || echo "cl /Bv failed"
-      #   echo === VS ENV VARS ===
-      #   echo VSCMD_ARG_TGT_ARCH=%VSCMD_ARG_TGT_ARCH%
-      #   echo VSINSTALLDIR=%VSINSTALLDIR%
-      #   echo VCToolsInstallDir=%VCToolsInstallDir%
-      #   echo VCToolsVersion=%VCToolsVersion%
-      #   echo PATH=%PATH:;=& echo ;%   rem prints PATH one entry per line for readability
+      - name: Diagnostics (no vcvars)
+        shell: cmd
+        run: |
+          echo === where cl ===
+          where cl || echo "cl not on PATH"
+          echo === cl version ===
+          cl /Bv || echo "cl /Bv failed"
+          echo === vswhere info ===
+          "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -products * -latest -format text -property installationPath
 
-      #   rem run bootstrap and show generated wrapper (if any)
-      #   cd boost_1_78_0
-      #   call bootstrap.bat vc143 || echo "bootstrap returned non-zero"
-      #   echo === GENERATED MSVC-SETUP (if present) ===
-      #   if exist bin.v2\standalone\msvc\msvc-14.3\address-model-32\architecture-x86\msvc-setup.bat (
-      #     type bin.v2\standalone\msvc\msvc-14.3\address-model-32\architecture-x86\msvc-setup.bat
-      #   ) else (
-      #     echo "msvc-setup.bat not found"
-      #   )
+      - name: Build Boost (vcvarsall + bootstrap + b2 on same command line)
+        shell: cmd
+        run: |
+          for /f "delims=" %%I in ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') do set "VS_INSTALL=%%I"
+          if not defined VS_INSTALL (
+            echo "vswhere failed to locate Visual Studio" & exit /b 1
+          )
+          call "%VS_INSTALL%\VC\Auxiliary\Build\vcvarsall.bat" amd64_x86 && cd %GITHUB_WORKSPACE%\%BOOST_DIR% && call bootstrap.bat && call b2.exe toolset=%VS_TOOLSET% address-model=32 architecture=x86 threading=multi -j%NUMBER_OF_PROCESSORS% stage
 
-      #   rem run b2 with verbose debug output so we can see what it calls
-      #   .\b2.exe -d+4 address-model=32 architecture=x86 threading=multi
-
-    - name: Build with MSBuild
-      run: |
-        msbuild JVMX2.sln /p:Configuration=Release /p:Platform=x86
-  
-
-
-    #    # - name: Cache Boost binaries
-    #   uses: actions/cache@v4
-    #   with:
-    #     path: boost_1_78_0
-    #     key: boost-1_78_0-msvc-x86-${{ runner.os }}
-
-    # - name: Download Boost (if not cached)
-    #   if: steps.cache.outputs.cache-hit != 'true'
-    #   run: |
-    #     $BoostUrl = "https://archives.boost.io/release/1.78.0/binaries/boost_1_78_0-bin-msvc-all-32-64.7z"
-    #     $BoostZip = "boost_1_78_0.7z"
-    #     $BoostPath = "boost_1_78_0"
-        
-    #     # Download the archive
-    #     Invoke-WebRequest -Uri $BoostUrl -OutFile $BoostZip
-        
-    #     # Extract using 7zip (pre-installed on windows-latest)
-    #     7z x $BoostZip -o"$BoostPath"
-        
-    #     echo "BOOST_ROOT=$BoostPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-    # - name: Build with MSBuild
-    #   run: |
-    #     msbuild JVMX2.sln /p:Configuration=Release /p:Platform=x86 `
-    #       /p:BoostIncludeDir="boost_1_78_0\include" `
-    #       /p:BoostLibDir="boost_1_78_0\lib"    
+      - name: Build with MSBuild
+        shell: cmd
+        run: |
+          msbuild JVMX2.sln /p:Configuration=Release /p:Platform=x86 /p:BoostIncludeDir="%GITHUB_WORKSPACE%\%BOOST_DIR%" /p:BoostLibDir="%GITHUB_WORKSPACE%\%BOOST_DIR%\stage\lib"
