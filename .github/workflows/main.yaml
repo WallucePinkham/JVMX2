@@ -55,10 +55,10 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64_x86
-          where cl
-          pushd "%GITHUB_WORKSPACE%\%BOOST_DIR%"
+          pushd "%GITHUB_WORKSPACE%\%BOOST_DIR%" || exit /b 1
+          if not exist b2.exe call bootstrap.bat
           b2.exe toolset=msvc-14.2 address-model=32 architecture=x86 threading=multi -j%NUMBER_OF_PROCESSORS% stage
-          popd      
+          popd   
 
       - name: Build with MSBuild
         shell: cmd
