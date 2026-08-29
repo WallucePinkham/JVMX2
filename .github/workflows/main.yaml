@@ -36,30 +36,29 @@ jobs:
           restore-keys: |
             boost-${{ env.BOOST_DIR }}-${{ runner.os }}-
 
-      - name: Diagnose
-        shell: cmd
-        run: |
-          call "%VS_INSTALL%\VC\Auxiliary\Build\vcvarsall.bat" amd64_x86
-          echo === where cl (after vcvarsall) ===
-          where cl
-          echo === MSVC versions installed ===
-          dir "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC" /b
-          echo === b2 cache files ===
-          dir "%USERPROFILE%\b2_msvc_*.cmd" 2>nul || echo "no b2 cache files"
-          echo === b2 verbose (first 50 lines) ===
-          pushd "%GITHUB_WORKSPACE%\%BOOST_DIR%"
-          b2.exe toolset=msvc-14.3 address-model=32 architecture=x86 threading=multi -d2 stage 2>&1 | findstr /n "." | findstr "^[1-5][0-9]:"
-          popd   
+      # - name: Diagnose
+      #   shell: cmd
+      #   run: |
+      #     call "%VS_INSTALL%\VC\Auxiliary\Build\vcvarsall.bat" amd64_x86
+      #     echo === where cl (after vcvarsall) ===
+      #     where cl
+      #     echo === MSVC versions installed ===
+      #     dir "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC" /b
+      #     echo === b2 cache files ===
+      #     dir "%USERPROFILE%\b2_msvc_*.cmd" 2>nul || echo "no b2 cache files"
+      #     echo === b2 verbose (first 50 lines) ===
+      #     pushd "%GITHUB_WORKSPACE%\%BOOST_DIR%"
+      #     b2.exe toolset=msvc-14.3 address-model=32 architecture=x86 threading=multi -d2 stage 2>&1 | findstr /n "." | findstr "^[1-5][0-9]:"
+      #     popd   
 
       - name: Build Boost
         shell: cmd
         run: |
-          for /f "tokens=*" %%i in ('dir /b /ad "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.3*"') do set MSVC_VER=%%i
-          call "%VS_INSTALL%\VC\Auxiliary\Build\vcvarsall.bat" amd64_x86
-          pushd "%GITHUB_WORKSPACE%\boost_1_78_0"
-          call bootstrap.bat
-          call b2.exe toolset=msvc-14.3 address-model=32 architecture=x86 threading=multi -j%NUMBER_OF_PROCESSORS% stage
-          popd   
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64_x86
+          where cl
+          pushd "%GITHUB_WORKSPACE%\%BOOST_DIR%"
+          b2.exe toolset=msvc-14.2 address-model=32 architecture=x86 threading=multi -j%NUMBER_OF_PROCESSORS% stage
+          popd      
 
       - name: Build with MSBuild
         shell: cmd
