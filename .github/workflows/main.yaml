@@ -21,10 +21,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1
+      - name: Install VS 2022 17.8
+        uses: microsoft/setup-msbuild@v2
         with:
-          vs-version: '17.0'
+          vs-version: 17.8   
 
       - name: Cache Boost build
         uses: actions/cache@v4
