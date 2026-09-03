@@ -1,60 +1,66 @@
 on:
   push:
     branches:
-    - main
-    - feature/*
-
+      - main
+      - feature/*
   pull_request:
     branches:
-    - main
-    - feature/*
-
+      - main
+      - feature/*
   workflow_dispatch:
 
 jobs:
   my_job:
     name: CI
-    runs-on: windows-latest
+    runs-on: windows-2019
+    env:
+      BOOST_DIR: boost_1_78_0
+      BOOST_CACHE_VERSION: v1
+      VS_TOOLSET: msvc-14.3
 
     steps:
-    - uses: actions/checkout@v4 
-    - name: Set up Visual Studio
-      uses: microsoft/setup-msbuild@v1
-      with:
-        vs-version: '17.0'  # Specify the version of Visual Studio
-    - name: set MS Dev environment
-      # run: |
-      #   call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
-      uses: ilammy/msvc-dev-cmd@v1
+      - uses: actions/checkout@v4
 
-    - name: Cache Boost build
-      uses: actions/cache@v4
-      if: always()
-      with:
-        path: |
-          boost_1_67_0/stage
-          boost_1_67_0/bin.v2
-        key: boost-1_67_0-${{ runner.os }}-${{ hashFiles('boost_1_67_0/**') }}
-        restore-keys: |
-          boost-1_67_0-${{ runner.os }}-      
+      - name: Install VS 2022 17.8
+        uses: microsoft/setup-msbuild@v2
+        with:
+          vs-version: 17.8   
 
-    - name: Build boost libraries
-      shell: cmd
-      # call "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
-      run: |
-        rem call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86
-        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
-        set VS150COMNTOOLS=%VS170COMNTOOLS%
-        rem call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\vsdevcmd\ext\vcvars\vcvars140.bat"
-        cd boost_1_67_0
-        call bootstrap.bat
-        echo Running B2...
-        rem call b2.exe --with-thread --with-date_time --with-filesystem --with-exception address-model=32 architecture=x86 threading=multi link=static runtime-link=static 
-        rem call b2.exe --with-thread --with-date_time --with-filesystem --with-exception --with-context --with-chrono address-model=32 architecture=x86 threading=multi 
-        call b2.exe address-model=32 architecture=x86 threading=multi 
+      - name: Cache Boost build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.BOOST_DIR }}/stage
+            ${{ env.BOOST_DIR }}/bin.v2
+          key: boost-${{ env.BOOST_DIR }}-${{ runner.os }}-${{ env.BOOST_CACHE_VERSION }}
+          restore-keys: |
+            boost-${{ env.BOOST_DIR }}-${{ runner.os }}-
 
+      # - name: Diagnose
+      #   shell: cmd
+      #   run: |
+      #     call "%VS_INSTALL%\VC\Auxiliary\Build\vcvarsall.bat" amd64_x86
+      #     echo === where cl (after vcvarsall) ===
+      #     where cl
+      #     echo === MSVC versions installed ===
+      #     dir "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC" /b
+      #     echo === b2 cache files ===
+      #     dir "%USERPROFILE%\b2_msvc_*.cmd" 2>nul || echo "no b2 cache files"
+      #     echo === b2 verbose (first 50 lines) ===
+      #     pushd "%GITHUB_WORKSPACE%\%BOOST_DIR%"
+      #     b2.exe toolset=msvc-14.3 address-model=32 architecture=x86 threading=multi -d2 stage 2>&1 | findstr /n "." | findstr "^[1-5][0-9]:"
+      #     popd   
 
-    - name: Build with MSBuild
-      run: |
-        msbuild JVMX2.sln /p:Configuration=Release /p:Platform=x86
- 
+      - name: Build Boost
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64_x86
+          pushd "%GITHUB_WORKSPACE%\%BOOST_DIR%" || exit /b 1
+          if not exist b2.exe call bootstrap.bat
+          b2.exe toolset=msvc-14.2 address-model=32 architecture=x86 threading=multi -j%NUMBER_OF_PROCESSORS% stage
+          popd   
+
+      - name: Build with MSBuild
+        shell: cmd
+        run: |
+          msbuild JVMX2.sln /p:Configuration=Release /p:Platform=x86 /p:BoostIncludeDir="%GITHUB_WORKSPACE%\%BOOST_DIR%" /p:BoostLibDir="%GITHUB_WORKSPACE%\%BOOST_DIR%\stage\lib"

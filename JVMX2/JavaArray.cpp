@@ -1,4 +1,3 @@
-
 #include "MallocFreeMemoryManager.h"
 
 #include "IndexOutOfBoundsException.h"
@@ -19,7 +18,7 @@
 
 JavaArray::JavaArray( /*std::shared_ptr<IMemoryManager> pMemoryManager,*/ e_JavaArrayTypes type, size_t size )
   : m_ContainedType( type )
-  , m_Size( size )
+  , m_size( size )
   , m_pMonitor( new Lockable )
     //, m_pValues( size, TypeParser::GetDefaultValue( type ) )
 #ifdef _DEBUG
@@ -95,7 +94,7 @@ size_t JavaArray::GetSizeOfValueType( e_JavaArrayTypes type )
 JavaArray::~JavaArray()
 {
 
-  for ( size_t i = 0; i < m_Size; ++ i )
+  for ( size_t i = 0; i < m_size; ++ i )
   {
     IJavaVariableType *pValue = GetValueAtIndex( i );
     pValue->~IJavaVariableType();
@@ -132,7 +131,7 @@ e_JavaVariableTypes JavaArray::GetVariableType() const
 bool JavaArray::operator==( const JavaArray &other ) const
 {
   DebugAssert();
-  return m_ContainedType == other.m_ContainedType && memcmp( m_pValues, other.m_pValues, CalculateSizeInBytes( m_ContainedType, m_Size ) );
+  return m_ContainedType == other.m_ContainedType && memcmp( m_pValues, other.m_pValues, CalculateSizeInBytes( m_ContainedType, m_size ) );
 }
 
 bool JavaArray::operator==( const IJavaVariableType &other ) const
@@ -152,7 +151,7 @@ IJavaVariableType *JavaArray::At( size_t index )
 {
   DebugAssert();
 
-  if ( index > m_Size )
+  if ( index > m_size )
   {
     throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed into array." );
   }
@@ -181,7 +180,7 @@ size_t JavaArray::GetNumberOfElements() const
   //if ( m_Values.size( ) != debugInitialLength ) __asm int 3;
   DebugAssert();
 
-  return m_Size;
+  return m_size;
 }
 
 bool JavaArray::operator<( const IJavaVariableType &other ) const
@@ -206,7 +205,7 @@ bool JavaArray::operator<( const JavaArray &other ) const
     return true;
   }
 
-  for ( size_t i = 0; i < m_Size && i < other.m_Size; ++ i )
+  for ( size_t i = 0; i < m_size && i < other.m_size; ++ i )
   {
     //if ( *reinterpret_cast<IJavaVariableType *> (m_pValues[i * GetSizeOfValueType( m_ContainedType )]) < *reinterpret_cast<IJavaVariableType *> (other.m_pValues[ i * GetSizeOfValueType( m_ContainedType ) ] ) )
 
@@ -282,7 +281,7 @@ void JavaArray::SetAt( const uint32_t &index, const JavaInteger &value )
     throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in. Less than zero." );
   }
 
-  if ( index >= m_Size )
+  if ( index >= m_size )
   {
     throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in." );
   }
@@ -313,7 +312,7 @@ void JavaArray::SetAt( const uint32_t &index, const JavaChar &value )
     throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in. Less than zero." );
   }
 
-  if ( index > m_Size )
+  if ( index > m_size )
   {
     throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in." );
   }
@@ -333,7 +332,7 @@ void JavaArray::SetAt(const uint32_t& index, const JavaByte& value)
     throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in. Less than zero.");
   }
 
-  if (index > m_Size)
+  if (index > m_size)
   {
     throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in.");
   }
@@ -353,7 +352,7 @@ void JavaArray::SetAt(const uint32_t& index, JavaLong value)
     throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in. Less than zero.");
   }
 
-  if (index > m_Size)
+  if (index > m_size)
   {
     throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in.");
   }
@@ -373,7 +372,7 @@ void JavaArray::SetAt( const uint32_t &index, const IJavaVariableType *pValue )
     throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in. Less than zero." );
   }
 
-  if ( index > m_Size )
+  if ( index > m_size )
   {
     throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in." );
   }
@@ -420,14 +419,14 @@ JavaString JavaArray::ConvertByteArrayToString() const
 
   JavaString result = JavaString::EmptyString();
 
-  char *pBuffer = new char[ m_Size + 1 ]; // +1 for terminator
+  char *pBuffer = new char[ m_size + 1 ]; // +1 for terminator
 
   try
   {
     int i = 0;
 
     //for ( auto it = m_pValues.begin(); it != m_pValues.end(); ++ it )
-    for ( size_t index = 0; index < m_Size; ++ index )
+    for ( size_t index = 0; index < m_size; ++ index )
     {
       char chr = reinterpret_cast<const JavaByte *>( GetValueAtIndex( index ) )->ToHostInt8();
       pBuffer[ i++ ] = chr;
@@ -458,7 +457,7 @@ void JavaArray::Initialise()
 {
   DebugAssert();
 
-  for ( size_t i = 0; i < m_Size; ++ i )
+  for ( size_t i = 0; i < m_size; ++ i )
   {
     IJavaVariableType *pValue = GetValueAtIndex( i );
     //*pValue = *TypeParser::GetDefaultValue( m_ContainedType );
@@ -513,14 +512,14 @@ void JavaArray::Initialise()
 IJavaVariableType *JavaArray::GetValueAtIndex( size_t i )
 {
   char *pValue = m_pValues + ( GetSizeOfValueType( m_ContainedType ) * i );
-  JVMX_ASSERT( pValue >= m_pValues && pValue < m_pValues + CalculateSizeInBytes( m_ContainedType, m_Size ) );
+  JVMX_ASSERT( pValue >= m_pValues && pValue < m_pValues + CalculateSizeInBytes( m_ContainedType, m_size ) );
   return reinterpret_cast<IJavaVariableType *>( pValue );
 }
 
 const IJavaVariableType *JavaArray::GetValueAtIndex( size_t i ) const
 {
   const char *pValue = m_pValues + ( GetSizeOfValueType( m_ContainedType ) * i );
-  JVMX_ASSERT( pValue >= m_pValues && pValue < m_pValues + CalculateSizeInBytes( m_ContainedType, m_Size ) );
+  JVMX_ASSERT( pValue >= m_pValues && pValue < m_pValues + CalculateSizeInBytes( m_ContainedType, m_size ) );
 
   return reinterpret_cast<const IJavaVariableType *>( pValue );
 }
@@ -545,7 +544,7 @@ void JavaArray::CloneOther( const JavaArray *pObjectToClone )
     throw InvalidArgumentException( __FUNCTION__ " - Contained types do not match." );
   }
 
-  JVMX_ASSERT( pObjectToClone->m_Size == m_Size );
+  JVMX_ASSERT( pObjectToClone->m_size == m_size );
 
   for ( uint32_t i = 0; i < pObjectToClone->GetNumberOfElements(); ++ i )
   {
@@ -666,7 +665,7 @@ DataBuffer JavaArray::ConvertByteArrayToBuffer() const
   }
 
   DataBuffer result = DataBuffer::EmptyBuffer();
-  for ( size_t i = 0; i < m_Size; ++ i )
+  for ( size_t i = 0; i < m_size; ++ i )
   {
     const IJavaVariableType *pValue = GetValueAtIndex( i );
     uint8_t byteValue = dynamic_cast<const JavaByte *>( pValue )->ToHostInt8();
@@ -740,17 +739,17 @@ JavaString JavaArray::ToString() const
   int count = 0;
 
   char buffer[ 38 ] = { 0 };
-  _snprintf( buffer, 37, "(%d)", m_Size );
+  _snprintf( buffer, 37, "(%d)", m_size );
 
   std::basic_stringstream<char16_t> outputStream;
 
   outputStream << buffer << u"[";
 
-  for ( size_t i = 0; i < m_Size; ++ i )
+  for ( size_t i = 0; i < m_size; ++ i )
   {
     const IJavaVariableType *pValue = GetValueAtIndex( i );
     outputStream << pValue->ToString().ToCharacterArray();
-    if ( i != m_Size )
+    if ( i != m_size )
     {
       outputStream << u", ";
     }
@@ -774,7 +773,7 @@ void JavaArray::DebugAssert() const
 {
 #ifdef _DEBUG
   //if ( m_Values.size() != debugInitialLength ) __asm int 3;
-  JVMX_ASSERT( m_Size == debugInitialLength );
+  JVMX_ASSERT( m_size == debugInitialLength );
 #endif // _DEBUG
 }
 
@@ -897,4 +896,55 @@ boost::intrusive_ptr<ObjectReference> JavaArray::CreateFromCArray(const uint8_t*
   }
 
   return pResult;
+}
+
+void JavaArray::CopyRangeFrom( const JavaArray *pSourceArray, size_t sourceIndex, size_t destIndex, size_t length )
+{
+  if ( nullptr == pSourceArray )
+  {
+    throw InvalidArgumentException( __FUNCTION__ " - Source array cannot be null." );
+  }
+
+  if ( m_ContainedType != pSourceArray->m_ContainedType )
+  {
+    throw InvalidArgumentException( __FUNCTION__ " - Source and destination array types do not match." );
+  }
+
+  if ( sourceIndex > pSourceArray->m_size || destIndex > m_size ||
+       length > pSourceArray->m_size - sourceIndex ||
+       length > m_size - destIndex )
+  {
+    throw IndexOutOfBoundsException( __FUNCTION__ " - Attempting to copy outside the bounds of the array." );
+  }
+
+  if ( 0 == length )
+  {
+    return;
+  }
+
+    // Primitive arrays: use raw memory copy for speed.
+  if ( m_ContainedType != e_JavaArrayTypes::Reference )
+  {
+    const size_t elementSize = GetSizeOfValueType( m_ContainedType );
+    char *pDst = m_pValues + ( destIndex * elementSize );
+    const char *pSrc = pSourceArray->m_pValues + ( sourceIndex * elementSize );
+
+    std::memmove( pDst, pSrc, length * elementSize );
+    return;
+  }
+
+  if ( this == pSourceArray && destIndex < sourceIndex )
+  {
+    for ( size_t i = length; i > 0; --i )
+    {
+      SetAt( static_cast<uint32_t>( destIndex + i - 1 ), pSourceArray->At( sourceIndex + i - 1 ) );
+    }
+
+    return;
+  }
+
+  for ( size_t i = 0; i < length; ++i )
+  {
+    SetAt( static_cast<uint32_t>( destIndex + i ), pSourceArray->At( sourceIndex + i ) );
+  }
 }

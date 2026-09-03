@@ -2020,46 +2020,58 @@ extern "C"
 
     try
     {
+      if (srcOffset < 0 || destOffset < 0 || length < 0)
+      {
+        pEnv->ThrowNew( pEnv, FindClass(pEnv, c_JavaArrayIndexOutOfBoundsException), "Array copy indices and length must be non-negative.");
+        return;
+      }
+
       auto pDest = pDestination->GetContainedArray();
       auto pSrc = pSource->GetContainedArray();   
 
-      bool isOverlapping = (src == dest) && (srcOffset < destOffset + length) && (destOffset < srcOffset + length);
+      //bool isOverlapping = (src == dest) && (srcOffset < destOffset + length) && (destOffset < srcOffset + length);
 
-      JavaArray* pTmp = nullptr;
-      uint8_t* pTempData = nullptr;
-      if (isOverlapping)
-      {
-        //auto pTmpArray = pVirtualMachineState->CreateArray(pSrc->GetContainedType(), pSrc->GetNumberOfElements());
-        //pTmp = pTmpArray->GetContainedArray();
-        auto size = JavaArray::CalculateSizeInBytes(pSrc->GetContainedType(), pSrc->GetNumberOfElements());
-        pTempData = new uint8_t[size+sizeof(JavaArray)];
-        pTmp = reinterpret_cast<JavaArray*> (new (pTempData) JavaArray(pSrc->GetContainedType(), pSrc->GetNumberOfElements()));
-        pTmp->CloneOther(pSrc);
-        pSrc = pTmp; // Use the temporary array for copying
-      }
-      
-      try {
+      //JavaArray* pTmp = nullptr;
+      //uint8_t* pTempData = nullptr;
+      //if (isOverlapping)
+      //{
+      //  //auto pTmpArray = pVirtualMachineState->CreateArray(pSrc->GetContainedType(), pSrc->GetNumberOfElements());
+      //  //pTmp = pTmpArray->GetContainedArray();
+      //  auto size = JavaArray::CalculateSizeInBytes(pSrc->GetContainedType(), pSrc->GetNumberOfElements());
+      //  pTempData = new uint8_t[size+sizeof(JavaArray)];
+      //  pTmp = reinterpret_cast<JavaArray*> (new (pTempData) JavaArray(pSrc->GetContainedType(), pSrc->GetNumberOfElements()));
+      //  pTmp->CloneOther(pSrc);
+      //  pSrc = pTmp; // Use the temporary array for copying
+      //}
+      //
+      //try {
 
-        ArrayCopyInternal(pVirtualMachineState, pSrc, length, srcOffset, destOffset, pDest);
-      }
-      catch (...)
-      {
-        if (nullptr != pTmp)
-        {
-          pTmp->~JavaArray(); // Call destructor to clean up
-          delete [] pTempData;
-          pTempData = nullptr;
-          pTmp = nullptr;
-        }
-      }
+      //  ArrayCopyInternal(pVirtualMachineState, pSrc, length, srcOffset, destOffset, pDest);
+      //}
+      //catch (...)
+      //{
+      //  if (nullptr != pTmp)
+      //  {
+      //    pTmp->~JavaArray(); // Call destructor to clean up
+      //    delete [] pTempData;
+      //    pTempData = nullptr;
+      //    pTmp = nullptr;
+      //  }
+      //}
 
-      if (nullptr != pTmp)
-      {
-        pTmp->~JavaArray(); // Call destructor to clean up
-        delete [] pTempData;
-        pTempData = nullptr;
-        pTmp = nullptr;
-      }
+      //if (nullptr != pTmp)
+      //{
+      //  pTmp->~JavaArray(); // Call destructor to clean up
+      //  delete [] pTempData;
+      //  pTempData = nullptr;
+      //  pTmp = nullptr;
+      //}
+
+      pDest->CopyRangeFrom(
+        pSrc,
+        static_cast<size_t>(srcOffset),
+        static_cast<size_t>(destOffset),
+        static_cast<size_t>(length));
     }
     catch ( IndexOutOfBoundsException & )
     {
