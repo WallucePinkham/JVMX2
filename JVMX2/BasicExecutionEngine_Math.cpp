@@ -185,16 +185,16 @@ void BasicExecutionEngine::ExecuteOpCodeFloatRemainder(const std::shared_ptr<IVi
   /*
   The result of an frem instruction is governed by these rules :
   * If either value1' or value2' is NaN, the result is NaN.
-    • If neither value1' nor value2' is NaN, the sign of the result equals
+    * If neither value1' nor value2' is NaN, the sign of the result equals
     the sign of the dividend.
-    • If the dividend is an infinity or the divisor is a zero or both, the
+    * If the dividend is an infinity or the divisor is a zero or both, the
     result is NaN.
-    • If the dividend is finite and the divisor is an infinity, the result
+    * If the dividend is finite and the divisor is an infinity, the result
     equals the dividend.
-    • If the dividend is a zero and the divisor is finite, the result equals
+    * If the dividend is a zero and the divisor is finite, the result equals
     the dividend.
     
-    • In the remaining cases, where neither operand is an infinity,
+    * In the remaining cases, where neither operand is an infinity,
     a zero, or NaN, the floating - point remainder result from
     a dividend value1' and a divisor value2' is defined by the
     mathematical relation result = value1' - (value2' * q), where
@@ -264,16 +264,16 @@ void BasicExecutionEngine::ExecuteOpCodeDoubleRemainder(const std::shared_ptr<IV
   /*
   The result of an frem instruction is governed by these rules :
   * If either value1' or value2' is NaN, the result is NaN.
-    • If neither value1' nor value2' is NaN, the sign of the result equals
+    * If neither value1' nor value2' is NaN, the sign of the result equals
     the sign of the dividend.
-    • If the dividend is an infinity or the divisor is a zero or both, the
+    * If the dividend is an infinity or the divisor is a zero or both, the
     result is NaN.
-    • If the dividend is finite and the divisor is an infinity, the result
+    * If the dividend is finite and the divisor is an infinity, the result
     equals the dividend.
-    • If the dividend is a zero and the divisor is finite, the result equals
+    * If the dividend is a zero and the divisor is finite, the result equals
     the dividend.
 
-    • In the remaining cases, where neither operand is an infinity,
+    * In the remaining cases, where neither operand is an infinity,
     a zero, or NaN, the floating - point remainder result from
     a dividend value1' and a divisor value2' is defined by the
     mathematical relation result = value1' - (value2' * q), where
@@ -871,4 +871,39 @@ void BasicExecutionEngine::ExecuteOpCodeDoubleSubtract(const std::shared_ptr<IVi
   double double1 = boost::dynamic_pointer_cast<JavaDouble>(pVirtualMachineState->PopOperand())->ToHostDouble();
 
   pVirtualMachineState->PushOperand(new JavaDouble(JavaDouble::FromHostDouble(double1 - double2)));
+}
+
+void BasicExecutionEngine::ExecuteOpCodeNegateLong(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
+{
+  if (e_JavaVariableTypes::Long != pVirtualMachineState->PeekOperand()->GetVariableType())
+  {
+    throw InvalidStateException(__FUNCTION__ " - Expected long on the operand stack.");
+  }
+
+  boost::intrusive_ptr<JavaLong> pOperand = boost::dynamic_pointer_cast<JavaLong>(pVirtualMachineState->PopOperand());
+  int64_t negatedValue = -pOperand->ToHostInt64();
+  pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(negatedValue)));
+}
+
+void BasicExecutionEngine::ExecuteOpCodeNegateFloat(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
+{
+  if (e_JavaVariableTypes::Float != pVirtualMachineState->PeekOperand()->GetVariableType())
+  {
+    throw InvalidStateException(__FUNCTION__ " - Expected float on the operand stack.");
+  }
+
+  boost::intrusive_ptr<JavaFloat> pOperand = boost::dynamic_pointer_cast<JavaFloat>(pVirtualMachineState->PopOperand());
+  float negatedValue = -pOperand->ToHostFloat();
+  pVirtualMachineState->PushOperand(new JavaFloat(JavaFloat::FromHostFloat(negatedValue)));
+}
+
+void BasicExecutionEngine::ExecuteOpCodeShiftLongRightArithmetic(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
+{
+  int32_t value2 = GetIntegerFromOperandStack(pVirtualMachineState);
+  int64_t value1 = GetLongFromOperandStack(pVirtualMachineState);
+
+  uint64_t uvalue1 = static_cast<uint64_t>(value1);
+  int64_t result = static_cast<int64_t>(uvalue1 >> (value2 & 0x3F));
+
+  pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(result)));
 }

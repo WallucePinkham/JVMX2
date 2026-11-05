@@ -40,6 +40,9 @@ public class AllTestsRunner {
         System.out.println("Running TestStringBuilder...");
         TestStringBuilder.main(new String[0]);        
 
+        System.out.println("Running TestUnimplementedOpcodes...");
+        TestUnimplementedOpcodes.main(new String[0]);
+
         System.out.println("All tests finished.");
     }
 }

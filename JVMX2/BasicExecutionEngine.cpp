@@ -1094,13 +1094,36 @@ e_ImmediateReturnRequired BasicExecutionEngine::ProcessNextOpcode(const std::sha
     break;
 
   case e_JavaOpCodes::DuplicateTopOperandOrTwox2:
+    break;
+
   case e_JavaOpCodes::SwapOperands:
+    ExecuteOpCodeSwapOperands(pVirtualMachineState);
+    break;
+
   case e_JavaOpCodes::NegateLong:
+    ExecuteOpCodeNegateLong(pVirtualMachineState);
+    break;
+
   case e_JavaOpCodes::NegateFloat:
+    ExecuteOpCodeNegateFloat(pVirtualMachineState);
+    break;
+
   case e_JavaOpCodes::ShiftLongRightArithmetic:
+    ExecuteOpCodeShiftLongRightArithmetic(pVirtualMachineState);
+    break;
+
   case e_JavaOpCodes::ConvertLongToFloat:
+    ExecuteOpCodeConvertLongToFloat(pVirtualMachineState);
+    break;
+
   case e_JavaOpCodes::ConvertFloatToLong:
+    ExecuteOpCodeConvertFloatToLong(pVirtualMachineState);
+    break;
+
   case e_JavaOpCodes::ConvertDoubleToLong:
+    ExecuteOpCodeConvertDoubleToLong(pVirtualMachineState);
+    break;
+
   case e_JavaOpCodes::InvokeDynamic:
   case e_JavaOpCodes::GotoWide:
   case e_JavaOpCodes::JumpSubRoutineWide:

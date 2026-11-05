@@ -1645,3 +1645,41 @@ void BasicExecutionEngine::ExecuteOpCodeDuplicateTopOperandx2(const std::shared_
   }
 #endif // _DEBUG
 }
+
+void BasicExecutionEngine::ExecuteOpCodeConvertLongToFloat(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
+{
+  int64_t value1 = GetLongFromOperandStack(pVirtualMachineState);
+  pVirtualMachineState->PushOperand(new JavaFloat(JavaFloat::FromHostFloat(static_cast<float>(value1))));
+}
+
+void BasicExecutionEngine::ExecuteOpCodeConvertFloatToLong(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
+{
+  if (e_JavaVariableTypes::Float != pVirtualMachineState->PeekOperand()->GetVariableType())
+  {
+    throw InvalidStateException(__FUNCTION__ " - Expected float on the operand stack.");
+  }
+
+  boost::intrusive_ptr<JavaFloat> pFloat = boost::dynamic_pointer_cast<JavaFloat>(pVirtualMachineState->PopOperand());
+  int64_t result = static_cast<int64_t>(pFloat->ToHostFloat());
+  pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(result)));
+}
+
+void BasicExecutionEngine::ExecuteOpCodeConvertDoubleToLong(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
+{
+  if (e_JavaVariableTypes::Double != pVirtualMachineState->PeekOperand()->GetVariableType())
+  {
+    throw InvalidStateException(__FUNCTION__ " - Expected double on the operand stack.");
+  }
+
+  boost::intrusive_ptr<JavaDouble> pDouble = boost::dynamic_pointer_cast<JavaDouble>(pVirtualMachineState->PopOperand());
+  int64_t result = static_cast<int64_t>(pDouble->ToHostDouble());
+  pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(result)));
+}
+
+void BasicExecutionEngine::ExecuteOpCodeSwapOperands(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
+{
+  auto val2 = pVirtualMachineState->PopOperand();
+  auto val1 = pVirtualMachineState->PopOperand();
+  pVirtualMachineState->PushOperand(val2);
+  pVirtualMachineState->PushOperand(val1);
+}

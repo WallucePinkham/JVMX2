@@ -113,6 +113,10 @@ Gemini must strictly avoid modern C++ idioms that break on C++11:
 - **Immutability**: Make classes immutable wherever possible (`const` members and methods).
 - **Thread Safety**: Preserve existing thread-safety contracts and locking mechanisms (e.g., mutexes, locks).
 
+### File Encoding & Multi-Byte Glyphs (CRITICAL)
+- **Multi-Byte Project**: This is a multi-byte project containing Unicode characters and glyphs (such as bullet points in comments).
+- **Encoding Preservation**: Ensure file edits preserve existing UTF-8 / UTF-16 character encodings and do not drop, normalize, or corrupt multi-byte glyphs or comments.
+
 ---
 
 ## Restrictions & Safety
