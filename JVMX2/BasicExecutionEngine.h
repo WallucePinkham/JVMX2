@@ -15,6 +15,11 @@ class StackFrame;
 
 #include "IExecutionEngine.h"
 
+class ObjectReference;
+class ConstantPoolStringReference;
+boost::intrusive_ptr<ObjectReference> GetFromStringPool(std::shared_ptr<ConstantPoolStringReference> pStringRef);
+void AddToStringPool(std::shared_ptr<ConstantPoolStringReference> pStringRef, boost::intrusive_ptr<ObjectReference> pObject);
+
 class BasicExecutionEngine : public IExecutionEngine
 {
 public:

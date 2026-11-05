@@ -109,6 +109,8 @@ enum class e_JavaOpCodes : uint16_t
   , DuplicateTopOperandx2 = 0x5b
   , DuplicateTopOperandOrTwo = 0x5c
   , DuplicateTopOperandOrTwox1 = 0x5d
+  , DuplicateTopOperandOrTwox2 = 0x5e
+  , SwapOperands = 0x5f
 
   , IntegerAdd = 0x60
   , LongAdd = 0x61
@@ -131,10 +133,13 @@ enum class e_JavaOpCodes : uint16_t
   , FloatRemainder = 0x72
   , DoubleRemainder = 0x73
   , NegateInteger = 0x74
+  , NegateLong = 0x75
+  , NegateFloat = 0x76
   , NegateDouble = 0x77
   , ShiftIntegerLeft = 0x78
   , ShiftLongLeft = 0x79
   , ShiftIntegerRightArithmetic = 0x7a
+  , ShiftLongRightArithmetic = 0x7b
 
   , ShiftIntegerRightLogical = 0x7c
   , ShiftLongRight = 0x7d
@@ -151,11 +156,14 @@ enum class e_JavaOpCodes : uint16_t
   , ConvertIntegerToFloat = 0x86
   , ConvertIntegerToDouble = 0x87
   , ConvertLongToInteger = 0x88
+  , ConvertLongToFloat = 0x89
   , ConvertLongToDouble = 0x8a
   , ConvertFloatToInteger = 0x8b
+  , ConvertFloatToLong = 0x8c
 
   , ConvertFloatToDouble = 0x8d
   , ConvertDoubleToInt = 0x8e
+  , ConvertDoubleToLong = 0x8f
 
   , ConvertDoubleToFloat = 0x90
   , ConvertIntegerToByte = 0x91
@@ -199,6 +207,7 @@ enum class e_JavaOpCodes : uint16_t
   , InvokeSpecial = 0xb7
   , InvokeStatic = 0xb8
   , InvokeInterface = 0xb9
+  , InvokeDynamic = 0xba
     // TODO: 
   , New = 0xbb
   , NewArray = 0xbc
@@ -213,6 +222,8 @@ enum class e_JavaOpCodes : uint16_t
   , NewMultiDimentionalArray = 0xc5
   , BranchIfNull = 0xc6
   , BranchIfNotNull = 0xc7
+  , GotoWide = 0xc8
+  , JumpSubRoutineWide = 0xc9
 };
 
 #endif // _JAVAOPCODES__H_
