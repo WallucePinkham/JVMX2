@@ -18,6 +18,7 @@
 int main(int argc, char* argv[])
 {
   CommandLineArguments cmdLine;
+  int exitCode = 0;
 
   int commandLineResult = CommandLineProcessor::ProcessCommandLine(argc, argv, cmdLine);
   if (commandLineResult != 0)
@@ -74,6 +75,13 @@ int main(int argc, char* argv[])
     //pJVM->Run( JVMX_T( "TestProperties.class" ), pInitialState );
     //pJVM->Run( JVMX_T( "TestNullPointerException.class" ), pInitialState );
 
+    // Preserve the Java program's exit status before Stop initiates a zero-status shutdown.
+    exitCode = pInitialState->GetExitCode();
+    if (pInitialState->HasExceptionOccurred() && 0 == exitCode)
+    {
+      exitCode = 1;
+    }
+
     pJVM->Stop(pInitialState);
 
     /*pGarbageCollector->Collect( e_ForceGarbageCollection::Yes );*/
@@ -83,5 +91,5 @@ int main(int argc, char* argv[])
     std::cout << ex.what() << std::endl;
   }
 
-  return 0;
+  return exitCode;
 }

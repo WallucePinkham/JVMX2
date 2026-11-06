@@ -255,6 +255,101 @@ void BasicExecutionEngine::ExecuteOpCodeDuplicateTopOperandOrTwox1(const std::sh
 #endif // _DEBUG
 }
 
+// Implement all four JVMS forms; the empty dispatch case left array assignments without the required duplicated values.
+void BasicExecutionEngine::ExecuteOpCodeDuplicateTopOperandOrTwox2(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
+{
+  const size_t stackSize = pVirtualMachineState->GetOperandStackSize();
+  if (stackSize < 2)
+  {
+    throw InvalidStateException(__FUNCTION__ " - Insufficient operands for dup2_x2.");
+  }
+
+  boost::intrusive_ptr<IJavaVariableType> pValue1 = pVirtualMachineState->PeekOperandFromBack(1);
+  boost::intrusive_ptr<IJavaVariableType> pValue2 = pVirtualMachineState->PeekOperandFromBack(2);
+  boost::intrusive_ptr<IJavaVariableType> pValue3;
+  boost::intrusive_ptr<IJavaVariableType> pValue4;
+  int form = 0;
+
+  if (IsCategoryTwoType(pValue1))
+  {
+    if (IsCategoryTwoType(pValue2))
+    {
+      form = 4;
+    }
+    else if (IsCategoryOneType(pValue2) && stackSize >= 3)
+    {
+      pValue3 = pVirtualMachineState->PeekOperandFromBack(3);
+      if (IsCategoryOneType(pValue3))
+      {
+        form = 3;
+      }
+    }
+  }
+  else if (IsCategoryOneType(pValue1) && IsCategoryOneType(pValue2) && stackSize >= 3)
+  {
+    pValue3 = pVirtualMachineState->PeekOperandFromBack(3);
+    if (IsCategoryTwoType(pValue3))
+    {
+      form = 2;
+    }
+    else if (IsCategoryOneType(pValue3) && stackSize >= 4)
+    {
+      pValue4 = pVirtualMachineState->PeekOperandFromBack(4);
+      if (IsCategoryOneType(pValue4))
+      {
+        form = 1;
+      }
+    }
+  }
+
+  if (0 == form)
+  {
+    throw InvalidStateException(__FUNCTION__ " - Operand types do not match a valid dup2_x2 form.");
+  }
+
+  pVirtualMachineState->PopOperand();
+  pVirtualMachineState->PopOperand();
+  if (form == 1 || form == 3)
+  {
+    pVirtualMachineState->PopOperand();
+  }
+  if (form == 1)
+  {
+    pVirtualMachineState->PopOperand();
+  }
+
+  if (form == 1)
+  {
+    pVirtualMachineState->PushOperand(pValue2);
+    pVirtualMachineState->PushOperand(pValue1);
+    pVirtualMachineState->PushOperand(pValue4);
+    pVirtualMachineState->PushOperand(pValue3);
+    pVirtualMachineState->PushOperand(pValue2);
+    pVirtualMachineState->PushOperand(pValue1);
+  }
+  else if (form == 2)
+  {
+    pVirtualMachineState->PushOperand(pValue2);
+    pVirtualMachineState->PushOperand(pValue1);
+    pVirtualMachineState->PushOperand(pValue3);
+    pVirtualMachineState->PushOperand(pValue2);
+    pVirtualMachineState->PushOperand(pValue1);
+  }
+  else if (form == 3)
+  {
+    pVirtualMachineState->PushOperand(pValue1);
+    pVirtualMachineState->PushOperand(pValue3);
+    pVirtualMachineState->PushOperand(pValue2);
+    pVirtualMachineState->PushOperand(pValue1);
+  }
+  else
+  {
+    pVirtualMachineState->PushOperand(pValue1);
+    pVirtualMachineState->PushOperand(pValue2);
+    pVirtualMachineState->PushOperand(pValue1);
+  }
+}
+
 void BasicExecutionEngine::ExecuteOpCodeConvertIntegerToShort(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
 {
   boost::intrusive_ptr< JavaInteger > pInteger1 = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());

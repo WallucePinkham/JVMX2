@@ -278,6 +278,14 @@ void BasicExecutionEngine::ExecuteOpCodeGoto(const std::shared_ptr<IVirtualMachi
   AdjustProgramCounterByOffset(pVirtualMachineState, ReadOffset(pVirtualMachineState));
 }
 
+void BasicExecutionEngine::ExecuteOpCodeGotoWide(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
+{
+  int32_t offset = Read32BitOffset(pVirtualMachineState);
+
+  // goto_w uses a signed offset from its opcode address; subtract the five instruction bytes already read.
+  pVirtualMachineState->AdvanceProgramCounter(offset - 5);
+}
+
 void BasicExecutionEngine::AdjustProgramCounterByOffset(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState, int16_t offset)
 {
   pVirtualMachineState->AdvanceProgramCounter(offset - (sizeof(int16_t) + sizeof(int8_t)));
@@ -632,6 +640,17 @@ void BasicExecutionEngine::ExecuteOpCodeJumpSubRoutine(const std::shared_ptr<IVi
   pVirtualMachineState->PushOperand(pAddress);
 
   AdjustProgramCounterByOffset(pVirtualMachineState, offset);
+}
+
+void BasicExecutionEngine::ExecuteOpCodeJumpSubRoutineWide(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
+{
+  int32_t offset = Read32BitOffset(pVirtualMachineState);
+
+  // jsr_w saves the next instruction for ret, then applies its signed 32-bit offset from the opcode address.
+  boost::intrusive_ptr<JavaReturnAddress> pAddress = new JavaReturnAddress(pVirtualMachineState->GetProgramCounter());
+  pVirtualMachineState->PushOperand(pAddress);
+
+  pVirtualMachineState->AdvanceProgramCounter(offset - 5);
 }
 
 void BasicExecutionEngine::ExecuteOpCodeReturnFromSubRoutine(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)

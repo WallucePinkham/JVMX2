@@ -1,11 +1,14 @@
 #include <cstdlib>
 #include <cfloat>
+#include <cmath>
 #include <cstring>
 #include <atomic>
+#include <limits>
 #include <memory>
 #include <vector>
 #include <map>
 #include <thread>
+#include <utility>
 
 #include "IClassLibrary.h"
 #include "IVirtualMachineState.h"
@@ -42,6 +45,67 @@ extern const JavaString c_ThrowableClassName;
 extern const JavaString c_UncaughtExceptionMethodName;
 extern const JavaString c_UncaughtExceptionMethodType;
 
+namespace
+{
+  void ValidateMathOperands(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState, e_JavaVariableTypes expectedType, uint8_t operandCount)
+  {
+    if (pVirtualMachineState->GetOperandStackSize() < operandCount)
+    {
+      throw InvalidStateException("Not enough operands on the stack for math operation.");
+    }
+
+    for (uint8_t operandIndex = 1; operandIndex <= operandCount; ++operandIndex)
+    {
+      boost::intrusive_ptr<IJavaVariableType> pOperand = pVirtualMachineState->PeekOperandFromBack(operandIndex);
+      if (nullptr == pOperand || expectedType != pOperand->GetVariableType())
+      {
+        throw InvalidStateException("Unexpected operand type on the stack for math operation.");
+      }
+    }
+  }
+
+  template <typename T>
+  boost::intrusive_ptr<T> PopValidatedMathOperand(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState, e_JavaVariableTypes expectedType)
+  {
+    ValidateMathOperands(pVirtualMachineState, expectedType, 1);
+    boost::intrusive_ptr<T> pOperand = boost::dynamic_pointer_cast<T>(pVirtualMachineState->PopOperand());
+    if (nullptr == pOperand)
+    {
+      throw InvalidStateException("Unexpected operand type on the stack for math operation.");
+    }
+
+    return pOperand;
+  }
+
+  template <typename T>
+  std::pair<boost::intrusive_ptr<T>, boost::intrusive_ptr<T> > PopValidatedMathOperands(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState, e_JavaVariableTypes expectedType)
+  {
+    ValidateMathOperands(pVirtualMachineState, expectedType, 2);
+    boost::intrusive_ptr<T> pOperand2 = boost::dynamic_pointer_cast<T>(pVirtualMachineState->PopOperand());
+    boost::intrusive_ptr<T> pOperand1 = boost::dynamic_pointer_cast<T>(pVirtualMachineState->PopOperand());
+    if (nullptr == pOperand1 || nullptr == pOperand2)
+    {
+      throw InvalidStateException("Unexpected operand type on the stack for math operation.");
+    }
+
+    return std::make_pair(pOperand1, pOperand2);
+  }
+
+  int32_t WrapToInt32(uint32_t bits)
+  {
+    int32_t result;
+    std::memcpy(&result, &bits, sizeof(result));
+    return result;
+  }
+
+  int64_t WrapToInt64(uint64_t bits)
+  {
+    int64_t result;
+    std::memcpy(&result, &bits, sizeof(result));
+    return result;
+  }
+}
+
 
 void BasicExecutionEngine::ExecuteOpCodeORLong(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
 {
@@ -73,21 +137,10 @@ void BasicExecutionEngine::ExecuteOpCodeFloatAdd(const std::shared_ptr<IVirtualM
     pVirtualMachineState->LogOperandStack();
   }
 #endif // _DEBUG
-  boost::intrusive_ptr<IJavaVariableType> pOperand2 = pVirtualMachineState->PopOperand();
-  boost::intrusive_ptr<IJavaVariableType> pOperand1 = pVirtualMachineState->PopOperand();
-
-  if (e_JavaVariableTypes::Float != pOperand2->GetVariableType())
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected a float on the operand stack.");
-  }
-
-  if (e_JavaVariableTypes::Float != pOperand1->GetVariableType())
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected a float on the operand stack.");
-  }
-
-  float value2 = boost::dynamic_pointer_cast<JavaFloat>(pOperand2)->ToHostFloat();
-  float value1 = boost::dynamic_pointer_cast<JavaFloat>(pOperand1)->ToHostFloat();
+  std::pair<boost::intrusive_ptr<JavaFloat>, boost::intrusive_ptr<JavaFloat> > operands =
+    PopValidatedMathOperands<JavaFloat>(pVirtualMachineState, e_JavaVariableTypes::Float);
+  float value2 = operands.second->ToHostFloat();
+  float value1 = operands.first->ToHostFloat();
 
   pVirtualMachineState->PushOperand(new JavaFloat(JavaFloat::FromHostFloat(value1 + value2)));
 
@@ -101,8 +154,10 @@ void BasicExecutionEngine::ExecuteOpCodeFloatAdd(const std::shared_ptr<IVirtualM
 
 void BasicExecutionEngine::ExecuteOpCodeFloatSubtract(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
 {
-  float float2 = boost::dynamic_pointer_cast<JavaFloat>(pVirtualMachineState->PopOperand())->ToHostFloat();
-  float float1 = boost::dynamic_pointer_cast<JavaFloat>(pVirtualMachineState->PopOperand())->ToHostFloat();
+  std::pair<boost::intrusive_ptr<JavaFloat>, boost::intrusive_ptr<JavaFloat> > operands =
+    PopValidatedMathOperands<JavaFloat>(pVirtualMachineState, e_JavaVariableTypes::Float);
+  float float2 = operands.second->ToHostFloat();
+  float float1 = operands.first->ToHostFloat();
 
   pVirtualMachineState->PushOperand(new JavaFloat(JavaFloat::FromHostFloat(float1 - float2)));
 }
@@ -118,32 +173,21 @@ void BasicExecutionEngine::ExecuteOpCodeIntegerRemainder(const std::shared_ptr<I
     return;
   }
 
+  if (integer1 == (std::numeric_limits<int32_t>::min)() && integer2 == -1)
+  {
+    pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(0)));
+    return;
+  }
+
   pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(integer1 % integer2)));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeLongRemainder(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
 {
-  if (pVirtualMachineState->GetOperandStackSize() < 2)
-  {
-    throw InvalidStateException(__FUNCTION__ " - Not enough operands on the stack for long remainder operation.");
-  }
-
-  if (pVirtualMachineState->PeekOperand()->GetVariableType() != e_JavaVariableTypes::Long)
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected long on the operand stack.");
-  }
-
-  auto pLong2 = boost::dynamic_pointer_cast<JavaLong>(pVirtualMachineState->PopOperand());
-
-  if (pVirtualMachineState->PeekOperand()->GetVariableType() != e_JavaVariableTypes::Long)
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected long on the operand stack.");
-  }
-
-  auto pLong1 = boost::dynamic_pointer_cast<JavaLong>(pVirtualMachineState->PopOperand());
-
-  int64_t long2 = pLong2->ToHostInt64();
-  int64_t long1 = pLong1->ToHostInt64();
+  std::pair<boost::intrusive_ptr<JavaLong>, boost::intrusive_ptr<JavaLong> > operands =
+    PopValidatedMathOperands<JavaLong>(pVirtualMachineState, e_JavaVariableTypes::Long);
+  int64_t long2 = operands.second->ToHostInt64();
+  int64_t long1 = operands.first->ToHostInt64();
 
   if (long2 == 0)
   {
@@ -151,36 +195,18 @@ void BasicExecutionEngine::ExecuteOpCodeLongRemainder(const std::shared_ptr<IVir
     return;
   }
 
-  int64_t result = long1 % long2;
+  int64_t result = (long1 == (std::numeric_limits<int64_t>::min)() && long2 == -1)
+    ? 0
+    : long1 % long2;
 
   pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(result)));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeFloatRemainder(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
 {
-  if (pVirtualMachineState->GetOperandStackSize() < 2)
-  {
-    throw InvalidStateException(__FUNCTION__ " - Not enough operands on the stack for float remainder operation.");
-  }
-
-  if (pVirtualMachineState->PeekOperand()->GetVariableType() != e_JavaVariableTypes::Float)
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected float on the operand stack.");
-  }
-
-  auto pFloat2 = boost::dynamic_pointer_cast<JavaFloat>(pVirtualMachineState->PopOperand());
-
-  if (pVirtualMachineState->PeekOperand()->GetVariableType() != e_JavaVariableTypes::Float)
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected float on the operand stack.");
-  }
-
-  auto pFloat1 = boost::dynamic_pointer_cast<JavaFloat>(pVirtualMachineState->PopOperand());
-
-  float float2 = pFloat2->ToHostFloat();
-  float float1 = pFloat1->ToHostFloat();
-
-  float result = 0.0f;
+  std::pair<boost::intrusive_ptr<JavaFloat>, boost::intrusive_ptr<JavaFloat> > operands =
+    PopValidatedMathOperands<JavaFloat>(pVirtualMachineState, e_JavaVariableTypes::Float);
+  float result = std::fmod(operands.first->ToHostFloat(), operands.second->ToHostFloat());
 
   /*
   The result of an frem instruction is governed by these rules :
@@ -205,61 +231,14 @@ void BasicExecutionEngine::ExecuteOpCodeFloatRemainder(const std::shared_ptr<IVi
     value2'.
     */
 
-  if (isnan(float1) || isnan(float2))
-  {
-    result = NAN;
-  }
-  else if (isinf(float1) || isinf(float2) || float2 == 0.0f)
-  {
-    result = NAN;
-  }
-  else if (isinf(float1))
-  {
-    result = float1;
-  }
-  else if (isinf(float2))
-  {
-    result = float1;
-  }
-  else if (float1 == 0.0f)
-  {
-    result = float1;
-  }
-  else
-  {
-    // Calculate the floating point remainder
-    int q = static_cast<int>(float1 / float2);
-    result = float1 - (float2 * q);
-  }
-
   pVirtualMachineState->PushOperand(new JavaFloat(JavaFloat::FromHostFloat(result)));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeDoubleRemainder(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
 {
-  if (pVirtualMachineState->GetOperandStackSize() < 2)
-  {
-    throw InvalidStateException(__FUNCTION__ " - Not enough operands on the stack for double remainder operation.");
-  }
-
-  if (pVirtualMachineState->PeekOperand()->GetVariableType() != e_JavaVariableTypes::Double)
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected double on the operand stack.");
-  }
-
-  auto pDouble2 = boost::dynamic_pointer_cast<JavaDouble>(pVirtualMachineState->PopOperand());
-
-  if (pVirtualMachineState->PeekOperand()->GetVariableType() != e_JavaVariableTypes::Double)
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected double on the operand stack.");
-  }
-
-  auto pDouble1 = boost::dynamic_pointer_cast<JavaDouble>(pVirtualMachineState->PopOperand());
-
-  double double2 = pDouble2->ToHostDouble();
-  double double1 = pDouble1->ToHostDouble();
-
-  double result = 0.0;
+  std::pair<boost::intrusive_ptr<JavaDouble>, boost::intrusive_ptr<JavaDouble> > operands =
+    PopValidatedMathOperands<JavaDouble>(pVirtualMachineState, e_JavaVariableTypes::Double);
+  double result = std::fmod(operands.first->ToHostDouble(), operands.second->ToHostDouble());
 
   /*
   The result of an frem instruction is governed by these rules :
@@ -284,33 +263,6 @@ void BasicExecutionEngine::ExecuteOpCodeDoubleRemainder(const std::shared_ptr<IV
     value2'.
     */
 
-  if (isnan(double1) || isnan(double2))
-  {
-    result = NAN;
-  }
-  else if (isinf(double1) || isinf(double2) || double2 == 0.0)
-  {
-    result = NAN;
-  }
-  else if (isinf(double1))
-  {
-    result = double1;
-  }
-  else if (isinf(double2))
-  {
-    result = double1;
-  }
-  else if (double1 == 0.0)
-  {
-    result = double1;
-  }
-  else
-  {
-    // Calculate the floating point remainder
-    int q = static_cast<int>(double1 / double2);
-    result = double1 - (double2 * q);
-  }
-
   pVirtualMachineState->PushOperand(new JavaDouble(JavaDouble::FromHostDouble(result)));
 }
 
@@ -326,17 +278,10 @@ void BasicExecutionEngine::ExecuteOpCodeFloatComparisonG(const std::shared_ptr<I
 
 int BasicExecutionEngine::CompareFloatValues(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState, int nanResult)
 {
-  boost::intrusive_ptr<JavaFloat> pFloat2 = boost::dynamic_pointer_cast<JavaFloat>(pVirtualMachineState->PopOperand());
-  if (nullptr == pFloat2)
-  {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be float type.");
-  }
-
-  boost::intrusive_ptr<JavaFloat> pFloat1 = boost::dynamic_pointer_cast<JavaFloat>(pVirtualMachineState->PopOperand());
-  if (nullptr == pFloat1)
-  {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected second operand to be float type.");
-  }
+  std::pair<boost::intrusive_ptr<JavaFloat>, boost::intrusive_ptr<JavaFloat> > operands =
+    PopValidatedMathOperands<JavaFloat>(pVirtualMachineState, e_JavaVariableTypes::Float);
+  boost::intrusive_ptr<JavaFloat> pFloat1 = operands.first;
+  boost::intrusive_ptr<JavaFloat> pFloat2 = operands.second;
 
   int32_t result = 0;
   if (_isnan(pFloat1->ToHostFloat()) || _isnan(pFloat2->ToHostFloat()))
@@ -361,17 +306,10 @@ int BasicExecutionEngine::CompareFloatValues(const std::shared_ptr<IVirtualMachi
 
 int BasicExecutionEngine::CompareDoubleValues(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState, int nanResult)
 {
-  boost::intrusive_ptr<JavaDouble> pDouble2 = boost::dynamic_pointer_cast<JavaDouble>(pVirtualMachineState->PopOperand());
-  if (nullptr == pDouble2)
-  {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be double type.");
-  }
-
-  boost::intrusive_ptr<JavaDouble> pDouble1 = boost::dynamic_pointer_cast<JavaDouble>(pVirtualMachineState->PopOperand());
-  if (nullptr == pDouble1)
-  {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected second operand to be double type.");
-  }
+  std::pair<boost::intrusive_ptr<JavaDouble>, boost::intrusive_ptr<JavaDouble> > operands =
+    PopValidatedMathOperands<JavaDouble>(pVirtualMachineState, e_JavaVariableTypes::Double);
+  boost::intrusive_ptr<JavaDouble> pDouble1 = operands.first;
+  boost::intrusive_ptr<JavaDouble> pDouble2 = operands.second;
 
   int32_t result = 0;
   if (_isnan(pDouble1->ToHostDouble()) || _isnan(pDouble2->ToHostDouble()))
@@ -403,10 +341,11 @@ void BasicExecutionEngine::ExecuteOpCodeIntegerAdd(const std::shared_ptr<IVirtua
   }
 #endif // _DEBUG
 
-  int integer2 = GetIntegerFromOperandStack(pVirtualMachineState);
-  int integer1 = GetIntegerFromOperandStack(pVirtualMachineState);
+  int32_t integer2 = GetIntegerFromOperandStack(pVirtualMachineState);
+  int32_t integer1 = GetIntegerFromOperandStack(pVirtualMachineState);
 
-  pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(integer1 + integer2)));
+  uint32_t resultBits = static_cast<uint32_t>(integer1) + static_cast<uint32_t>(integer2);
+  pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(WrapToInt32(resultBits))));
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (pVirtualMachineState->HasUserCodeStarted())
@@ -425,41 +364,35 @@ void BasicExecutionEngine::ExecuteOpCodeIntegerMultiply(const std::shared_ptr<IV
   }
 #endif // _DEBUG
 
-  int integer2 = GetIntegerFromOperandStack(pVirtualMachineState);
-  int integer1 = GetIntegerFromOperandStack(pVirtualMachineState);
+  int32_t integer2 = GetIntegerFromOperandStack(pVirtualMachineState);
+  int32_t integer1 = GetIntegerFromOperandStack(pVirtualMachineState);
 
-  pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(integer1 * integer2)));
+  uint32_t resultBits = static_cast<uint32_t>(integer1) * static_cast<uint32_t>(integer2);
+  pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(WrapToInt32(resultBits))));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeIntegerSubtract(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
 {
-  int integer2 = GetIntegerFromOperandStack(pVirtualMachineState);
-  int integer1 = GetIntegerFromOperandStack(pVirtualMachineState);
+  int32_t integer2 = GetIntegerFromOperandStack(pVirtualMachineState);
+  int32_t integer1 = GetIntegerFromOperandStack(pVirtualMachineState);
 
-  pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(integer1 - integer2)));
+  uint32_t resultBits = static_cast<uint32_t>(integer1) - static_cast<uint32_t>(integer2);
+  pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(WrapToInt32(resultBits))));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeFloatMultiply(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
 {
-  boost::intrusive_ptr<JavaFloat> pFloat2 = boost::dynamic_pointer_cast<JavaFloat>(pVirtualMachineState->PopOperand());
-  if (nullptr == pFloat2)
-  {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be float type.");
-  }
+  std::pair<boost::intrusive_ptr<JavaFloat>, boost::intrusive_ptr<JavaFloat> > operands =
+    PopValidatedMathOperands<JavaFloat>(pVirtualMachineState, e_JavaVariableTypes::Float);
 
-  boost::intrusive_ptr<JavaFloat> pFloat1 = boost::dynamic_pointer_cast<JavaFloat>(pVirtualMachineState->PopOperand());
-  if (nullptr == pFloat1)
-  {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected second operand to be float type.");
-  }
-
-  pVirtualMachineState->PushOperand(new JavaFloat(JavaFloat::FromHostFloat(pFloat1->ToHostFloat() * pFloat2->ToHostFloat())));
+  pVirtualMachineState->PushOperand(new JavaFloat(JavaFloat::FromHostFloat(operands.first->ToHostFloat() * operands.second->ToHostFloat())));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeNegateInteger(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
 {
   int32_t value = GetIntegerFromOperandStack(pVirtualMachineState);
-  pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(value * -1)));
+  uint32_t resultBits = 0u - static_cast<uint32_t>(value);
+  pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(WrapToInt32(resultBits))));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeShiftIntegerLeft(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
@@ -467,7 +400,8 @@ void BasicExecutionEngine::ExecuteOpCodeShiftIntegerLeft(const std::shared_ptr<I
   int32_t value2 = GetIntegerFromOperandStack(pVirtualMachineState);
   int32_t value1 = GetIntegerFromOperandStack(pVirtualMachineState);
 
-  pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(value1 << (value2 & 0x1F))));
+  uint32_t resultBits = static_cast<uint32_t>(value1) << (value2 & 0x1F);
+  pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(WrapToInt32(resultBits))));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeShiftIntegerRightArithmetic(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
@@ -490,14 +424,8 @@ void BasicExecutionEngine::ExecuteOpCodeShiftIntegerRightLogical(const std::shar
   int32_t value2 = GetIntegerFromOperandStack(pVirtualMachineState);
   int32_t value1 = GetIntegerFromOperandStack(pVirtualMachineState);
 
-  value2 = (value2 & 0x1F); // Get bottom 5 bits.
-
-  // see this: http://stackoverflow.com/questions/5253194/implementing-logical-right-shift-in-c
-
-  int size = sizeof(int32_t) * 8;
-  int32_t result = (value1 >> value2) & ~(((0x1 << (size - 1)) >> value2) << 1);
-
-  JVMX_ASSERT(result == ((uint32_t)value1) >> value2);
+  uint32_t resultBits = static_cast<uint32_t>(value1) >> (value2 & 0x1F);
+  int32_t result = WrapToInt32(resultBits);
 
   pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(result)));
 
@@ -520,32 +448,21 @@ void BasicExecutionEngine::ExecuteOpCodeIntegerDivide(const std::shared_ptr<IVir
     return;
   }
 
+  if (integer1 == (std::numeric_limits<int32_t>::min)() && integer2 == -1)
+  {
+    pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(integer1)));
+    return;
+  }
+
   pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(integer1 / integer2)));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeLongDivide(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
 {
-  if (pVirtualMachineState->GetOperandStackSize() < 2)
-  {
-    throw InvalidStateException(__FUNCTION__ " - Not enough operands on the stack for long remainder operation.");
-  }
-
-  if (pVirtualMachineState->PeekOperand()->GetVariableType() != e_JavaVariableTypes::Long)
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected long on the operand stack.");
-  }
-
-  auto pLong2 = boost::dynamic_pointer_cast<JavaLong>(pVirtualMachineState->PopOperand());
-
-  if (pVirtualMachineState->PeekOperand()->GetVariableType() != e_JavaVariableTypes::Long)
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected long on the operand stack.");
-  }
-
-  auto pLong1 = boost::dynamic_pointer_cast<JavaLong>(pVirtualMachineState->PopOperand());
-
-  int64_t long2 = pLong2->ToHostInt64();
-  int64_t long1 = pLong1->ToHostInt64();
+  std::pair<boost::intrusive_ptr<JavaLong>, boost::intrusive_ptr<JavaLong> > operands =
+    PopValidatedMathOperands<JavaLong>(pVirtualMachineState, e_JavaVariableTypes::Long);
+  int64_t long2 = operands.second->ToHostInt64();
+  int64_t long1 = operands.first->ToHostInt64();
 
   if (long2 == 0)
   {
@@ -553,7 +470,9 @@ void BasicExecutionEngine::ExecuteOpCodeLongDivide(const std::shared_ptr<IVirtua
     return;
   }
 
-  int64_t result = long1 / long2;
+  int64_t result = (long1 == (std::numeric_limits<int64_t>::min)() && long2 == -1)
+    ? long1
+    : long1 / long2;
 
   pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(result)));
 }
@@ -658,7 +577,8 @@ void BasicExecutionEngine::ExecuteOpCodeLongMultiply(const std::shared_ptr<IVirt
   int64_t long2 = GetLongFromOperandStack(pVirtualMachineState);
   int64_t long1 = GetLongFromOperandStack(pVirtualMachineState);
 
-  pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(long1 * long2)));
+  uint64_t resultBits = static_cast<uint64_t>(long1) * static_cast<uint64_t>(long2);
+  pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(WrapToInt64(resultBits))));
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (pVirtualMachineState->HasUserCodeStarted())
@@ -680,7 +600,8 @@ void BasicExecutionEngine::ExecuteOpCodeLongAdd(const std::shared_ptr<IVirtualMa
   int64_t long2 = GetLongFromOperandStack(pVirtualMachineState);
   int64_t long1 = GetLongFromOperandStack(pVirtualMachineState);
 
-  pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(long1 + long2)));
+  uint64_t resultBits = static_cast<uint64_t>(long1) + static_cast<uint64_t>(long2);
+  pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(WrapToInt64(resultBits))));
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (pVirtualMachineState->HasUserCodeStarted())
@@ -695,7 +616,8 @@ void BasicExecutionEngine::ExecuteOpCodeShiftLongRight(const std::shared_ptr<IVi
   int32_t value2 = GetIntegerFromOperandStack(pVirtualMachineState);
   int64_t value1 = GetLongFromOperandStack(pVirtualMachineState);
 
-  pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(value1 >> (value2 & 0x1F))));
+  uint64_t resultBits = static_cast<uint64_t>(value1) >> (value2 & 0x3F);
+  pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(WrapToInt64(resultBits))));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeShiftLongLeft(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
@@ -703,26 +625,16 @@ void BasicExecutionEngine::ExecuteOpCodeShiftLongLeft(const std::shared_ptr<IVir
   int32_t value2 = GetIntegerFromOperandStack(pVirtualMachineState);
   int64_t value1 = GetLongFromOperandStack(pVirtualMachineState);
 
-  pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(value1 << (value2 & 0x1F))));
+  uint64_t resultBits = static_cast<uint64_t>(value1) << (value2 & 0x3F);
+  pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(WrapToInt64(resultBits))));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeDoubleDivide(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
 {
-  boost::intrusive_ptr<IJavaVariableType> pOperand2 = pVirtualMachineState->PopOperand();
-  boost::intrusive_ptr<IJavaVariableType> pOperand1 = pVirtualMachineState->PopOperand();
-
-  if (e_JavaVariableTypes::Double != pOperand2->GetVariableType())
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected double as second parameter.");
-  }
-
-  if (e_JavaVariableTypes::Double != pOperand1->GetVariableType())
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected double as first parameter.");
-  }
-
-  double value1 = boost::dynamic_pointer_cast<JavaDouble>(pOperand1)->ToHostDouble();
-  double value2 = boost::dynamic_pointer_cast<JavaDouble>(pOperand2)->ToHostDouble();
+  std::pair<boost::intrusive_ptr<JavaDouble>, boost::intrusive_ptr<JavaDouble> > operands =
+    PopValidatedMathOperands<JavaDouble>(pVirtualMachineState, e_JavaVariableTypes::Double);
+  double value1 = operands.first->ToHostDouble();
+  double value2 = operands.second->ToHostDouble();
 
   double result = value1 / value2;
 
@@ -731,12 +643,7 @@ void BasicExecutionEngine::ExecuteOpCodeDoubleDivide(const std::shared_ptr<IVirt
 
 void BasicExecutionEngine::ExecuteOpCodeNegateDouble(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
 {
-  if (e_JavaVariableTypes::Double != pVirtualMachineState->PeekOperand()->GetVariableType())
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected double on the operand stack.");
-  }
-
-  boost::intrusive_ptr<JavaDouble> pOperand = boost::dynamic_pointer_cast<JavaDouble>(pVirtualMachineState->PopOperand());
+  boost::intrusive_ptr<JavaDouble> pOperand = PopValidatedMathOperand<JavaDouble>(pVirtualMachineState, e_JavaVariableTypes::Double);
 
   double negatedValue = (-pOperand->ToHostDouble()); // Apply operator -()
 
@@ -770,7 +677,8 @@ void BasicExecutionEngine::ExecuteOpCodeLongSubtract(const std::shared_ptr<IVirt
   int64_t integer2 = GetLongFromOperandStack(pVirtualMachineState);
   int64_t integer1 = GetLongFromOperandStack(pVirtualMachineState);
 
-  pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(integer1 - integer2)));
+  uint64_t resultBits = static_cast<uint64_t>(integer1) - static_cast<uint64_t>(integer2);
+  pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(WrapToInt64(resultBits))));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeORInteger(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
@@ -783,21 +691,10 @@ void BasicExecutionEngine::ExecuteOpCodeORInteger(const std::shared_ptr<IVirtual
 
 void BasicExecutionEngine::ExecuteOpCodeFloatDivide(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
 {
-  boost::intrusive_ptr<IJavaVariableType> pOperand2 = pVirtualMachineState->PopOperand();
-  boost::intrusive_ptr<IJavaVariableType> pOperand1 = pVirtualMachineState->PopOperand();
-
-  if (e_JavaVariableTypes::Float != pOperand2->GetVariableType())
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected float as second parameter.");
-  }
-
-  if (e_JavaVariableTypes::Float != pOperand1->GetVariableType())
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected float as first parameter.");
-  }
-
-  float value1 = boost::dynamic_pointer_cast<JavaFloat>(pOperand1)->ToHostFloat();
-  float value2 = boost::dynamic_pointer_cast<JavaFloat>(pOperand2)->ToHostFloat();
+  std::pair<boost::intrusive_ptr<JavaFloat>, boost::intrusive_ptr<JavaFloat> > operands =
+    PopValidatedMathOperands<JavaFloat>(pVirtualMachineState, e_JavaVariableTypes::Float);
+  float value1 = operands.first->ToHostFloat();
+  float value2 = operands.second->ToHostFloat();
 
   float result = value1 / value2;
 
@@ -806,19 +703,10 @@ void BasicExecutionEngine::ExecuteOpCodeFloatDivide(const std::shared_ptr<IVirtu
 
 void BasicExecutionEngine::ExecuteOpCodeDoubleMultiply(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
 {
-  boost::intrusive_ptr<JavaDouble> pDouble2 = boost::dynamic_pointer_cast<JavaDouble>(pVirtualMachineState->PopOperand());
-  if (nullptr == pDouble2)
-  {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be float type.");
-  }
+  std::pair<boost::intrusive_ptr<JavaDouble>, boost::intrusive_ptr<JavaDouble> > operands =
+    PopValidatedMathOperands<JavaDouble>(pVirtualMachineState, e_JavaVariableTypes::Double);
 
-  boost::intrusive_ptr<JavaDouble> pDouble1 = boost::dynamic_pointer_cast<JavaDouble>(pVirtualMachineState->PopOperand());
-  if (nullptr == pDouble1)
-  {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected second operand to be float type.");
-  }
-
-  pVirtualMachineState->PushOperand(new JavaDouble(JavaDouble::FromHostDouble(pDouble1->ToHostDouble() * pDouble2->ToHostDouble())));
+  pVirtualMachineState->PushOperand(new JavaDouble(JavaDouble::FromHostDouble(operands.first->ToHostDouble() * operands.second->ToHostDouble())));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeDoubleAdd(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
@@ -829,21 +717,10 @@ void BasicExecutionEngine::ExecuteOpCodeDoubleAdd(const std::shared_ptr<IVirtual
     pVirtualMachineState->LogOperandStack();
   }
 #endif // _DEBUG
-  boost::intrusive_ptr<IJavaVariableType> pOperand2 = pVirtualMachineState->PopOperand();
-  boost::intrusive_ptr<IJavaVariableType> pOperand1 = pVirtualMachineState->PopOperand();
-
-  if (e_JavaVariableTypes::Double != pOperand2->GetVariableType())
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected a float on the operand stack.");
-  }
-
-  if (e_JavaVariableTypes::Double != pOperand1->GetVariableType())
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected a float on the operand stack.");
-  }
-
-  double value2 = boost::dynamic_pointer_cast<JavaDouble>(pOperand2)->ToHostDouble();
-  double value1 = boost::dynamic_pointer_cast<JavaDouble>(pOperand1)->ToHostDouble();
+  std::pair<boost::intrusive_ptr<JavaDouble>, boost::intrusive_ptr<JavaDouble> > operands =
+    PopValidatedMathOperands<JavaDouble>(pVirtualMachineState, e_JavaVariableTypes::Double);
+  double value2 = operands.second->ToHostDouble();
+  double value1 = operands.first->ToHostDouble();
 
   pVirtualMachineState->PushOperand(new JavaDouble(JavaDouble::FromHostDouble(value1 + value2)));
 
@@ -867,32 +744,25 @@ void BasicExecutionEngine::ExecuteOpCodeDoubleComparisonG(const std::shared_ptr<
 
 void BasicExecutionEngine::ExecuteOpCodeDoubleSubtract(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
 {
-  double double2 = boost::dynamic_pointer_cast<JavaDouble>(pVirtualMachineState->PopOperand())->ToHostDouble();
-  double double1 = boost::dynamic_pointer_cast<JavaDouble>(pVirtualMachineState->PopOperand())->ToHostDouble();
+  std::pair<boost::intrusive_ptr<JavaDouble>, boost::intrusive_ptr<JavaDouble> > operands =
+    PopValidatedMathOperands<JavaDouble>(pVirtualMachineState, e_JavaVariableTypes::Double);
+  double double2 = operands.second->ToHostDouble();
+  double double1 = operands.first->ToHostDouble();
 
   pVirtualMachineState->PushOperand(new JavaDouble(JavaDouble::FromHostDouble(double1 - double2)));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeNegateLong(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
 {
-  if (e_JavaVariableTypes::Long != pVirtualMachineState->PeekOperand()->GetVariableType())
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected long on the operand stack.");
-  }
-
-  boost::intrusive_ptr<JavaLong> pOperand = boost::dynamic_pointer_cast<JavaLong>(pVirtualMachineState->PopOperand());
-  int64_t negatedValue = -pOperand->ToHostInt64();
+  boost::intrusive_ptr<JavaLong> pOperand = PopValidatedMathOperand<JavaLong>(pVirtualMachineState, e_JavaVariableTypes::Long);
+  uint64_t resultBits = 0u - static_cast<uint64_t>(pOperand->ToHostInt64());
+  int64_t negatedValue = WrapToInt64(resultBits);
   pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(negatedValue)));
 }
 
 void BasicExecutionEngine::ExecuteOpCodeNegateFloat(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState)
 {
-  if (e_JavaVariableTypes::Float != pVirtualMachineState->PeekOperand()->GetVariableType())
-  {
-    throw InvalidStateException(__FUNCTION__ " - Expected float on the operand stack.");
-  }
-
-  boost::intrusive_ptr<JavaFloat> pOperand = boost::dynamic_pointer_cast<JavaFloat>(pVirtualMachineState->PopOperand());
+  boost::intrusive_ptr<JavaFloat> pOperand = PopValidatedMathOperand<JavaFloat>(pVirtualMachineState, e_JavaVariableTypes::Float);
   float negatedValue = -pOperand->ToHostFloat();
   pVirtualMachineState->PushOperand(new JavaFloat(JavaFloat::FromHostFloat(negatedValue)));
 }
@@ -902,8 +772,13 @@ void BasicExecutionEngine::ExecuteOpCodeShiftLongRightArithmetic(const std::shar
   int32_t value2 = GetIntegerFromOperandStack(pVirtualMachineState);
   int64_t value1 = GetLongFromOperandStack(pVirtualMachineState);
 
-  uint64_t uvalue1 = static_cast<uint64_t>(value1);
-  int64_t result = static_cast<int64_t>(uvalue1 >> (value2 & 0x3F));
+  uint32_t shiftCount = static_cast<uint32_t>(value2) & 0x3F;
+  uint64_t resultBits = static_cast<uint64_t>(value1) >> shiftCount;
+  if (value1 < 0 && shiftCount != 0)
+  {
+    resultBits |= (~static_cast<uint64_t>(0)) << (64 - shiftCount);
+  }
+  int64_t result = WrapToInt64(resultBits);
 
   pVirtualMachineState->PushOperand(new JavaLong(JavaLong::FromHostInt64(result)));
 }

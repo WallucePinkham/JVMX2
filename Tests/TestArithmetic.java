@@ -77,6 +77,50 @@ public class TestArithmetic {
         check("Double.isNaN(df)", Double.isNaN(df), true);
         double dg = Double.POSITIVE_INFINITY;
         check("Double.POSITIVE_INFINITY", dg, Double.POSITIVE_INFINITY);
+
+        // Long shift counts use the low six bits; right shift variants differ for negative values.
+        long negativeShiftValue = -8L;
+        check("long: arithmetic right shift", negativeShiftValue >> 2, -2L);
+        check("long: logical right shift", negativeShiftValue >>> 2, 4611686018427387902L);
+        check("long: arithmetic shift by 63", negativeShiftValue >> 63, -1L);
+        check("long: logical shift by 32", -1L >>> 32, 4294967295L);
+        check("int: left shift wraps", Integer.MIN_VALUE << 1, 0);
+        check("long: left shift wraps", Long.MIN_VALUE << 1, 0L);
+
+        // Floating-point remainder follows Java's IEEE-754 remainder rules.
+        float floatInfinity = Float.POSITIVE_INFINITY;
+        double doubleInfinity = Double.POSITIVE_INFINITY;
+        check("float: finite remainder by infinity", -5.5f % floatInfinity, -5.5f);
+        check("float: infinity remainder", Float.isNaN(floatInfinity % 2.0f), true);
+        check("float: large quotient remainder", 1.0e20f % 3.0f, 2.0f);
+        check("double: finite remainder by infinity", -5.5 % doubleInfinity, -5.5);
+        check("double: infinity remainder", Double.isNaN(doubleInfinity % 2.0), true);
+        check("double: large quotient remainder", 1.0e20 % 3.0, 1.0);
+        float negativeFloatZero = -0.0f;
+        double negativeDoubleZero = -0.0;
+        check("float: remainder preserves negative zero",
+              1.0f / (negativeFloatZero % 3.0f), Float.NEGATIVE_INFINITY);
+        check("double: remainder preserves negative zero",
+              1.0 / (negativeDoubleZero % 3.0), Double.NEGATIVE_INFINITY);
+
+        // Integer arithmetic wraps to the Java 32-bit and 64-bit result width.
+        int intMaximum = Integer.MAX_VALUE;
+        int intMinimum = Integer.MIN_VALUE;
+        check("int: addition wraps", intMaximum + 1, intMinimum);
+        check("int: subtraction wraps", intMinimum - 1, intMaximum);
+        check("int: multiplication wraps", intMaximum * 2, -2);
+        check("int: negation wraps", -intMinimum, intMinimum);
+        check("int: minimum divided by negative one wraps", intMinimum / -1, intMinimum);
+        check("int: minimum remainder negative one", intMinimum % -1, 0);
+
+        long longMaximum = Long.MAX_VALUE;
+        long longMinimum = Long.MIN_VALUE;
+        check("long: addition wraps", longMaximum + 1L, longMinimum);
+        check("long: subtraction wraps", longMinimum - 1L, longMaximum);
+        check("long: multiplication wraps", longMaximum * 2L, -2L);
+        check("long: negation wraps", -longMinimum, longMinimum);
+        check("long: minimum divided by negative one wraps", longMinimum / -1L, longMinimum);
+        check("long: minimum remainder negative one", longMinimum % -1L, 0L);
     }
 
     private static void check(String label, int actual, int expected) {
@@ -98,7 +142,7 @@ public class TestArithmetic {
     private static void check(String label, float actual, float expected) {
         if (Float.isNaN(expected) && Float.isNaN(actual)) {
             System.out.println(ConsoleColors.GREEN + "SUCCESS: " + label + " == NaN" + ConsoleColors.RESET);
-        } else if (Float.isInfinite(expected) && Float.isInfinite(actual)) {
+        } else if (Float.isInfinite(expected) && expected == actual) {
             System.out.println(ConsoleColors.GREEN + "SUCCESS: " + label + " == Infinity" + ConsoleColors.RESET);
         } else if (Math.abs(actual - expected) < 1e-6) {
             System.out.println(ConsoleColors.GREEN + "SUCCESS: " + label + " == " + expected + ConsoleColors.RESET);
@@ -110,7 +154,7 @@ public class TestArithmetic {
     private static void check(String label, double actual, double expected) {
         if (Double.isNaN(expected) && Double.isNaN(actual)) {
             System.out.println(ConsoleColors.GREEN + "SUCCESS: " + label + " == NaN" + ConsoleColors.RESET);
-        } else if (Double.isInfinite(expected) && Double.isInfinite(actual)) {
+        } else if (Double.isInfinite(expected) && expected == actual) {
             System.out.println(ConsoleColors.GREEN + "SUCCESS: " + label + " == Infinity" + ConsoleColors.RESET);
         } else if (Math.abs(actual - expected) < 1e-12) {
             System.out.println(ConsoleColors.GREEN + "SUCCESS: " + label + " == " + expected + ConsoleColors.RESET);

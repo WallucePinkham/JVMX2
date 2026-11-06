@@ -1094,6 +1094,7 @@ e_ImmediateReturnRequired BasicExecutionEngine::ProcessNextOpcode(const std::sha
     break;
 
   case e_JavaOpCodes::DuplicateTopOperandOrTwox2:
+    ExecuteOpCodeDuplicateTopOperandOrTwox2(pVirtualMachineState);
     break;
 
   case e_JavaOpCodes::SwapOperands:
@@ -1124,9 +1125,16 @@ e_ImmediateReturnRequired BasicExecutionEngine::ProcessNextOpcode(const std::sha
     ExecuteOpCodeConvertDoubleToLong(pVirtualMachineState);
     break;
 
-  case e_JavaOpCodes::InvokeDynamic:
   case e_JavaOpCodes::GotoWide:
+    ExecuteOpCodeGotoWide(pVirtualMachineState);
+    break;
+
   case e_JavaOpCodes::JumpSubRoutineWide:
+    ExecuteOpCodeJumpSubRoutineWide(pVirtualMachineState);
+    break;
+
+  case e_JavaOpCodes::InvokeDynamic:
+    // Resolve the constant-pool entry and BootstrapMethods arguments, then link and cache the resulting call site.
   default:
     pLogger->LogDebug("%s %Id - Read opcode: %hu (%s)\n", pVirtualMachineState->GetCurrentClassAndMethodName().ToUtf8String().c_str(), pVirtualMachineState->GetProgramCounter() - 1, opCode, TranslateOpCode(opCode));
     pVirtualMachineState->LogCallStack();
@@ -2067,7 +2075,17 @@ int32_t BasicExecutionEngine::Read32BitOffset(const std::shared_ptr<IVirtualMach
   uint8_t byte3 = ReadByteUnsigned(pVirtualMachineState);
   uint8_t byte4 = ReadByteUnsigned(pVirtualMachineState);
 
-  return (byte1 << 24) | (byte2 << 16) | (byte3 << 8) | byte4;
+  uint32_t bits = (static_cast<uint32_t>(byte1) << 24) |
+    (static_cast<uint32_t>(byte2) << 16) |
+    (static_cast<uint32_t>(byte3) << 8) |
+    static_cast<uint32_t>(byte4);
+
+  if ((bits & 0x80000000u) != 0)
+  {
+    return -1 - static_cast<int32_t>(~bits);
+  }
+
+  return static_cast<int32_t>(bits);
 }
 
 void BasicExecutionEngine::Halt()
