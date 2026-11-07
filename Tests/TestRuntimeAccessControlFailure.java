@@ -1,24 +1,20 @@
 public class TestRuntimeAccessControlFailure {
     public static void main(String[] args) {
         System.out.println("Running TestRuntimeAccessControlFailure...");
-        boolean exceptionThrown = false;
         try {
-            // Simulate or attempt an action where access control should throw
-            // IllegalAccessError.
-            // Currently, because runtime access checks (JVMS §5.4.4) are
-            // incomplete/missing,
-            // no exception is thrown here.
+            AccessTest.main(new String[0]);
         } catch (java.lang.IllegalAccessError e) {
-            exceptionThrown = true;
             System.out.println("Caught expected IllegalAccessError.");
+            System.out.println("SUCCESS: TestRuntimeAccessControlFailure passed.");
+            return;
         } catch (Throwable t) {
-            System.out.println("Caught other throwable: " + t);
+            throw new RuntimeException("Expected IllegalAccessError, but caught " + t, t);
         }
 
-        if (!exceptionThrown) {
-            throw new RuntimeException(
-                    "FAIL: Expected IllegalAccessError was not thrown due to missingime access control enforcement (JVMS §5.4.4).");
-        }
-        System.out.println("SUCCESS: TestRuntimeAccessControlFailure passed.");
+        throw new RuntimeException(
+                "Expected IllegalAccessError when AccessTest invoked a private method from another class.");
+    }
+
+    private static void restrictedMethod() {
     }
 }
