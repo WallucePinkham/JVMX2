@@ -15,6 +15,11 @@ class StackFrame;
 
 #include "IExecutionEngine.h"
 
+class ObjectReference;
+class ConstantPoolStringReference;
+boost::intrusive_ptr<ObjectReference> GetFromStringPool(std::shared_ptr<ConstantPoolStringReference> pStringRef);
+void AddToStringPool(std::shared_ptr<ConstantPoolStringReference> pStringRef, boost::intrusive_ptr<ObjectReference> pObject);
+
 class BasicExecutionEngine : public IExecutionEngine
 {
 public:
@@ -173,6 +178,7 @@ private:
   void ExecuteOpCodeStoreReferenceInLocalWithIndex( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeStoreReferenceInLocal( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState, uint16_t localVariableIndex );
   void ExecuteOpCodeGoto( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  void ExecuteOpCodeGotoWide( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeReturnReference( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeReturnInteger( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeIntegerRemainder( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
@@ -235,6 +241,7 @@ private:
   void ExecuteOpCodeLongComparison( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodePushDoubleOrLongFromConstantPoolWide( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeJumpSubRoutine( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  void ExecuteOpCodeJumpSubRoutineWide( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeReturnFromSubRoutine( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeReturnLong( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeXORLong( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
@@ -277,12 +284,20 @@ private:
   void ExecuteOpCodeFloatAdd( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeDoubleSubtract( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeDuplicateTopOperandx2( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  void ExecuteOpCodeDuplicateTopOperandOrTwox2( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeConvertIntegerToShort( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeDuplicateTopOperandOrTwox1( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeLookupSwitch( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeStoreIntoDoubleArray( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeLoadDoubleFromArray( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeORLong( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  void ExecuteOpCodeNegateLong( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  void ExecuteOpCodeNegateFloat( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  void ExecuteOpCodeShiftLongRightArithmetic( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  void ExecuteOpCodeConvertLongToFloat( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  void ExecuteOpCodeConvertFloatToLong( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  void ExecuteOpCodeConvertDoubleToLong( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
+  void ExecuteOpCodeSwapOperands( const std::shared_ptr<IVirtualMachineState> & pVirtualMachineState );
   void ExecuteOpCodeWide(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState);
 
   private:

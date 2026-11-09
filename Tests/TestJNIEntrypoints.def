@@ -1,0 +1,2 @@
+EXPORTS
+    Java_TestJNIEntrypoints_runAll=_Java_TestJNIEntrypoints_runAll@8

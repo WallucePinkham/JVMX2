@@ -13,6 +13,7 @@
 #include "TypeParser.h"
 
 #include "HelperTypes.h"
+#include "HelperClasses.h"
 #include "ObjectReference.h"
 
 #include "IVirtualMachineState.h"
@@ -30,56 +31,64 @@ extern const JavaString c_SyntheticField_ClassName;
 const JavaString c_JavaLangReflectField_ClassName = JavaString::FromCString( u"java/lang/reflect/Field" );
 const JavaString c_JavaLangReflectVMField_ClassName = JavaString::FromCString( u"java/lang/reflect/VMField" );
 
+namespace
+{
+  jarray CreatePrimitiveArray( JNIEnv *pEnv, jsize length, e_JavaArrayTypes type )
+  {
+    JNIEnvExported *pInternal = reinterpret_cast<JNIEnvExported *>( pEnv );
+    IVirtualMachineState *pVirtualMachineState = reinterpret_cast<IVirtualMachineState *>( pInternal->m_pInternal );
+
+    if ( length < 0 )
+    {
+      HelperClasses::ThrowJavaException( pVirtualMachineState, c_JavaNegativeArraySizeExceptionException );
+      return nullptr;
+    }
+
+    boost::intrusive_ptr<ObjectReference> pArray = pVirtualMachineState->CreateArray( type, static_cast<size_t>( length ) );
+    return JNIEnvInternal::ConvertArrayPointerToJArray( pVirtualMachineState, pArray );
+  }
+}
+
 extern "C"
 {
   JNIEXPORT jdoubleArray JNICALL JNIEnvInternal::NewDoubleArray( JNIEnv *pEnv, jsize length )
   {
-    JNIEnvExported *pInternal = reinterpret_cast<JNIEnvExported *>( pEnv );
-    IVirtualMachineState *pVirtualMachineState = reinterpret_cast<IVirtualMachineState *>( pInternal->m_pInternal );
-
-    boost::intrusive_ptr<ObjectReference> pArray = pVirtualMachineState->CreateArray( e_JavaArrayTypes::Double, length );
-
-    return reinterpret_cast<jdoubleArray>( ConvertArrayPointerToJArray( pVirtualMachineState, pArray ) );
+    return reinterpret_cast<jdoubleArray>( CreatePrimitiveArray( pEnv, length, e_JavaArrayTypes::Double ) );
   }
 
   JNIEXPORT jfloatArray JNICALL JNIEnvInternal::NewFloatArray( JNIEnv *pEnv, jsize length )
   {
-    JNIEnvExported *pInternal = reinterpret_cast<JNIEnvExported *>( pEnv );
-    IVirtualMachineState *pVirtualMachineState = reinterpret_cast<IVirtualMachineState *>( pInternal->m_pInternal );
-
-    boost::intrusive_ptr<ObjectReference> pArray = pVirtualMachineState->CreateArray( e_JavaArrayTypes::Float, length );
-
-    return reinterpret_cast<jfloatArray>( ConvertArrayPointerToJArray( pVirtualMachineState, pArray ) );
+    return reinterpret_cast<jfloatArray>( CreatePrimitiveArray( pEnv, length, e_JavaArrayTypes::Float ) );
   }
 
   JNIEXPORT jlongArray JNICALL JNIEnvInternal::NewLongArray( JNIEnv *pEnv, jsize length )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    return reinterpret_cast<jlongArray>( CreatePrimitiveArray( pEnv, length, e_JavaArrayTypes::Long ) );
   }
 
   JNIEXPORT jintArray JNICALL JNIEnvInternal::NewIntArray( JNIEnv *pEnv, jsize length )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    return reinterpret_cast<jintArray>( CreatePrimitiveArray( pEnv, length, e_JavaArrayTypes::Integer ) );
   }
 
   JNIEXPORT jshortArray JNICALL JNIEnvInternal::NewShortArray( JNIEnv *pEnv, jsize length )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    return reinterpret_cast<jshortArray>( CreatePrimitiveArray( pEnv, length, e_JavaArrayTypes::Short ) );
   }
 
   JNIEXPORT jcharArray JNICALL JNIEnvInternal::NewCharArray( JNIEnv *pEnv, jsize length )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    return reinterpret_cast<jcharArray>( CreatePrimitiveArray( pEnv, length, e_JavaArrayTypes::Char ) );
   }
 
   JNIEXPORT jbyteArray JNICALL JNIEnvInternal::NewByteArray( JNIEnv *pEnv, jsize length )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    return reinterpret_cast<jbyteArray>( CreatePrimitiveArray( pEnv, length, e_JavaArrayTypes::Byte ) );
   }
 
   JNIEXPORT jbooleanArray JNICALL JNIEnvInternal::NewBooleanArray( JNIEnv *pEnv, jsize length )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    return reinterpret_cast<jbooleanArray>( CreatePrimitiveArray( pEnv, length, e_JavaArrayTypes::Boolean ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetObjectArrayElement( JNIEnv *pEnv, jobjectArray array, jsize index, jobject value )
@@ -1948,7 +1957,10 @@ extern "C"
 
   JNIEXPORT jboolean JNICALL JNIEnvInternal::ExceptionCheck( JNIEnv *pEnv )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    JNIEnvExported *pInternal = reinterpret_cast<JNIEnvExported *>( pEnv );
+    IVirtualMachineState *pVirtualMachineState = reinterpret_cast<IVirtualMachineState *>( pInternal->m_pInternal );
+
+    return pVirtualMachineState->HasExceptionOccurred() ? JNI_TRUE : JNI_FALSE;
   }
 
   void JNIEnvInternal::ArrayCopyInternal(IVirtualMachineState* pVirtualMachineState, JavaArray* pSrc, int length, int srcOffset, int destOffset, JavaArray* pDest)
@@ -2332,5 +2344,3 @@ JNIEXPORT jint JNICALL JavaVMInternal::DetachCurrentThread( JavaVM *vm )
 {
   throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
 }
-
-

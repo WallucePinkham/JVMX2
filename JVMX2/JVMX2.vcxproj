@@ -24,6 +24,11 @@
     <ClCompile Include="AnnotationsEntry.cpp" />
     <ClCompile Include="AttributeConstantValue.cpp" />
     <ClCompile Include="BasicClassLibrary.cpp" />
+    <ClCompile Include="BasicExecutionEngine_Math.cpp" />
+    <ClCompile Include="BasicExecutionEngine_LoadsStores.cpp" />
+    <ClCompile Include="BasicExecutionEngine_ControlFlow.cpp" />
+    <ClCompile Include="BasicExecutionEngine_Objects.cpp" />
+    <ClCompile Include="BasicExecutionEngine_Invoke.cpp" />
     <ClCompile Include="BasicExecutionEngine.cpp" />
     <ClCompile Include="BasicStackManager.cpp" />
     <ClCompile Include="BasicVirtualMachineState.cpp" />

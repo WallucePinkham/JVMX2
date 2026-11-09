@@ -273,6 +273,7 @@ void VirtualMachine::Run(const JavaString& fileName, const std::shared_ptr<IVirt
   }
   catch (JVMXException& ex)
   {
+    pInitialState->Halt(1);
     m_pLogger->LogError(__FUNCTION__ " - Exception thrown from running virtual machine.");
     m_pLogger->LogError("\tException Detail:");
     m_pLogger->LogError(ex.what());
@@ -508,6 +509,7 @@ void VirtualMachine::RunClassName(const JavaString& className,
   }
   catch (JVMXException& ex)
   {
+    pInitialState->Halt(1);
     m_pLogger->LogError(__FUNCTION__ " - Exception thrown from running virtual machine.");
     m_pLogger->LogError("\tException Detail:");
     m_pLogger->LogError(ex.what());

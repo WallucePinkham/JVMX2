@@ -559,7 +559,7 @@ JNIEnv *JavaNativeInterface::GetEnvironment()
     m_pExportedEnvironment->CallByteMethodA = JNIEnvInternal::CallByteMethodA;
     m_pExportedEnvironment->CallCharMethod = JNIEnvInternal::CallCharMethod;
     m_pExportedEnvironment->CallCharMethodA = JNIEnvInternal::CallCharMethodA;
-    m_pExportedEnvironment->CallCharMethodA = JNIEnvInternal::CallCharMethodA;
+    m_pExportedEnvironment->CallCharMethodV = JNIEnvInternal::CallCharMethodV;
     m_pExportedEnvironment->CallShortMethod = JNIEnvInternal::CallShortMethod;
     m_pExportedEnvironment->CallShortMethodV = JNIEnvInternal::CallShortMethodV;
     m_pExportedEnvironment->CallShortMethodA = JNIEnvInternal::CallShortMethodA;

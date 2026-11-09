@@ -13,10 +13,10 @@ class StringPool : public wallaroo::Part
 {
 public:
   void Add(const JavaString& key, boost::intrusive_ptr<ObjectReference> value);
-  boost::intrusive_ptr<ObjectReference> Get(const JavaString& key);
+  boost::intrusive_ptr<ObjectReference> Get(const JavaString& key) const;
 
   // Mostly intended for use by Garbage Collector
-  std::vector<boost::intrusive_ptr<ObjectReference>> GetAll();
+  std::vector<boost::intrusive_ptr<ObjectReference>> GetAll() const;
 
 private:
   std::map<std::u16string, boost::intrusive_ptr<ObjectReference>> m_Pool;
