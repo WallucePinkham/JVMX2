@@ -2,6 +2,8 @@
 pushd "%~dp0"
 if errorlevel 1 exit /b 1
 
+call build_jni_test.bat
+if errorlevel 1 goto failed
 python generate_access_test.py
 if errorlevel 1 goto failed
 python generate_wide_branch_tests.py

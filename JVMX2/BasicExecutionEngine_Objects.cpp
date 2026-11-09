@@ -123,6 +123,32 @@ void BasicExecutionEngine::ExecuteOpCodeGetStatic(const std::shared_ptr<IVirtual
   pVirtualMachineState->PushOperand(pField->GetStaticValue());
 }
 
+/*
+ * Runtime field-access implementation guide (JVMS 5.4.4):
+ *
+ * ResolveField finds a field by name and caches the result, but it does not
+ * know which bytecode caller is trying to use that field. Add the access
+ * decision in the getstatic, putstatic, getfield, and putfield execution paths
+ * after ResolveField returns a FieldInfo and before reading or writing it.
+ * Make that check run on both cache hits and cache misses; never cache an
+ * authorization result that is independent of the current caller.
+ *
+ * Use the active frame's class as D, the resolved FieldInfo's declaring class
+ * as C (add or retain an owner link if field metadata does not expose it), and
+ * the symbolic class named by the ConstantPoolFieldReference as the referenced
+ * class. Check referenced-class accessibility and then field visibility:
+ * public is accessible everywhere; private requires D == C; protected allows
+ * same-runtime-package access or a subclass caller; package-private requires
+ * the same runtime package. Runtime-package equality includes both package
+ * name and defining class-loader identity, not just the dotted/internal name.
+ *
+ * For protected instance fields accessed across packages, additionally check
+ * the receiver constraint at getfield/putfield, where the object reference is
+ * available: its type must be D or a subclass of D. Static field accesses have
+ * no receiver constraint. On denial, raise java/lang/IllegalAccessError and
+ * preserve existing resolution and opcode/member-kind errors (for example,
+ * NoSuchFieldError and IncompatibleClassChangeError) as their own failures.
+ */
 std::shared_ptr<FieldInfo> BasicExecutionEngine::ResolveField(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState, const JavaString& className, const JavaString& fieldName)
 {
   auto it = m_ResolvedFields.find(std::make_pair(className, fieldName));

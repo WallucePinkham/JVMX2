@@ -59,19 +59,10 @@ Do **NOT** use Linux / bash utilities (`grep`, `head`, `tail`, `sed`, `cat`). Us
   & $msbuild .\JVMX2.sln /t:Build /m /p:Configuration=Debug /p:Platform=x86
   ```
   The `x86` solution platform maps to the project's `Win32` platform. Build outputs are written to `Debug`.
-- **Run Tests**: Execute from directory `C:/dev/JVMX2/JVMX2`:
-  ```powershell
-  ..\Debug\JVMX2.exe -cp ..\JVMX2 -jar ..\tests\alltests.jar
-  ```
-
-  Running tests in Debug mode is VERY SLOW because of a lot of extra logging.
-  If you want to run tests, consider compiling in Release mode and running:
-
+- **Run Tests (Preferred in Release Mode)**: Running tests in Debug mode is extremely slow due to extensive verbose logging. Always prefer compiling and running tests in Release mode:
   ```powershell
   ..\Release\JVMX2.exe -cp ..\JVMX2 -jar ..\tests\alltests.jar
   ```
-
-  OR Compile without JVMX_LOG_VERBOSE being defined. However, debugging can be hard if you do this.
 
 
 

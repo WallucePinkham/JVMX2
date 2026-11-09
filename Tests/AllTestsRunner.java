@@ -46,6 +46,8 @@ public class AllTestsRunner {
         System.out.println("Running TestAccessControl...");
         TestAccessControl.main(new String[0]);
 
+        TestJNIEntrypoints.main(new String[0]);
+
         System.out.println("Running TestRuntimeAccessControlFailure...");
         TestRuntimeAccessControlFailure.main(new String[0]);
 

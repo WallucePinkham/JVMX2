@@ -1532,6 +1532,50 @@ std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethod(JavaClass* p
   return pMethodInfo;
 }
 
+/*
+ * Runtime access-control implementation guide (JVMS 5.4.4):
+ *
+ * This is the method-reference resolution path used by the execution engine.
+ * Once the symbolic reference has been resolved to a MethodInfo, check that
+ * the executing class is allowed to access the referenced class and the
+ * resolved method. The caller ("D") is the class owning the active bytecode
+ * frame (GetCurrentClassName()), not the class named by the constant-pool
+ * reference and not the runtime class of the receiver. The member's declaring
+ * class ("C") is pMethodInfo->GetClass(); it may differ from the class named
+ * by pMethodRef when the method is inherited.
+ *
+ * Perform the checks in this order:
+ *   1. Preserve the symbolic owner from pMethodRef->GetClassName() before
+ *      walking superclasses. Confirm that D may access that referenced class:
+ *      a public class is accessible everywhere; a non-public class is
+ *      accessible only from the same runtime package.
+ *   2. Resolve the name and descriptor to the actual method as this function
+ *      already does. Then check access using the resolved method's declaring
+ *      class and flags: public is accessible; private requires D to be that
+ *      declaring class; protected permits the same runtime package or a
+ *      subclass caller; package-private requires the same runtime package.
+ *   3. Treat "same runtime package" as both the same package name and the same
+ *      defining class loader. JavaClass exposes GetPackageName() and
+ *      GetClassLoader(); comparing package strings alone is insufficient
+ *      when multiple class loaders are involved.
+ *   4. For a protected instance method accessed across packages, also enforce
+ *      the protected receiver constraint at the invocation site, where the
+ *      object reference is available: the receiver's type must be D or a
+ *      subclass of D. A static method has no receiver constraint.
+ *   5. Report an access denial as java/lang/IllegalAccessError through the
+ *      existing Java-exception mechanism. Keep lookup failures and unrelated
+ *      linkage errors distinct; do not turn NoSuchMethodError or
+ *      IncompatibleClassChangeError into IllegalAccessError.
+ *
+ * Audit every invocation opcode before relying on this function for checks.
+ * In particular, invokeinterface currently supplies the receiver's runtime
+ * class at one call site; resolution must use the constant-pool symbolic owner,
+ * with runtime dispatch handled separately. Keep caller-sensitive access
+ * decisions out of any resolution cache unless the caller identity is part of
+ * the cache key. The generated AccessTest in Tests/generate_access_test.py
+ * invokes a private static method on TestRuntimeAccessControlFailure and
+ * should be caught by that harness as IllegalAccessError.
+ */
 std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethodOnClass(boost::intrusive_ptr<JavaString> pClassName, const ConstantPoolMethodReference* pMethodRef)
 {
   std::shared_ptr<JavaClass> pClassFile;
