@@ -37,8 +37,13 @@ x64/
 Debug/
 Release/
 
+/Tests/*.class
+/vcpkg_installed/
+/boost_1_78_0/
+
 !boost_1_67_0/boost/preprocessor/debug/
 !boost_1_67_0/boost/preprocessor/debug/**
 !boost_1_67_0/boost/spirit/home/classic/debug/
 !boost_1_67_0/boost/spirit/home/classic/debug/**
 !boost_1_67_0/boost/**/debug/**
+.aider*
