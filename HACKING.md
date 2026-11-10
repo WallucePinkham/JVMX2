@@ -3,31 +3,26 @@
 ## Compiling
 
 I have used Microsoft Visual Studio 2022 to compile the code in x86 Debug and Release Mode.
-You need to download:
+You need:
 
-* [Boost](https://www.boost.org/) v1.67.0
+* [vcpkg](https://github.com/microsoft/vcpkg)
 * [wallaroo](https://wallaroolib.sourceforge.net/index.html) v0.7.0
 
-Unzip and extract these somewhere on your hard drive. 
+### Boost
 
-### Compile Boost
+Boost dependencies are declared in `vcpkg.json` and pinned to v1.78.0 through its vcpkg baseline. The manifest includes the Boost modules used directly by JVMX2; Boost.Thread and Boost.ProgramOptions provide compiled libraries, and their transitive dependencies are included by vcpkg. The project overlay triplet selects the installed MSVC v142 toolset for Boost 1.78, whose build scripts do not correctly match newer MSVC toolset library names.
 
-Next compile the Boost libraries. On my system, the boost libraries all compiled to library files like: `libboost_atomic-vc140-mt-sgd-x64-1_67.lib`
-But when trying to compile JVMX2, the linker was looking for: `libboost_atomic-vc141-mt-sgd-x64-1_67.lib`. Renaming / copying the files from vc140 to vc141 seemed to work. I suspect a more modern version of Boost will solve this problem, but I have not experimented yet, because I am not sure what else will break.
+Install vcpkg and enable its MSBuild integration once:
 
-### Wallaroo
+```powershell
+vcpkg integrate install
+```
 
-Wallaroo does not need compiling.
+Open the solution in Visual Studio or build it with MSBuild. The project enables manifest mode and vcpkg will install the pinned dependencies for the selected platform. To install them manually from the repository root, use the x86 overlay triplet: `vcpkg install --triplet x86-windows --overlay-triplets .\vcpkg-triplets`. The overlay expects the MSVC v142 toolset to be installed; it has been tested with the v142 compiler bundled alongside Visual Studio 2022.
 
-### Point Visual Studio in the right direction
+Wallaroo does not need compiling. Point Visual Studio to its include folder under **C/C++ > Additional Include Directories**.
 
-Now you just have to point Visual Studio in the direction of the boost include folder, the boost binaries and the wallaroo include folder.
-
-* Set your `Library Directories` under `VC++ Directories` to e.g. `<root folder>\boost_1_67_0\stage\lib;$(LibraryPath)`. 
-* Set your `Additional Include Directories` under `C/C++` to e.g. `<root folder>\boost_1_67_0;<root folder>\wallaroo;%(AdditionalIncludeDirectories)` 
-* Set your `Additional Dependencies` under `Linker Input` (under `Linker`) to include `ws2_32.lib`
-
-Remeber to use Win32 build. JVMX does not run on x64 just yet, mostly because I am not super familiar with x64 assembly. I do intend to get there, but if you don't want to wait, pull requests are welcome.
+Remember to use the Win32 build. JVMX does not run on x64 yet, mostly because I still need to do the work for JNI on x64 architectures.
 
 ## Running
 
