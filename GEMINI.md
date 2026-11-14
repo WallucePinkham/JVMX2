@@ -64,6 +64,13 @@ Do **NOT** use Linux / bash utilities (`grep`, `head`, `tail`, `sed`, `cat`). Us
   ..\Release\JVMX2.exe -cp ..\JVMX2 -jar ..\tests\alltests.jar
   ```
 
+### Expected Test Failures
+
+The current test suite has known failures on both Windows and Linux:
+- `TestJNIEntrypoints` reports 171 failures out of 226 because those JNI entrypoints are not implemented yet.
+- `TestRuntimeAccessControlFailure` expects an `IllegalAccessError` that the VM does not yet raise.
+
+These are expected baseline failures, not evidence that a build or unrelated test regressed. When reporting test results, identify these failures separately and investigate any additional or changed failures. Do not claim the full suite passes when the test process exits nonzero.
 
 
 ---
@@ -137,4 +144,3 @@ Before making significant architectural changes, review:
 - `Design.md`
 - `Hacking.md`
 ```
-

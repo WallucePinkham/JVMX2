@@ -6,8 +6,8 @@ This guide tracks the work required to make JVMX2 portable while preserving its 
 
 | Operating system | Architecture | Status / priority |
 |---|---|---|
-| Windows | x86 | Existing build; preserve |
-| Linux | x86_64 | Immediate porting target |
+| Windows | x86 | Existing Release build succeeds; preserve |
+| Linux | x86_64 | CMake Release build succeeds; test/runtime work remains |
 | Linux | x86 | Immediate porting target |
 | Windows | x64 | Future target |
 
@@ -20,16 +20,18 @@ Treat each OS/architecture combination as a distinct ABI target. In particular, 
 - `JavaNativeInterface.cpp` retains MSVC x86 inline assembly for Windows and uses libffi with the platform ABI for Linux x86_64.
 - JVMX2 uses Boost headers and compiled libraries. Dependencies are declared in `vcpkg.json`; the Linux x86_64 vcpkg installation and CMake build are complete.
 - Platform-facing strings use `JVMX_T`; Java UTF-16 literals use `JVMX_UTF16_T`. Java strings are stored as UTF-16 code units and do not use Linux's 32-bit `wchar_t`.
+- The Windows Release x86 solution build succeeds. The existing JNI-entrypoint and runtime access-control test failures are expected on both Windows and Linux; see `Gemini.md`.
 
 ## Porting milestones
 
 ### 1. Establish a repeatable Linux build
 
 - A Linux-only CMake build definition is in place; keep it separate from the Visual Studio project.
-- The Linux OS delegate and core portability changes pass targeted GCC 11 C++11 syntax checks, and the full Linux x86_64 CMake build succeeds.
+- Linux x86_64 Release and Windows x86 Release builds both succeed.
 - The Linux x86_64 CMake build completes with libffi installed from the vcpkg manifest.
-- The documented `-jar` test invocation initializes system classes, then aborts with an uncaught `std::bad_cast` while loading the file URL handler.
-- Running the extracted `AllTestsRunner.class` directly with a temporary Linux build of `TestJNIEntrypoints` reached the JNI entrypoint checks (226 total, 171 unimplemented-entry failures), then failed the runtime access-control test. This is useful partial coverage, not a passing full suite.
+- Running the extracted `AllTestsRunner.class` directly with a temporary Linux build of `TestJNIEntrypoints` reached all 226 JNI entrypoint checks; 171 fail because those JNI functions remain unimplemented. It also reaches the runtime access-control test, which fails as expected because the VM does not yet raise the expected `IllegalAccessError`. These known failures also occur on Windows and are not regressions from the Linux port.
+- Running the Linux suite through `-jar` has a separate unresolved issue: startup aborts with `std::bad_cast` while loading the file URL handler. Investigate this launch path separately from the expected JNI/access-control failures.
+- The temporary Linux JNI test library exercised the libffi dispatch and its `jlong` return. Mixed integer/floating-point arguments and all JNI return types still need focused validation.
 - Record the exact configure, build, and test commands.
 
 For WSL, bootstrap vcpkg, then configure with the vcpkg toolchain. Use the repository's existing `vcpkg_installed` root so the partially completed Linux install is reused. vcpkg keeps packages for different triplets in separate subdirectories (`x64-linux`, `x86-windows`, and so on), so installing Linux dependencies does not replace Windows packages.
@@ -68,11 +70,10 @@ Port the interface behavior in focused groups:
 
 Do not treat `SIGSTOP`/`SIGCONT` as direct replacements for `SuspendThread`/`ResumeThread`: these signals can stop or continue the entire process, not just the requested thread. First trace the callers and expected behavior. If the JVM relies on suspending an individual thread, choose a safe design or report the operation as unsupported rather than introducing process-wide stops.
 
-### 3. Replace the JNI call mechanism
+### 3. Validate the Linux JNI call mechanism
 
-The current JNI dispatcher pushes arguments and calls a function using MSVC x86 inline assembly. That is specific to 32-bit Windows and does not implement the Linux x86 ABI, the x86_64 System V ABI, or the Windows x64 ABI.
+Windows x86 retains the MSVC inline-assembly JNI dispatcher; Linux x86_64 uses libffi with `FFI_DEFAULT_ABI`. Neither implementation establishes support for Linux x86 or Windows x64, which require their own ABI-specific implementation and validation.
 
-- Document the native argument and return-value types that JVMX2 must support.
 - Linux x86_64 dynamic JNI calls use libffi and `FFI_DEFAULT_ABI`; Windows x86 keeps its existing dispatcher. Other ABI targets remain unsupported pending separate implementations and validation.
 - `vcpkg.json` declares libffi, and the Linux CMake target links the package's `libffi` target.
 - The Linux runtime recognizes the class library's legacy built-in DLL aliases as internal libraries rather than trying to load them as Linux shared objects.
@@ -81,21 +82,26 @@ The current JNI dispatcher pushes arguments and calls a function using MSVC x86 
 
 Do not try to solve the JNI port by mechanically translating the existing assembly to GCC extended assembly; calling conventions and register/stack rules differ across architectures and operating systems.
 
-### 4. Remove remaining compiler and platform assumptions
+### 4. Investigate Linux test startup
+
+- Diagnose the `std::bad_cast` from the Linux `-jar` launch through the file URL handler. Compare it with direct execution of the extracted runner, which gets past initialization and reaches the test methods.
+- Keep that unresolved launch failure distinct from the known, expected JNI-entrypoint and runtime access-control test failures.
+
+### 5. Remove remaining compiler and platform assumptions
 
 - Find active MSVC-only syntax, Windows headers/APIs, and inline-assembly breakpoints in compiled sources.
 - Replace debug breakpoints with a small platform-appropriate helper or another repository-consistent mechanism.
 - Keep C++11 compatibility and preserve existing thread-safety behavior.
 - Exclude third-party source directories from broad mechanical edits unless a specific required fix is identified.
 
-### 5. Validate both targets
+### 6. Validate additional targets
 
 - Build and run the applicable JVM tests on x86_64 Ubuntu.
 - Build and run the same tests on x86 Ubuntu (using a 32-bit toolchain and libraries).
 - Include tests for OS delegation and JNI native calls; a successful compile alone does not establish ABI correctness.
 - Keep known expected runtime failures distinct from build failures and document them in test results.
 
-### 6. Add Windows x64 support
+### 7. Add Windows x64 support
 
 After the Linux targets are working, add and validate the Windows x64 build without regressing Windows x86. Reuse the ABI-aware JNI design only where it explicitly supports the Microsoft x64 ABI; validate Windows x64 native calls independently rather than inferring support from Linux x86_64 tests.
 
