@@ -44,14 +44,14 @@ std::shared_ptr<ConstantPoolEntry> ConstantPool::GetConstant( size_t index ) con
 {
   if ( 0 == index || index > m_Entries.size() )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Index was invalid. Use GetCount() to find the number of items, and remember that indexes start at 1." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Index was invalid. Use GetCount() to find the number of items, and remember that indexes start at 1." ) );
   }
 
   std::shared_ptr<ConstantPoolEntry> pEntry( m_Entries.at( index ) );
 
   if ( pEntry->GetType() == e_ConstantPoolEntryTypeNullEntry )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - The constant pool entry at this index is not a real value. This is likely due to a long or a double value that uses up two index values." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - The constant pool entry at this index is not a real value. This is likely due to a long or a double value that uses up two index values." ) );
   }
 
   return pEntry;

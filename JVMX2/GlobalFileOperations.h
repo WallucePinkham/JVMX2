@@ -15,5 +15,4 @@
 
 #define JVMX_FSEEK fseek
 
-#endif __GLOBAL_FILE_OPERATIONS_H__
-
+#endif // __GLOBAL_FILE_OPERATIONS_H__

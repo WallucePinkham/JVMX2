@@ -173,7 +173,7 @@ std::shared_ptr<RedisGarbageCollector> ObjectRegistryRedis::GetGarbageCollector(
   if ( nullptr == pRedisGarbageCollector )
   {
     JVMX_ASSERT( false );
-    throw InvalidStateException( __FUNCTION__ " - Expected RedisGarbageCollector to be used with ObjectRegistryRedis." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected RedisGarbageCollector to be used with ObjectRegistryRedis." ) );
   }
 
   return pRedisGarbageCollector;

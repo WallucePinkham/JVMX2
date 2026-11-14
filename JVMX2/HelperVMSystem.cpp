@@ -1,5 +1,11 @@
 #include <chrono>
+#if defined(_WIN32) || defined(_WIN64)
 #include <direct.h>
+#elif defined(__linux__)
+#include <unistd.h>
+#else
+#error "Unsupported platform."
+#endif
 #include <boost/algorithm/string.hpp>
 
 #include "JavaNativeInterface.h"
@@ -64,7 +70,11 @@ jlong JNICALL HelperVMSystem::java_lang_VMSystem_currentTimeMillis( JNIEnv *pEnv
 std::string GetCwd()
 {
   std::string currentWorkingDir = ".";
+#if defined(_WIN32) || defined(_WIN64)
   char* pCwdBuffer = _getcwd(NULL, 0);
+#else
+  char* pCwdBuffer = getcwd(NULL, 0);
+#endif
 
   if (nullptr != pCwdBuffer)
   {

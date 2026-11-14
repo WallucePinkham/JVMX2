@@ -3,7 +3,13 @@
 #include <memory>
 #include <algorithm>
 
+#if defined(_WIN32) || defined(_WIN64)
 #include <direct.h>
+#elif defined(__linux__)
+#include <unistd.h>
+#else
+#error "Unsupported platform."
+#endif
 
 #include <boost/algorithm/string.hpp>
 
@@ -274,7 +280,7 @@ void VirtualMachine::Run(const JavaString& fileName, const std::shared_ptr<IVirt
   catch (JVMXException& ex)
   {
     pInitialState->Halt(1);
-    m_pLogger->LogError(__FUNCTION__ " - Exception thrown from running virtual machine.");
+    m_pLogger->LogError(JVMX_FUNCTION_MESSAGE( " - Exception thrown from running virtual machine." ));
     m_pLogger->LogError("\tException Detail:");
     m_pLogger->LogError(ex.what());
   }
@@ -335,7 +341,7 @@ void VirtualMachine::AddUrlSourceToSystemClassloader(const std::shared_ptr<IVirt
   pInitialState->LogOperandStack();
 #endif
 
-  pInitialState->Execute(JVMX_T("java/net/URLClassLoader"), JVMX_T("addURL"), JVMX_T("(Ljava/net/URL;)V"));
+  pInitialState->Execute(JavaString(JVMX_UTF16_T("java/net/URLClassLoader")), JavaString(JVMX_UTF16_T("addURL")), JavaString(JVMX_UTF16_T("(Ljava/net/URL;)V")));
 
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (pInitialState->HasUserCodeStarted())
@@ -354,9 +360,9 @@ void VirtualMachine::RunClassName(const JavaString& className,
   try
   {
     DataBuffer mainClassData = DataBuffer::EmptyBuffer();
-    if (!className.EndsWith(JVMX_T(".jar")))
+    if (!className.EndsWith(JVMX_UTF16_T(".jar")))
     {
-      return Run(className.Append(u".class"), pInitialState, true);
+      return Run(className.Append(JVMX_UTF16_T(".class")), pInitialState, true);
     }
 
     JavaString jarFileName = className;
@@ -373,11 +379,16 @@ void VirtualMachine::RunClassName(const JavaString& className,
     std::shared_ptr<JavaClass> pApplicationClassLoaderClass = m_pRuntimeConstantPool->FindClass(DefaultClassLoader::c_ApplicationClassLoaderClassName);
     if (nullptr == pApplicationClassLoaderClass)
     {
+#if defined(__linux__)
+      const std::string applicationClassName = DefaultClassLoader::c_ApplicationClassLoaderClassName.ToUtf8String();
+      InitialiseClass(applicationClassName.c_str(), pInitialState);
+#else
       InitialiseClass(DefaultClassLoader::c_ApplicationClassLoaderClassName.ToCharacterArray(), pInitialState);
+#endif
       pApplicationClassLoaderClass = m_pRuntimeConstantPool->FindClass(DefaultClassLoader::c_ApplicationClassLoaderClassName);
       if (nullptr == pApplicationClassLoaderClass)
       {
-        throw InvalidStateException(__FUNCTION__ " - Could not resolve class for java/lang/ClassLoader.");
+        throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not resolve class for java/lang/ClassLoader." ));
       }
     }
 
@@ -510,7 +521,7 @@ void VirtualMachine::RunClassName(const JavaString& className,
   catch (JVMXException& ex)
   {
     pInitialState->Halt(1);
-    m_pLogger->LogError(__FUNCTION__ " - Exception thrown from running virtual machine.");
+    m_pLogger->LogError(JVMX_FUNCTION_MESSAGE( " - Exception thrown from running virtual machine." ));
     m_pLogger->LogError("\tException Detail:");
     m_pLogger->LogError(ex.what());
   }
@@ -547,7 +558,7 @@ void VirtualMachine::RunClassName(const JavaString& className,
 //      pApplicationClassLoaderClass = m_pRuntimeConstantPool->FindClass(DefaultClassLoader::c_ApplicationClassLoaderClassName);
 //      if (nullptr == pApplicationClassLoaderClass)
 //      {
-//        throw InvalidStateException(__FUNCTION__ " - Could not resolve class for java/lang/ClassLoader.");
+//        throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not resolve class for java/lang/ClassLoader." ));
 //      }
 //    }
 //
@@ -646,7 +657,7 @@ void VirtualMachine::RunClassName(const JavaString& className,
 //  }
 //  catch (JVMXException& ex)
 //  {
-//    m_pLogger->LogError(__FUNCTION__ " - Exception thrown from running virtual machine.");
+//    m_pLogger->LogError(JVMX_FUNCTION_MESSAGE( " - Exception thrown from running virtual machine." ));
 //    m_pLogger->LogError("\tException Detail:");
 //    m_pLogger->LogError(ex.what());
 //  }
@@ -656,7 +667,7 @@ void VirtualMachine::LoadFile(const JVMX_CHAR_TYPE* pFileName)
 {
   if (nullptr == pFileName)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Filename is empty.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Filename is empty." ));
   }
 
   DefaultClassLoader loader;
@@ -669,7 +680,7 @@ JavaString VirtualMachine::GetClassNameFromFileName(const JavaString& fileName)
   size_t dotPos = fileName.FindLast(JVMX_T('.'));
   if (JavaString::NotFound() == dotPos)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Could not determine class name from filename.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Could not determine class name from filename." ));
   }
 
   JavaString className = fileName.SubString(0, dotPos);
@@ -691,7 +702,7 @@ void VirtualMachine::InitialiseClass(const JVMX_CHAR_TYPE* pClassName, const std
   }
   catch (JVMXException& ex)
   {
-    std::string msg(__FUNCTION__ " - Exception thrown from while initializing class: ");
+    std::string msg(JVMX_FUNCTION_MESSAGE( " - Exception thrown from while initializing class: " ));
     std::string classNameUtf8 = HelperConversion::ConvertJVMXCharToUtf8(pClassName);
     msg.append(classNameUtf8);
 
@@ -850,7 +861,7 @@ const char* VirtualMachine::GetPrimitiveClassName(const uint16_t primitiveType)
     longTypeName = JavaString::FromCString("void");
     break;
   default:
-    throw InvalidArgumentException(__FUNCTION__ " - Type Not found.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Type Not found." ));
   }
 
   return VirtualMachine::GetClassNameFromType(longTypeName);
@@ -906,7 +917,7 @@ const char* VirtualMachine::GetClassNameFromType(JavaString finalStringValue)
   else
   {
     // TODO: Throw Java Exception Here
-    throw InvalidArgumentException(__FUNCTION__ " - Type Not found.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Type Not found." ));
   }
 
   return pFinalClassName;
@@ -1019,7 +1030,7 @@ std::unique_ptr<jvalue[]> VirtualMachine::ConvertJArrayToArrayOfObjects(jarray a
     return nullptr;
   }
 
-  std::unique_ptr<jvalue[]> pResult = std::make_unique< jvalue[] >(pArray->GetNumberOfElements());
+  std::unique_ptr<jvalue[]> pResult( new jvalue[pArray->GetNumberOfElements()] );
 
   if (0 == pArray->GetNumberOfElements())
   {
@@ -1030,7 +1041,7 @@ std::unique_ptr<jvalue[]> VirtualMachine::ConvertJArrayToArrayOfObjects(jarray a
   JVMX_ASSERT(methodType.parameters.size() == pArray->GetNumberOfElements());
   if (methodType.parameters.size() != pArray->GetNumberOfElements())
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Number of arguments passed does not match number of arguments for the requested method.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Number of arguments passed does not match number of arguments for the requested method." ));
   }
 
   for (size_t index = 0; index < pArray->GetNumberOfElements(); ++index)
@@ -1056,7 +1067,7 @@ jvalue VirtualMachine::ConvertJavaVariableToJValue(const boost::intrusive_ptr<IJ
       boost::intrusive_ptr<IJavaVariableType> pBool = boost::dynamic_pointer_cast<JavaBool>(pElementValue);
       if (pBool->IsNull())
       {
-        throw InvalidArgumentException(__FUNCTION__ " - Exepected bool but received null.");
+        throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Exepected bool but received null." ));
       }
 
       newValue.z = boost::dynamic_pointer_cast<JavaBool>(pElementValue)->ToBool();
@@ -1067,7 +1078,7 @@ jvalue VirtualMachine::ConvertJavaVariableToJValue(const boost::intrusive_ptr<IJ
     }
     else
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Exepected Bool but received another variable type.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Exepected Bool but received another variable type." ));
     }
     break;
   }
@@ -1079,7 +1090,7 @@ jvalue VirtualMachine::ConvertJavaVariableToJValue(const boost::intrusive_ptr<IJ
       boost::intrusive_ptr<IJavaVariableType> pChar = boost::dynamic_pointer_cast<JavaChar>(pElementValue);
       if (pChar->IsNull())
       {
-        throw InvalidArgumentException(__FUNCTION__ " - Exepected char but received null.");
+        throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Exepected char but received null." ));
       }
 
       newValue.c = boost::dynamic_pointer_cast<JavaChar>(pElementValue)->ToChar16();
@@ -1090,7 +1101,7 @@ jvalue VirtualMachine::ConvertJavaVariableToJValue(const boost::intrusive_ptr<IJ
     }
     else
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Exepected char but received another variable type.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Exepected char but received another variable type." ));
     }
     break;
   }
@@ -1103,7 +1114,7 @@ jvalue VirtualMachine::ConvertJavaVariableToJValue(const boost::intrusive_ptr<IJ
       boost::intrusive_ptr<IJavaVariableType> pFloat = boost::dynamic_pointer_cast<JavaFloat>(pElementValue);
       if (pFloat->IsNull())
       {
-        throw InvalidArgumentException(__FUNCTION__ " - Exepected float but received null.");
+        throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Exepected float but received null." ));
       }
 
       newValue.f = boost::dynamic_pointer_cast<JavaFloat>(pElementValue)->ToHostFloat();
@@ -1114,7 +1125,7 @@ jvalue VirtualMachine::ConvertJavaVariableToJValue(const boost::intrusive_ptr<IJ
     }
     else
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Exepected float but received another variable type.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Exepected float but received another variable type." ));
     }
     break;
   }
@@ -1126,7 +1137,7 @@ jvalue VirtualMachine::ConvertJavaVariableToJValue(const boost::intrusive_ptr<IJ
       boost::intrusive_ptr<IJavaVariableType> pDouble = boost::dynamic_pointer_cast<JavaDouble>(pElementValue);
       if (pDouble->IsNull())
       {
-        throw InvalidArgumentException(__FUNCTION__ " - Exepected Double but received null.");
+        throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Exepected Double but received null." ));
       }
 
       newValue.d = boost::dynamic_pointer_cast<JavaDouble>(pElementValue)->ToHostDouble();
@@ -1137,7 +1148,7 @@ jvalue VirtualMachine::ConvertJavaVariableToJValue(const boost::intrusive_ptr<IJ
     }
     else
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Exepected Double but received another variable type.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Exepected Double but received another variable type." ));
     }
     break;
   }
@@ -1149,7 +1160,7 @@ jvalue VirtualMachine::ConvertJavaVariableToJValue(const boost::intrusive_ptr<IJ
       boost::intrusive_ptr<IJavaVariableType> pByte = boost::dynamic_pointer_cast<JavaByte>(pElementValue);
       if (pByte->IsNull())
       {
-        throw InvalidArgumentException(__FUNCTION__ " - Exepected Byte but received null.");
+        throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Exepected Byte but received null." ));
       }
 
       newValue.b = boost::dynamic_pointer_cast<JavaByte>(pElementValue)->ToHostInt8();
@@ -1160,7 +1171,7 @@ jvalue VirtualMachine::ConvertJavaVariableToJValue(const boost::intrusive_ptr<IJ
     }
     else
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Exepected Byte but received another variable type.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Exepected Byte but received another variable type." ));
     }
     break;
   }
@@ -1172,7 +1183,7 @@ jvalue VirtualMachine::ConvertJavaVariableToJValue(const boost::intrusive_ptr<IJ
       boost::intrusive_ptr<IJavaVariableType> pShort = boost::dynamic_pointer_cast<JavaShort>(pElementValue);
       if (pShort->IsNull())
       {
-        throw InvalidArgumentException(__FUNCTION__ " - Exepected Short but received null.");
+        throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Exepected Short but received null." ));
       }
 
       newValue.s = boost::dynamic_pointer_cast<JavaShort>(pElementValue)->ToHostInt16();
@@ -1183,7 +1194,7 @@ jvalue VirtualMachine::ConvertJavaVariableToJValue(const boost::intrusive_ptr<IJ
     }
     else
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Exepected Short but received another variable type.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Exepected Short but received another variable type." ));
     }
     break;
   }
@@ -1195,7 +1206,7 @@ jvalue VirtualMachine::ConvertJavaVariableToJValue(const boost::intrusive_ptr<IJ
       boost::intrusive_ptr<IJavaVariableType> pInteger = boost::dynamic_pointer_cast<JavaInteger>(pElementValue);
       if (pInteger->IsNull())
       {
-        throw InvalidArgumentException(__FUNCTION__ " - Exepected Integer but received null.");
+        throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Exepected Integer but received null." ));
       }
 
       newValue.i = boost::dynamic_pointer_cast<JavaInteger>(pElementValue)->ToHostInt32();
@@ -1206,7 +1217,7 @@ jvalue VirtualMachine::ConvertJavaVariableToJValue(const boost::intrusive_ptr<IJ
     }
     else
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Exepected Integer but received another variable type.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Exepected Integer but received another variable type." ));
     }
     break;
   }
@@ -1218,7 +1229,7 @@ jvalue VirtualMachine::ConvertJavaVariableToJValue(const boost::intrusive_ptr<IJ
       boost::intrusive_ptr<IJavaVariableType> pLong = boost::dynamic_pointer_cast<JavaLong>(pElementValue);
       if (pLong->IsNull())
       {
-        throw InvalidArgumentException(__FUNCTION__ " - Exepected Long but received null.");
+        throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Exepected Long but received null." ));
       }
 
       newValue.j = boost::dynamic_pointer_cast<JavaLong>(pElementValue)->ToHostInt64();
@@ -1229,7 +1240,7 @@ jvalue VirtualMachine::ConvertJavaVariableToJValue(const boost::intrusive_ptr<IJ
     }
     else
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Exepected Long but received another variable type.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Exepected Long but received another variable type." ));
     }
     break;
   }
@@ -1240,7 +1251,7 @@ jvalue VirtualMachine::ConvertJavaVariableToJValue(const boost::intrusive_ptr<IJ
     break;
 
   default:
-    throw InvalidArgumentException(__FUNCTION__ " - Unknown type. ");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Unknown type. " ));
     break;
   }
 
@@ -1308,7 +1319,11 @@ void VirtualMachine::Initialise(const std::string& startingClassfile,
   pInitialState->SetProperties(newClassPath, properties);
 
   m_pLogger->LogInformation("JVMX Starting...");
+#if defined(_WIN32) || defined(_WIN64)
   auto pCwdBuffer = _getcwd(NULL, 0);
+#else
+  auto pCwdBuffer = getcwd(NULL, 0);
+#endif
   m_pLogger->LogInformation("Current working directory: %s", pCwdBuffer);
   free(pCwdBuffer);
 
@@ -1388,7 +1403,7 @@ void VirtualMachine::Stop(const std::shared_ptr<IVirtualMachineState>& pInitialS
   }
   catch (JVMXException& ex)
   {
-    m_pLogger->LogError(__FUNCTION__ " - Exception thrown while shutting down.");
+    m_pLogger->LogError(JVMX_FUNCTION_MESSAGE( " - Exception thrown while shutting down." ));
     m_pLogger->LogError("\tException Detail: %s", ex.what());
     throw;
   }
@@ -1484,24 +1499,24 @@ jint JNICALL VirtualMachine::java_lang_reflect_Constructor_getModifiers(JNIEnv* 
 
   if (nullptr == pClassObject)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected class object in field 'clazz' of current object.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected class object in field 'clazz' of current object." ));
   }
 
   if (nullptr == pSlot)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected integer in field 'slot' of current object.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected integer in field 'slot' of current object." ));
   }
 
   boost::intrusive_ptr<JavaString> pClassName = boost::dynamic_pointer_cast<JavaString>(pClassObject->GetContainedObject()->GetJVMXFieldByName(c_SyntheticField_ClassName));
   if (nullptr == pClassName)
   {
-    throw InvalidStateException(__FUNCTION__ " - Error reading class name of Class object.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Error reading class name of Class object." ));
   }
 
   std::shared_ptr<JavaClass> pActualClass = pVirtualMachineState->InitialiseClass(*pClassName);
   if (nullptr == pActualClass)
   {
-    throw InvalidStateException(__FUNCTION__ " - Could not find the class matching the name of the constructor's class object.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not find the class matching the name of the constructor's class object." ));
   }
 
   if (!pActualClass->IsInitialsed())
@@ -1512,7 +1527,7 @@ jint JNICALL VirtualMachine::java_lang_reflect_Constructor_getModifiers(JNIEnv* 
   std::shared_ptr<MethodInfo> pMethodInfo = pActualClass->GetMethodByIndex(pSlot->ToHostInt32());
   if (nullptr == pMethodInfo)
   {
-    throw InvalidStateException(__FUNCTION__ " - Could not get the method indicated by the relevant slot.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not get the method indicated by the relevant slot." ));
   }
 
   return pMethodInfo->GetFlags() & 0x0FFF;
@@ -1592,7 +1607,7 @@ boost::intrusive_ptr<ObjectReference> VirtualMachine::BuildParameterArray(TypePa
       ++characterIndex;
       JavaString className = (*it)->SubString(characterIndex);
 
-      if (className.EndsWith(JVMX_T(";")))
+      if (className.EndsWith(JVMX_UTF16_T(";")))
       {
         className = className.SubString(0, className.GetLengthInCodePoints() - 1);
       }
@@ -1770,13 +1785,13 @@ jobject JNICALL VirtualMachine::java_lang_VMThrowable_fillInStackTrace(JNIEnv* p
   boost::intrusive_ptr<ObjectReference> pArrayOfStackTraceElements = pVirtualMachineState->GetCallStackOfStackTraceElements();
   if (nullptr == pArrayOfStackTraceElements)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected valid array of StaceTraceElement objects.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected valid array of StaceTraceElement objects." ));
   }
 
   std::shared_ptr<JavaClass> pClassOfVMThrowable = pVirtualMachineState->InitialiseClass(JavaString::FromCString("java/lang/VMThrowable"));
   if (nullptr == pClassOfVMThrowable)
   {
-    throw InvalidStateException(__FUNCTION__ " - Could not load class VMThrowable.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not load class VMThrowable." ));
   }
 
   //if (!pClassOfVMThrowable->IsInitialsed())
@@ -1806,13 +1821,13 @@ jobject JNICALL VirtualMachine::Java_java_lang_VMThrowable_getStackTrace(JNIEnv*
   boost::intrusive_ptr<ObjectReference> pVMThrowable = JNIEnvInternal::ConvertJObjectToObjectPointer(obj);
   if (nullptr == pVMThrowable)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected object pointer to be non-null.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected object pointer to be non-null." ));
   }
 
   boost::intrusive_ptr<ObjectReference> pArrayOfStackTraceElements = boost::dynamic_pointer_cast<ObjectReference>(pVMThrowable->GetContainedObject()->GetFieldByName(JavaString::FromCString("vmdata")));
   if (nullptr == pArrayOfStackTraceElements)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected valid array of StaceTraceElement objects.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected valid array of StaceTraceElement objects." ));
   }
 
   return JNIEnvInternal::ConvertObjectPointerToJObject(pVirtualMachineState, pArrayOfStackTraceElements);
@@ -2039,7 +2054,7 @@ jobject JNICALL VirtualMachine::java_lang_reflect_VMField_get(JNIEnv* pEnv, jobj
     break;
 
   default:
-    throw InvalidStateException(__FUNCTION__ " - Unexpected type.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Unexpected type." ));
   }
 
   return JNIEnvInternal::ConvertNullPointerToJObject();
@@ -2060,25 +2075,25 @@ jint JNICALL VirtualMachine::java_lang_reflect_VMField_getModifiersInternal(JNIE
   boost::intrusive_ptr<ObjectReference> pJavaLangClass = boost::dynamic_pointer_cast<ObjectReference>(pVMField->GetContainedObject()->GetFieldByName(JavaString::FromCString(JVMX_T("clazz"))));
   if (nullptr == pJavaLangClass)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected class object in field 'clazz' of current object.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected class object in field 'clazz' of current object." ));
   }
 
   boost::intrusive_ptr<JavaString> pClassName = boost::dynamic_pointer_cast<JavaString>(pJavaLangClass->GetContainedObject()->GetJVMXFieldByName(c_SyntheticField_ClassName));
   if (nullptr == pClassName)
   {
-    throw InvalidStateException(__FUNCTION__ " - Error reading class name of Class object.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Error reading class name of Class object." ));
   }
 
   std::shared_ptr<JavaClass> pClass = pVirtualMachineState->InitialiseClass(*pClassName);
   if (nullptr == pClass)
   {
-    throw InvalidStateException(__FUNCTION__ " - Could not find class.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not find class." ));
   }
 
   boost::intrusive_ptr<ObjectReference> pFieldNameObject = boost::dynamic_pointer_cast<ObjectReference>(pVMField->GetContainedObject()->GetFieldByName(JavaString::FromCString(JVMX_T("name"))));
   if (nullptr == pFieldNameObject)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected String object in field 'name' of current object.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected String object in field 'name' of current object." ));
   }
 
   JavaString fieldName = HelperTypes::ExtractValueFromStringObject(pFieldNameObject);
@@ -2086,7 +2101,7 @@ jint JNICALL VirtualMachine::java_lang_reflect_VMField_getModifiersInternal(JNIE
   std::shared_ptr<FieldInfo> pFieldInfo = pClass->GetFieldByName(fieldName);
   if (nullptr == pFieldInfo)
   {
-    throw InvalidStateException(__FUNCTION__ " - Could not find the field on the class object.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not find the field on the class object." ));
   }
 
   return pFieldInfo->GetFlags();
@@ -2107,7 +2122,7 @@ jclass VirtualMachine::java_lang_reflect_VMField_getType(struct JNIEnv* pEnv, jo
   boost::intrusive_ptr<ObjectReference> pJavaLangClass = boost::dynamic_pointer_cast<ObjectReference>(pVMField->GetContainedObject()->GetFieldByName(JavaString::FromCString(JVMX_T("clazz"))));
   if (nullptr == pJavaLangClass)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected class object in field 'clazz' of current object.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected class object in field 'clazz' of current object." ));
   }
 
   return static_cast<jclass>(JNIEnvInternal::ConvertObjectPointerToJObject(pVirtualMachineState, pJavaLangClass));

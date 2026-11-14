@@ -63,7 +63,7 @@ std::shared_ptr<VerificationTypeInfo> VerificationTypeInfoFactory::CreateVerific
       break;
 
     default:
-      throw TypeMismatchException( __FUNCTION__ " - Unexpected value found for type verification info." );
+      throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Unexpected value found for type verification info." ) );
       break;
   }
 }

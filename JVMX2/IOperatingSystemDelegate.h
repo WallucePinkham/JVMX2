@@ -3,6 +3,7 @@
 #ifndef __IOPERATINGSYSTEMDELEGATE_H__
 #define __IOPERATINGSYSTEMDELEGATE_H__
 
+#include <memory>
 #include <string>
 #include <thread>
 

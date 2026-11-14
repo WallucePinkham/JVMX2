@@ -8,7 +8,7 @@
 // {
 //   if ( nullptr == pMemoryManager )
 //   {
-//     throw InvalidArgumentException( __FUNCTION__ " - Memory Manager Pointer cannot be NULL." );
+//     throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Memory Manager Pointer cannot be NULL." ) );
 //   }
 // 
 //   if ( nullptr == JavaObject::FieldAllocatorType::GetAllocator() )
@@ -51,7 +51,7 @@
 // {
 //   if ( nullptr == pMemoryManager )
 //   {
-//     throw InvalidArgumentException( __FUNCTION__ " - Memory Manager Pointer cannot be NULL." );
+//     throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Memory Manager Pointer cannot be NULL." ) );
 //   }
 // 
 //   if ( nullptr == JavaArray::ElementAllocator::GetAllocator() )

@@ -3,6 +3,7 @@
 #include "JavaString.h"
 
 #include "ConstantPoolClassReference.h"
+#include "DebugBreak.h"
 
 ConstantPoolClassReference::ConstantPoolClassReference( uint16_t index )
   : m_Value( index )
@@ -62,7 +63,7 @@ boost::intrusive_ptr<JavaString> ConstantPoolClassReference::GetClassName() cons
 #ifdef _DEBUG
   if ( nullptr == m_pName )
   {
-    __asm int 3;
+    JvmxDebugBreak();
   }
 #endif // _DEBUG
 

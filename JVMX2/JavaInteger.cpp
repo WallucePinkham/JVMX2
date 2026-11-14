@@ -141,8 +141,7 @@ JavaInteger JavaInteger::FromShort( const JavaShort &value )
 
 JavaString JavaInteger::ToString() const
 {
-  char dest[ c_IToABufferSize ] = { 0 };
-  return JavaString::FromCString( _itoa( m_Value, dest, 10 ) );
+  return JavaString::FromCString( std::to_string( m_Value ).c_str() );
 }
 
 bool JavaInteger::IsNull() const
@@ -160,7 +159,7 @@ JavaInteger &JavaInteger::operator=( const IJavaVariableType &other )
 {
   if ( !other.IsIntegerCompatible() )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Expected a type that was integer compatible." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected a type that was integer compatible." ) );
   }
 
   m_Value = TypeParser::UpCastToInteger( &other )->ToHostInt32();

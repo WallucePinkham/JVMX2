@@ -30,7 +30,7 @@ std::shared_ptr<ConstantPoolEntry> BasicClassLibrary::GetConstant( const JavaStr
   std::shared_ptr<JavaClass> pClass = FindClass( className );
   if ( nullptr == pClass )
   {
-    throw InvalidStateException( __FUNCTION__ " - Expected class to be loaded already." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected class to be loaded already." ) );
   }
 
   return std::make_shared<ConstantPoolEntry>( pClass->GetConstant( index ) );

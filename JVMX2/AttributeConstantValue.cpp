@@ -7,7 +7,7 @@ AttributeConstantValue::AttributeConstantValue( JavaString name, ConstantPoolInd
 {
   if ( 0 == m_ConstantIndex )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Constant pool index of 0 is invalid." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Constant pool index of 0 is invalid." ) );
   }
 }
 
@@ -26,7 +26,7 @@ AttributeConstantValue AttributeConstantValue::FromBinary( JavaString name, Stre
 {
   if ( byteStream.GetBytesLeft() < sizeof( ConstantPoolIndex ) )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Not enough bytes left in the stream." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Not enough bytes left in the stream." ) );
   }
 
   return AttributeConstantValue( name, static_cast<ConstantPoolIndex>(byteStream.ReadUint16()) );

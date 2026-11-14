@@ -73,7 +73,7 @@ DataBuffer Stream::ReadBytes( size_t length )
 {
   if ( m_StreamPosition + length > m_Buffer.GetByteLength() )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Trying to read past the end of the buffer." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Trying to read past the end of the buffer." ) );
   }
 
   DataBuffer result = DataBuffer::FromByteArray( length, m_Buffer.ToByteArray() + m_StreamPosition );
@@ -107,7 +107,7 @@ DataBuffer Stream::ToDataBuffer() const
 {
   if ( m_StreamPosition > m_Buffer.GetByteLength() )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Trying to convert an invalid stream to a buffer." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Trying to convert an invalid stream to a buffer." ) );
   }
 
   const uint8_t *pBuffer = m_Buffer.ToByteArray();

@@ -71,20 +71,20 @@ void BasicExecutionEngine::ExecuteOpCodeLoadDoubleFromArray(const std::shared_pt
 {
   if (e_JavaVariableTypes::Integer != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected integer on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected integer on the operand stack." ));
   }
 
   boost::intrusive_ptr< JavaInteger > pIndex = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
 
   if (e_JavaVariableTypes::Array != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected Array on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected Array on the operand stack." ));
   }
 
   boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>(pVirtualMachineState->PopOperand());
   if (nullptr == pArray)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected reference to JavaArray on operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected reference to JavaArray on operand stack." ));
   }
 
   if (pArray->IsNull())
@@ -102,7 +102,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadDoubleFromArray(const std::shared_pt
   JavaDouble* pTempDouble = dynamic_cast<JavaDouble*>(pArray->GetContainedArray()->At(pIndex->ToHostInt32()));
   if (nullptr == pTempDouble)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected double in array.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected double in array." ));
   }
 
   boost::intrusive_ptr<JavaDouble> pDouble = new JavaDouble(JavaDouble::FromHostDouble(pTempDouble->ToHostDouble()));
@@ -184,19 +184,19 @@ void BasicExecutionEngine::ExecuteOpCodeStoreIntoDoubleArray(const std::shared_p
   boost::intrusive_ptr<IJavaVariableType> pValue = pVirtualMachineState->PopOperand();
   if (e_JavaVariableTypes::Double != pValue->GetVariableType())
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected third operand to be double type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected third operand to be double type." ));
   }
 
   boost::intrusive_ptr< JavaInteger > pIndex = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
   if (nullptr == pIndex)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected second operand to be integer type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected second operand to be integer type." ));
   }
 
   boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>(pVirtualMachineState->PopOperand());
   if (nullptr == pArray)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be array type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected first operand to be array type." ));
   }
 
   if (pArray->IsNull())
@@ -261,7 +261,7 @@ void BasicExecutionEngine::ExecuteOpCodeDuplicateTopOperandOrTwox2(const std::sh
   const size_t stackSize = pVirtualMachineState->GetOperandStackSize();
   if (stackSize < 2)
   {
-    throw InvalidStateException(__FUNCTION__ " - Insufficient operands for dup2_x2.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Insufficient operands for dup2_x2." ));
   }
 
   boost::intrusive_ptr<IJavaVariableType> pValue1 = pVirtualMachineState->PeekOperandFromBack(1);
@@ -304,7 +304,7 @@ void BasicExecutionEngine::ExecuteOpCodeDuplicateTopOperandOrTwox2(const std::sh
 
   if (0 == form)
   {
-    throw InvalidStateException(__FUNCTION__ " - Operand types do not match a valid dup2_x2 form.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Operand types do not match a valid dup2_x2 form." ));
   }
 
   pVirtualMachineState->PopOperand();
@@ -355,7 +355,7 @@ void BasicExecutionEngine::ExecuteOpCodeConvertIntegerToShort(const std::shared_
   boost::intrusive_ptr< JavaInteger > pInteger1 = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
   if (nullptr == pInteger1)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be integer type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected first operand to be integer type." ));
   }
 
   boost::intrusive_ptr<JavaShort> pFinalShort = new JavaShort(JavaShort::FromHostInt16(static_cast<uint16_t>(pInteger1->ToHostInt32())));
@@ -371,7 +371,7 @@ void BasicExecutionEngine::ExecuteOpCodeStoreFloatInLocal(const std::shared_ptr<
 {
   if (e_JavaVariableTypes::Float != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected float on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected float on the operand stack." ));
   }
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -428,24 +428,24 @@ void BasicExecutionEngine::ExecuteOpCodeLoadReferenceFromConstantPool(const std:
 
     if (nullptr == pClassFile)
     {
-      throw InvalidStateException(__FUNCTION__ " - Class was not resolved.");
+      throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Class was not resolved." ));
     }
 
     pVirtualMachineState->PushOperand(new JavaClassReference(pClassFile));
   }
   else if (e_ConstantPoolEntryTypeMethodHandle == pConstant->GetType() || e_ConstantPoolEntryTypeMethodType == pConstant->GetType())
   {
-    throw NotImplementedException(__FUNCTION__ " - Not implemented yet.");
+    throw NotImplementedException(JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ));
   }
   else if (e_ConstantPoolEntryTypeMethodReference == pConstant->GetType())
   {
     //     std::shared_ptr<JavaClassFile> pClass = GetClassLibrary()->FindClass( *(pConstant->AsMethodReference()->GetName()) );
     //     pVirtualMachineState->PushOperand( pClass->GetMethodByNameAndType( *(pConstant->AsMethodReference( )->GetName( )), *(pConstant->AsMethodReference( )->GetType( )) ) );
-    throw NotImplementedException(__FUNCTION__ " - Not implemented yet.");
+    throw NotImplementedException(JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ));
   }
   else
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Unexpected constant type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Unexpected constant type." ));
   }
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -510,7 +510,7 @@ void BasicExecutionEngine::ExecuteOpCodeStoreLongInLocal(const std::shared_ptr<I
 {
   if (e_JavaVariableTypes::Long != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected long on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected long on the operand stack." ));
   }
 
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -575,7 +575,7 @@ void BasicExecutionEngine::ExecuteOpCodePushFromConstantPoolWide(const std::shar
   }
   else if (e_ConstantPoolEntryTypeMethodReference == pEntry->GetType())
   {
-    throw NotImplementedException(__FUNCTION__ " - Not implemented yet.");
+    throw NotImplementedException(JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ));
   }
 }
 
@@ -593,7 +593,7 @@ void BasicExecutionEngine::ExecuteOpCodeStoreIntoIntArray(const std::shared_ptr<
   //  boost::dynamic_pointer_cast<JavaInteger>(pOperand);
   if (!pOperand->IsIntegerCompatible())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected integer on operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected integer on operand stack." ));
   }
 
   boost::intrusive_ptr< JavaInteger > pValue = TypeParser::UpCastToInteger(pOperand.get());
@@ -601,13 +601,13 @@ void BasicExecutionEngine::ExecuteOpCodeStoreIntoIntArray(const std::shared_ptr<
   boost::intrusive_ptr< JavaInteger > pIndex = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
   if (nullptr == pIndex)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected integer on operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected integer on operand stack." ));
   }
 
   boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>(pVirtualMachineState->PopOperand());
   if (nullptr == pArray)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected reference to JavaArray on operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected reference to JavaArray on operand stack." ));
   }
 
   if (pArray->IsNull())
@@ -637,7 +637,7 @@ void BasicExecutionEngine::ExecuteOpCodeStoreIntoLongArray(const std::shared_ptr
   //  boost::dynamic_pointer_cast<JavaInteger>(pOperand);
   if (pOperand->GetVariableType() != e_JavaVariableTypes::Long)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected long on operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected long on operand stack." ));
   }
 
   boost::intrusive_ptr< JavaLong > pValue = boost::dynamic_pointer_cast<JavaLong>(pOperand);
@@ -645,13 +645,13 @@ void BasicExecutionEngine::ExecuteOpCodeStoreIntoLongArray(const std::shared_ptr
   boost::intrusive_ptr< JavaInteger > pIndex = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
   if (nullptr == pIndex)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected integer on operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected integer on operand stack." ));
   }
 
   boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>(pVirtualMachineState->PopOperand());
   if (nullptr == pArray)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected reference to JavaArray on operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected reference to JavaArray on operand stack." ));
   }
 
   if (pArray->IsNull())
@@ -695,7 +695,7 @@ int BasicExecutionEngine::GetIntegerFromOperandStack(const std::shared_ptr<IVirt
     break;
 
   default:
-    throw InvalidStateException(__FUNCTION__ " - Value on the operand stack was not of type integer.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Value on the operand stack was not of type integer." ));
   }
 
   return result;
@@ -712,7 +712,7 @@ int64_t BasicExecutionEngine::GetLongFromOperandStack(const std::shared_ptr<IVir
 
   if (!pOperand->IsIntegerCompatible())
   {
-    throw InvalidStateException(__FUNCTION__ " - Value on the operand stack was not of type long or integer.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Value on the operand stack was not of type long or integer." ));
   }
 
   return TypeParser::UpCastToInteger(pOperand.get())->ToHostInt32();
@@ -732,7 +732,7 @@ void BasicExecutionEngine::ExecuteOpCodeStoreReferenceInLocal(const std::shared_
     pVirtualMachineState->LogOperandStack();
     pVirtualMachineState->LogCallStack();
 #endif // _DEBUG
-    throw InvalidStateException(__FUNCTION__ " - Expected reference on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected reference on the operand stack." ));
   }
 
   pVirtualMachineState->SetLocalVariable(localVariableIndex, pVirtualMachineState->PopOperand());
@@ -742,7 +742,7 @@ void BasicExecutionEngine::ExecuteOpCodeStoreIntegerInLocal(const std::shared_pt
 {
   if (e_JavaVariableTypes::Integer != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected integer on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected integer on the operand stack." ));
   }
 
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -779,7 +779,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadIntegerFromLocal(const std::shared_p
   if (!pLocalValue->IsIntegerCompatible())
   {
     pVirtualMachineState->LogLocalVariables();
-    throw InvalidStateException(__FUNCTION__ " - Expected integer in local variable.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected integer in local variable." ));
   }
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -803,21 +803,21 @@ void BasicExecutionEngine::ExecuteOpCodeLoadReferenceFromArray(const std::shared
 {
   if (e_JavaVariableTypes::Integer != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected integer on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected integer on the operand stack." ));
   }
 
   boost::intrusive_ptr< JavaInteger > pIndex = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
 
   if (e_JavaVariableTypes::Array != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected Array on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected Array on the operand stack." ));
   }
 
   boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>(pVirtualMachineState->PopOperand());
 
   if (nullptr == pArray)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected reference to JavaArray on operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected reference to JavaArray on operand stack." ));
   }
 
   if (pArray->IsNull())
@@ -855,7 +855,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadCharacterFromArray(const std::shared
   const JavaChar* pChar = dynamic_cast<const JavaChar*>(pArray->GetContainedArray()->At(index));
   if (nullptr == pChar)
   {
-    throw InvalidStateException(__FUNCTION__ " - Could not convert from array contained type to char.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not convert from array contained type to char." ));
   }
 
   pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromChar(*pChar)));
@@ -874,21 +874,21 @@ std::pair< boost::intrusive_ptr<ObjectReference>, uint32_t> BasicExecutionEngine
 
   if (e_JavaVariableTypes::Integer != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected integer on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected integer on the operand stack." ));
   }
 
   boost::intrusive_ptr< JavaInteger > pIndex = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
 
   if (e_JavaVariableTypes::Array != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected Array on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected Array on the operand stack." ));
   }
 
   boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>(pVirtualMachineState->PopOperand());
 
   if (nullptr == pArray)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected reference to JavaArray on operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected reference to JavaArray on operand stack." ));
   }
 
   if (pArray->IsNull())
@@ -929,7 +929,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadShortFromArray(const std::shared_ptr
   const JavaShort* pShort = dynamic_cast<const JavaShort*>(pArray->GetContainedArray()->At(index));
   if (nullptr == pShort)
   {
-    throw InvalidStateException(__FUNCTION__ " - Could not convert from array contained type to char.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not convert from array contained type to char." ));
   }
 
   pVirtualMachineState->PushOperand(new JavaInteger(JavaInteger::FromHostInt32(pShort->ToHostInt16())));
@@ -946,7 +946,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadFloatFromLocal(const std::shared_ptr
   if (e_JavaVariableTypes::Float != pVirtualMachineState->GetLocalVariable(localVariableIndex)->GetVariableType())
   {
     pVirtualMachineState->LogLocalVariables();
-    throw InvalidStateException(__FUNCTION__ " - Expected float in local variable.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected float in local variable." ));
   }
 
   pVirtualMachineState->PushOperand(pVirtualMachineState->GetLocalVariable(localVariableIndex));
@@ -970,7 +970,7 @@ void BasicExecutionEngine::ExecuteOpCodeStoreIntoCharArray(const std::shared_ptr
     pValue = boost::dynamic_pointer_cast<JavaInteger>(pThirdArgument);
     if (nullptr == pValue)
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Expected third operand to be integer type.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected third operand to be integer type." ));
     }
   }
 
@@ -991,7 +991,7 @@ void BasicExecutionEngine::ExecuteOpCodeStoreIntoShortArray(const std::shared_pt
     pValue = boost::dynamic_pointer_cast<JavaInteger>(pThirdArgument);
     if (nullptr == pValue)
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Expected third operand to be integer type.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected third operand to be integer type." ));
     }
   }
 
@@ -1012,7 +1012,7 @@ void BasicExecutionEngine::ExecuteOpCodeStoreIntoByteArray(const std::shared_ptr
     pValue = boost::dynamic_pointer_cast<JavaInteger>(pThirdArgument);
     if (nullptr == pValue)
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Expected third operand to be integer type.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected third operand to be integer type." ));
     }
   }
 
@@ -1032,19 +1032,19 @@ void BasicExecutionEngine::ExecuteOpCodeStoreIntoReferenceArray(const std::share
   boost::intrusive_ptr<IJavaVariableType> pValue = pVirtualMachineState->PopOperand();
   if (!pValue->IsReferenceType())
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected third operand to be reference type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected third operand to be reference type." ));
   }
 
   boost::intrusive_ptr< JavaInteger > pIndex = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
   if (nullptr == pIndex)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected second operand to be integer type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected second operand to be integer type." ));
   }
 
   boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>(pVirtualMachineState->PopOperand());
   if (nullptr == pArray)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected reference to JavaArray on operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected reference to JavaArray on operand stack." ));
   }
 
   if (pArray->IsNull())
@@ -1066,7 +1066,7 @@ void BasicExecutionEngine::ExecuteOpCodeConvertIntegerToFloat(const std::shared_
   boost::intrusive_ptr< JavaInteger > pInteger1 = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
   if (nullptr == pInteger1)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be integer type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected first operand to be integer type." ));
   }
 
   pVirtualMachineState->PushOperand(new JavaFloat(JavaFloat::FromHostFloat(static_cast<float>(pInteger1->ToHostInt32()))));
@@ -1077,7 +1077,7 @@ void BasicExecutionEngine::ExecuteOpCodeConvertIntegerToDouble(const std::shared
   boost::intrusive_ptr< JavaInteger > pInteger1 = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
   if (nullptr == pInteger1)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be integer type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected first operand to be integer type." ));
   }
 
   pVirtualMachineState->PushOperand(new JavaDouble(JavaDouble::FromHostDouble(static_cast<double>(pInteger1->ToHostInt32()))));
@@ -1088,7 +1088,7 @@ void BasicExecutionEngine::ExecuteOpCodeConvertFloatToInteger(const std::shared_
   boost::intrusive_ptr<JavaFloat> pFloat = boost::dynamic_pointer_cast<JavaFloat>(pVirtualMachineState->PopOperand());
   if (nullptr == pFloat)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be float type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected first operand to be float type." ));
   }
 
   boost::intrusive_ptr< JavaInteger > result = new JavaInteger(JavaInteger::FromDefault());
@@ -1149,7 +1149,7 @@ void BasicExecutionEngine::ExecuteOpCodeIncrementLocalVariable(const std::shared
   boost::intrusive_ptr< JavaInteger > pIntValue = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->GetLocalVariable(index));
   if (nullptr == pIntValue)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected integer in local variable");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected integer in local variable" ));
   }
 
   int32_t finalValue = pIntValue->ToHostInt32() + constantValue;
@@ -1169,7 +1169,7 @@ void BasicExecutionEngine::ExecuteOpCodeConvertIntegerToChar(const std::shared_p
   boost::intrusive_ptr< JavaInteger > pInteger1 = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
   if (nullptr == pInteger1)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be integer type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected first operand to be integer type." ));
   }
 
   uint16_t characterValue = static_cast<uint16_t>(pInteger1->ToHostInt32());
@@ -1226,7 +1226,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadLongFromLocal(const std::shared_ptr<
   }
   else
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected long in local variable.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected long in local variable." ));
   }
 
 #if defined(_DEBUG) && defined (JVMX_LOG_VERBOSE)
@@ -1242,19 +1242,19 @@ void BasicExecutionEngine::ExecuteOpCodeLoadByteOrBooleanFromArray(const std::sh
 {
   if (e_JavaVariableTypes::Integer != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected integer on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected integer on the operand stack." ));
   }
 
   boost::intrusive_ptr< JavaInteger > pIndex = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
   if (e_JavaVariableTypes::Array != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected Array on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected Array on the operand stack." ));
   }
 
   boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>(pVirtualMachineState->PopOperand());
   if (nullptr == pArray)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected reference to JavaArray on operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected reference to JavaArray on operand stack." ));
   }
 
   if (pArray->IsNull())
@@ -1271,7 +1271,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadByteOrBooleanFromArray(const std::sh
 
   if (pArray->GetContainedArray()->GetContainedType() != e_JavaArrayTypes::Boolean && pArray->GetContainedArray()->GetContainedType() != e_JavaArrayTypes::Byte)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected boolean or byte in the array.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected boolean or byte in the array." ));
   }
 
   IJavaVariableType* pArrayValueAtIndex = pArray->GetContainedArray()->At(pIndex->ToHostInt32());
@@ -1298,7 +1298,7 @@ void BasicExecutionEngine::ExecuteOpCodeConvertIntegerToByte(const std::shared_p
   boost::intrusive_ptr< JavaInteger > pInteger1 = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
   if (nullptr == pInteger1)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be integer type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected first operand to be integer type." ));
   }
 
   int32_t value = ConvertIntegerToByte(pInteger1);
@@ -1311,19 +1311,19 @@ void BasicExecutionEngine::StoreIntoArray(const std::shared_ptr<IVirtualMachineS
   boost::intrusive_ptr< JavaInteger > pIndex = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
   if (nullptr == pIndex)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected second operand to be integer type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected second operand to be integer type." ));
   }
 
   boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>(pVirtualMachineState->PopOperand());
   if (nullptr == pArray)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be array type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected first operand to be array type." ));
   }
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (pVirtualMachineState->HasUserCodeStarted())
   {
-    GetLogger()->LogDebug(__FUNCTION__ " - Storing value %s in index %d", (const char*)(pValue->ToString().ToUtf8String().c_str()), pIndex->ToHostInt32());
+    GetLogger()->LogDebug(JVMX_FUNCTION_MESSAGE( " - Storing value %s in index %d" ), (const char*)(pValue->ToString().ToUtf8String().c_str()), pIndex->ToHostInt32());
   }
 #endif // _DEBUG
 
@@ -1360,7 +1360,7 @@ void BasicExecutionEngine::ExecuteOpCodePushDoubleOrLongFromConstantPoolWide(con
   }
   else
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected Long or Double constant at the index.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected Long or Double constant at the index." ));
   }
 }
 
@@ -1397,7 +1397,7 @@ void BasicExecutionEngine::ExecuteOpCodeStoreDoubleInLocal(const std::shared_ptr
 {
   if (e_JavaVariableTypes::Double != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected double on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected double on the operand stack." ));
   }
 
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -1442,7 +1442,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadDoubleFromLocal(const std::shared_pt
   if (e_JavaVariableTypes::Double != pVirtualMachineState->GetLocalVariable(localVariableIndex)->GetVariableType())
   {
     pVirtualMachineState->LogLocalVariables();
-    throw InvalidStateException(__FUNCTION__ " - Expected Double in local variable.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected Double in local variable." ));
   }
 
   pVirtualMachineState->PushOperand(pVirtualMachineState->GetLocalVariable(localVariableIndex));
@@ -1493,7 +1493,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadIntegerFromArray(const std::shared_p
 
   if (e_JavaVariableTypes::Integer != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected integer on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected integer on the operand stack." ));
   }
 
   boost::intrusive_ptr< JavaInteger > pIndex = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
@@ -1508,14 +1508,14 @@ void BasicExecutionEngine::ExecuteOpCodeLoadIntegerFromArray(const std::shared_p
 
   if (e_JavaVariableTypes::Array != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected Array on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected Array on the operand stack." ));
   }
 
   boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>(pVirtualMachineState->PopOperand());
 
   if (nullptr == pArray)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected reference to JavaArray on operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected reference to JavaArray on operand stack." ));
   }
 
   if (pArray->IsNull())
@@ -1535,7 +1535,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadIntegerFromArray(const std::shared_p
   const JavaInteger* pResult = dynamic_cast<const JavaInteger*>(pArray->GetContainedArray()->At(pIndex->ToHostInt32()));
   if (nullptr == pResult)
   {
-    throw InvalidStateException(__FUNCTION__ " - Could not convert from array contained type to integer.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not convert from array contained type to integer." ));
   }
 
   pVirtualMachineState->PushOperand(new JavaInteger(*pResult));
@@ -1558,7 +1558,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadLongFromArray(const std::shared_ptr<
   const JavaLong* pLong = dynamic_cast<const JavaLong*>(pArray->GetContainedArray()->At(index));
   if (nullptr == pLong)
   {
-    throw InvalidStateException(__FUNCTION__ " - Could not convert from array contained type to char.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not convert from array contained type to char." ));
   }
 
   pVirtualMachineState->PushOperand(new JavaLong(*pLong));
@@ -1579,7 +1579,7 @@ void BasicExecutionEngine::ExecuteOpCodeConvertDoubleToInt(const std::shared_ptr
   boost::intrusive_ptr<JavaDouble> pDouble = boost::dynamic_pointer_cast<JavaDouble>(pVirtualMachineState->PopOperand());
   if (nullptr == pDouble)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be float type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected first operand to be float type." ));
   }
 
   boost::intrusive_ptr< JavaInteger > result = new JavaInteger(JavaInteger::FromDefault());
@@ -1600,7 +1600,7 @@ void BasicExecutionEngine::ExecuteOpCodeConvertDoubleToFloat(const std::shared_p
   boost::intrusive_ptr< JavaDouble > pDouble1 = boost::dynamic_pointer_cast<JavaDouble>(pVirtualMachineState->PopOperand());
   if (nullptr == pDouble1)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be double type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected first operand to be double type." ));
   }
 
   pVirtualMachineState->PushOperand(new JavaFloat(JavaFloat::FromHostDouble(static_cast<double>(pDouble1->ToHostDouble()))));
@@ -1611,7 +1611,7 @@ void BasicExecutionEngine::ExecuteOpCodeConvertFloatToDouble(const std::shared_p
   boost::intrusive_ptr< JavaFloat > pFloat1 = boost::dynamic_pointer_cast<JavaFloat>(pVirtualMachineState->PopOperand());
   if (nullptr == pFloat1)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be float type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected first operand to be float type." ));
   }
 
   pVirtualMachineState->PushOperand(new JavaDouble(JavaDouble::FromHostDouble(static_cast<double>(pFloat1->ToHostFloat()))));
@@ -1621,20 +1621,20 @@ void BasicExecutionEngine::ExecuteOpCodeLoadFloatFromArray(const std::shared_ptr
 {
   if (e_JavaVariableTypes::Integer != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected integer on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected integer on the operand stack." ));
   }
 
   boost::intrusive_ptr< JavaInteger > pIndex = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
 
   if (e_JavaVariableTypes::Array != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected Array on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected Array on the operand stack." ));
   }
 
   boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>(pVirtualMachineState->PopOperand());
   if (nullptr == pArray)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected reference to JavaArray on operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected reference to JavaArray on operand stack." ));
   }
 
   if (pArray->IsNull())
@@ -1652,7 +1652,7 @@ void BasicExecutionEngine::ExecuteOpCodeLoadFloatFromArray(const std::shared_ptr
   JavaFloat* pTempFloat = dynamic_cast<JavaFloat*>(pArray->GetContainedArray()->At(pIndex->ToHostInt32()));
   if (nullptr == pTempFloat)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected float in array.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected float in array." ));
   }
 
   boost::intrusive_ptr<JavaFloat> pFloat = new JavaFloat(JavaFloat::FromHostFloat(pTempFloat->ToHostFloat()));
@@ -1672,19 +1672,19 @@ void BasicExecutionEngine::ExecuteOpCodeStoreIntoFloatArray(const std::shared_pt
   boost::intrusive_ptr<IJavaVariableType> pValue = pVirtualMachineState->PopOperand();
   if (e_JavaVariableTypes::Float != pValue->GetVariableType())
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected third operand to be float type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected third operand to be float type." ));
   }
 
   boost::intrusive_ptr< JavaInteger > pIndex = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
   if (nullptr == pIndex)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected second operand to be integer type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected second operand to be integer type." ));
   }
 
   boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>(pVirtualMachineState->PopOperand());
   if (nullptr == pArray)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be array type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected first operand to be array type." ));
   }
 
   if (pArray->IsNull())
@@ -1751,7 +1751,7 @@ void BasicExecutionEngine::ExecuteOpCodeConvertFloatToLong(const std::shared_ptr
 {
   if (e_JavaVariableTypes::Float != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected float on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected float on the operand stack." ));
   }
 
   boost::intrusive_ptr<JavaFloat> pFloat = boost::dynamic_pointer_cast<JavaFloat>(pVirtualMachineState->PopOperand());
@@ -1763,7 +1763,7 @@ void BasicExecutionEngine::ExecuteOpCodeConvertDoubleToLong(const std::shared_pt
 {
   if (e_JavaVariableTypes::Double != pVirtualMachineState->PeekOperand()->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected double on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected double on the operand stack." ));
   }
 
   boost::intrusive_ptr<JavaDouble> pDouble = boost::dynamic_pointer_cast<JavaDouble>(pVirtualMachineState->PopOperand());

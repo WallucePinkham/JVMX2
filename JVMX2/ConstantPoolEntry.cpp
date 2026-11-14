@@ -154,7 +154,7 @@ void ConstantPoolEntry::swap( ConstantPoolEntry &left, ConstantPoolEntry &right 
 // {
 //   if ( GetType() != e_ConstantPoolEntryTypeClassReference )
 //   {
-//     throw TypeMismatchException( __FUNCTION__ " - Constant pool entry is not a class reference as expected." );
+//     throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Constant pool entry is not a class reference as expected." ) );
 //   }
 //
 //   return *(dynamic_cast<const ConstantPoolClassReference *>(GetValue()));
@@ -164,7 +164,7 @@ boost::intrusive_ptr<JavaString> ConstantPoolEntry::AsString() const
 {
   if ( GetType() != e_ConstantPoolEntryTypeString )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Constant pool entry is not a string as expected." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Constant pool entry is not a string as expected." ) );
   }
 
   return new JavaString( *std::dynamic_pointer_cast<JavaString>( m_pValue ) );
@@ -174,7 +174,7 @@ boost::intrusive_ptr<JavaString> ConstantPoolEntry::AsString() const
 // {
 //   if ( GetType() != e_ConstantPoolEntryTypeNameAndTypeDescriptor )
 //   {
-//     throw TypeMismatchException( __FUNCTION__ " - Constant pool entry is not a named and type descriptor as expected." );
+//     throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Constant pool entry is not a named and type descriptor as expected." ) );
 //   }
 //
 //   return *(dynamic_cast<const ConstantPoolNameAndTypeDescriptor *>(GetValue()));
@@ -184,7 +184,7 @@ std::shared_ptr<ConstantPoolClassReference> ConstantPoolEntry::AsClassReferenceP
 {
   if ( GetType() != e_ConstantPoolEntryTypeClassReference )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Constant pool entry is not a class reference as expected." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Constant pool entry is not a class reference as expected." ) );
   }
 
   return std::dynamic_pointer_cast<ConstantPoolClassReference>( m_pValue );
@@ -194,7 +194,7 @@ std::shared_ptr<ConstantPoolNameAndTypeDescriptor> ConstantPoolEntry::AsNameAndT
 {
   if ( GetType() != e_ConstantPoolEntryTypeNameAndTypeDescriptor )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Constant pool entry is not a name and type descriptor as expected." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Constant pool entry is not a name and type descriptor as expected." ) );
   }
 
   return std::dynamic_pointer_cast<ConstantPoolNameAndTypeDescriptor>( m_pValue );
@@ -237,7 +237,7 @@ std::shared_ptr<ConstantPoolFieldReference> ConstantPoolEntry::AsFieldReferenceP
 {
   if ( GetType() != e_ConstantPoolEntryTypeFieldReference )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Constant pool entry is not a field reference as expected." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Constant pool entry is not a field reference as expected." ) );
   }
 
   return std::dynamic_pointer_cast<ConstantPoolFieldReference>( m_pValue );
@@ -247,7 +247,7 @@ boost::intrusive_ptr< JavaInteger > ConstantPoolEntry::AsInteger() const
 {
   if ( GetType() != e_ConstantPoolEntryTypeInteger )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Constant pool entry is not an integer as expected." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Constant pool entry is not an integer as expected." ) );
   }
 
   return new JavaInteger( *std::dynamic_pointer_cast<JavaInteger>( m_pValue ) );
@@ -257,7 +257,7 @@ boost::intrusive_ptr<JavaFloat> ConstantPoolEntry::AsFloat() const
 {
   if ( GetType() != e_ConstantPoolEntryTypeFloat )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Constant pool entry is not an integer as expected." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Constant pool entry is not an integer as expected." ) );
   }
 
   return new JavaFloat( *std::dynamic_pointer_cast<JavaFloat>( m_pValue ) );
@@ -267,7 +267,7 @@ boost::intrusive_ptr<JavaLong> ConstantPoolEntry::AsLong() const
 {
   if ( GetType() != e_ConstantPoolEntryTypeLong )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Constant pool entry is not an long as expected." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Constant pool entry is not an long as expected." ) );
   }
 
   return new JavaLong( *std::dynamic_pointer_cast<JavaLong>( m_pValue ) );
@@ -277,7 +277,7 @@ boost::intrusive_ptr<JavaDouble> ConstantPoolEntry::AsDouble() const
 {
   if ( GetType() != e_ConstantPoolEntryTypeDouble )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Constant pool entry is not an double as expected." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Constant pool entry is not an double as expected." ) );
   }
 
   return new JavaDouble( *std::dynamic_pointer_cast<JavaDouble>( m_pValue ) );
@@ -287,7 +287,7 @@ std::shared_ptr<ConstantPoolStringReference> ConstantPoolEntry::AsStringReferenc
 {
   if ( GetType() != e_ConstantPoolEntryTypeStringReference )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Constant pool entry is not a string reference as expected." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Constant pool entry is not a string reference as expected." ) );
   }
 
   return std::dynamic_pointer_cast<ConstantPoolStringReference>( m_pValue );
@@ -297,7 +297,7 @@ std::shared_ptr<ConstantPoolMethodReference> ConstantPoolEntry::AsMethodReferenc
 {
   if ( GetType() != e_ConstantPoolEntryTypeMethodReference && GetType() != e_ConstantPoolEntryTypeInterfaceMethodReference )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Constant pool entry is not a method reference as expected." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Constant pool entry is not a method reference as expected." ) );
   }
 
   return std::dynamic_pointer_cast<ConstantPoolMethodReference>( m_pValue );
@@ -327,7 +327,7 @@ boost::intrusive_ptr<ObjectReference> ConstantPoolEntry::AsArrayOfChars() const
 {
   if ( GetType() != e_ConstantPoolEntryTypeString )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Constant pool entry is not a string as expected." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Constant pool entry is not a string as expected." ) );
   }
 
   JavaString *pStringValue = dynamic_cast<JavaString *>( m_pValue.get() );

@@ -92,7 +92,7 @@ std::shared_ptr<AnnotationsElementValue> AnnotationsElementValue::FromBinary( St
     break;
 
     default:
-      throw InvalidStateException( __FUNCTION__ " - Class is in invalid state. Unknown type." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Class is in invalid state. Unknown type." ) );
       break;
   }
 
@@ -144,7 +144,7 @@ DataBuffer AnnotationsElementValue::ToBinary() const
     break;
 
     default:
-      throw InvalidStateException( __FUNCTION__ " - Class is in invalid state. Unknown type." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Class is in invalid state. Unknown type." ) );
       break;
   }
 
@@ -215,7 +215,7 @@ ConstantPoolIndex AnnotationsElementValue::GetEnumConstValueTypeNameIndex() cons
 {
   if ( e_AnnotationsElementTypeEnumConstant != m_Type )
   {
-    throw UnsupportedOperationException( __FUNCTION__ " - Trying to get an enum value when this is not an enum type." );
+    throw UnsupportedOperationException( JVMX_FUNCTION_MESSAGE( " - Trying to get an enum value when this is not an enum type." ) );
   }
 
   return m_EnumConstValueTypeNameIndex;
@@ -225,7 +225,7 @@ ConstantPoolIndex AnnotationsElementValue::GetEnumConstValueConstNameIndex() con
 {
   if ( e_AnnotationsElementTypeEnumConstant != m_Type )
   {
-    throw UnsupportedOperationException( __FUNCTION__ " - Trying to get an enum value when this is not an enum type." );
+    throw UnsupportedOperationException( JVMX_FUNCTION_MESSAGE( " - Trying to get an enum value when this is not an enum type." ) );
   }
 
   return m_EnumConstValueConstNameIndex;
@@ -235,7 +235,7 @@ ConstantPoolIndex AnnotationsElementValue::GetClassInfoIndex() const
 {
   if ( e_AnnotationsElementTypeReferenceToClass != m_Type )
   {
-    throw UnsupportedOperationException( __FUNCTION__ " - Trying to get an class index when this is not an class type." );
+    throw UnsupportedOperationException( JVMX_FUNCTION_MESSAGE( " - Trying to get an class index when this is not an class type." ) );
   }
 
   return m_ClassInfoIndex;
@@ -245,7 +245,7 @@ std::shared_ptr<AnnotationsEntry> AnnotationsElementValue::GetNestedAnnotation()
 {
   if ( e_AnnotationsElementTypeAnnotation != m_Type )
   {
-    throw UnsupportedOperationException( __FUNCTION__ " - Trying to get an annotation when this is not an annotation type." );
+    throw UnsupportedOperationException( JVMX_FUNCTION_MESSAGE( " - Trying to get an annotation when this is not an annotation type." ) );
   }
 
   return m_pAnnotation;
@@ -255,7 +255,7 @@ uint16_t AnnotationsElementValue::GetArrayValueNumberOfValues() const
 {
   if ( e_AnnotationsElementTypeArray != m_Type )
   {
-    throw UnsupportedOperationException( __FUNCTION__ " - Trying to get an array length when this is not an array type." );
+    throw UnsupportedOperationException( JVMX_FUNCTION_MESSAGE( " - Trying to get an array length when this is not an array type." ) );
   }
 
   return static_cast<uint16_t>(m_Values.size());
@@ -265,7 +265,7 @@ std::shared_ptr<AnnotationsElementValue> AnnotationsElementValue::GetArrayValueA
 {
   if ( e_AnnotationsElementTypeArray != m_Type )
   {
-    throw UnsupportedOperationException( __FUNCTION__ " - Trying to get an array value when this is not an array type." );
+    throw UnsupportedOperationException( JVMX_FUNCTION_MESSAGE( " - Trying to get an array value when this is not an array type." ) );
   }
 
   try
@@ -274,7 +274,7 @@ std::shared_ptr<AnnotationsElementValue> AnnotationsElementValue::GetArrayValueA
   }
   catch ( std::out_of_range& )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Could not get Method name. Index out of bounds." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Could not get Method name. Index out of bounds." ) );
   }
 }
 
@@ -294,7 +294,7 @@ ConstantPoolIndex AnnotationsElementValue::GetConstValueIndex() const
       break;
 
     default:
-      throw UnsupportedOperationException( __FUNCTION__ " - Trying to get an base type value when this is not a base type." );
+      throw UnsupportedOperationException( JVMX_FUNCTION_MESSAGE( " - Trying to get an base type value when this is not a base type." ) );
   }
 
   return m_ConstValueIndex;
@@ -369,7 +369,7 @@ e_AnnotationsElementTypes AnnotationsElementValue::SetTypeFromTag( uint8_t tag )
       break;
 
     default:
-      throw InvalidArgumentException( __FUNCTION__ " - Unknown tag passed in." );
+      throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Unknown tag passed in." ) );
   }
 
   return m_Type;
@@ -432,7 +432,7 @@ uint8_t AnnotationsElementValue::GetTagFromType() const
       break;
 
     default:
-      throw InvalidArgumentException( __FUNCTION__ " - Unknown type value in class." );
+      throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Unknown type value in class." ) );
   }
 }
 

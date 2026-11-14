@@ -65,6 +65,6 @@ std::shared_ptr<StackFrame> StackFrameFactory::CreateStackFrame( Stream &byteStr
     return std::make_shared<StackFrameFullFrame>( StackFrameFullFrame::FromBinary( byteStream ) );
   }
 
-  throw UnsupportedTypeException( __FUNCTION__ " - Unknown stack frame type encountered." );
+  throw UnsupportedTypeException( JVMX_FUNCTION_MESSAGE( " - Unknown stack frame type encountered." ) );
 }
 

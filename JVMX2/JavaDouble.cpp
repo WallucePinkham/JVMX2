@@ -1,6 +1,7 @@
 
 #include <limits>
 #include <cfloat>
+#include <cmath>
 #include <memory>
 
 #include "InternalErrorException.h"
@@ -167,6 +168,5 @@ JavaDouble &JavaDouble::operator=( const JavaDouble &other )
 
 bool JavaDouble::IsNan() const
 {
-  return _isnan( m_Value ) != 0;
+  return std::isnan( m_Value );
 }
-

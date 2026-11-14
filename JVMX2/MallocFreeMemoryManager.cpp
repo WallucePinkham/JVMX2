@@ -27,7 +27,7 @@ MallocFreeMemoryManager::~MallocFreeMemoryManager()
     std::shared_ptr<ILogger> pLogger = GlobalCatalog::GetInstance().Get( "Logger" );
     if ( nullptr != pLogger )
     {
-      pLogger->LogWarning( __FUNCTION__ " - Exception Caught in destructor" );
+      pLogger->LogWarning( JVMX_FUNCTION_MESSAGE( " - Exception Caught in destructor" ) );
     }
   }
 }
@@ -54,13 +54,13 @@ void MallocFreeMemoryManager::Free( uint8_t *pBuffer )
 
   if ( nullptr == pBuffer )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Trying to free an null pointer." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Trying to free an null pointer." ) );
   }
 
   auto pos = m_AllocatedBlocks.find( pBuffer );
   if ( m_AllocatedBlocks.end() == pos )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Trying to free an invalid pointer." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Trying to free an invalid pointer." ) );
   }
 
   m_allocatedByteCount -= pos->second;

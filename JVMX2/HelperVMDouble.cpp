@@ -1,9 +1,10 @@
 #include <cstdlib>
+#include <cmath>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
 
-#include <boost\intrusive_ptr.hpp>
+#include <boost/intrusive_ptr.hpp>
 
 #include "JavaNativeInterface.h"
 
@@ -57,12 +58,12 @@ jstring JNICALL HelperVMDouble::java_lang_Double_toString( JNIEnv *pEnv, jobject
 
 
 const std::string HelperVMDouble::FloatToString(float f) {
-    if (isnan(f))
+    if (std::isnan(f))
     {
         return "NaN";
     }
 
-    if (isinf(f))
+    if (std::isinf(f))
     {
         return "Infinity";
     }
@@ -87,12 +88,12 @@ const std::string HelperVMDouble::FloatToString(float f) {
 }
 
 const std::string HelperVMDouble::DoubleToString(double f) {
-    if (isnan(f))
+    if (std::isnan(f))
     {
         return "NaN";
     }
 
-    if (isinf(f))
+    if (std::isinf(f))
     {
         return "Infinity";
     }

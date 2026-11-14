@@ -56,14 +56,14 @@ CodeAttributeUnknown JavaCodeAttribute::ToUnknown() const
 {
   if ( e_JavaAttributeTypeUnknown != m_Type )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Tried to convert a attribute to another type. Internal Types didn't match." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Tried to convert a attribute to another type. Internal Types didn't match." ) );
   }
 
   const CodeAttributeUnknown *pResult = dynamic_cast<const CodeAttributeUnknown *>(this);
 
   if ( nullptr == pResult )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Tried to convert a attribute to another type. Dynamic cast failed." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Tried to convert a attribute to another type. Dynamic cast failed." ) );
   }
 
   return CodeAttributeUnknown( *pResult );
@@ -73,14 +73,14 @@ AttributeConstantValue JavaCodeAttribute::ToConstantValue() const
 {
   if ( e_JavaAttributeTypeConstantValue != m_Type )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Tried to convert a attribute to another type. Internal Types didn't match." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Tried to convert a attribute to another type. Internal Types didn't match." ) );
   }
 
   const AttributeConstantValue *pResult = dynamic_cast<const AttributeConstantValue *>(this);
 
   if ( nullptr == pResult )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Tried to convert a attribute to another type. Dynamic cast failed." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Tried to convert a attribute to another type. Dynamic cast failed." ) );
   }
 
   return AttributeConstantValue( *pResult );
@@ -90,14 +90,14 @@ ClassAttributeCode JavaCodeAttribute::ToCode() const
 {
   if ( e_JavaAttributeTypeCode != m_Type )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Tried to convert a attribute to another type. Internal Types didn't match." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Tried to convert a attribute to another type. Internal Types didn't match." ) );
   }
 
   const ClassAttributeCode *pResult = dynamic_cast<const ClassAttributeCode *>(this);
 
   if ( nullptr == pResult )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Tried to convert a attribute to another type. Dynamic cast failed." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Tried to convert a attribute to another type. Dynamic cast failed." ) );
   }
 
   return ClassAttributeCode( *pResult );

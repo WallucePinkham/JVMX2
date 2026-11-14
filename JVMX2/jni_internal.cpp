@@ -1,5 +1,6 @@
 
 #include <cstdarg>
+#include <cstring>
 
 #include "FileDoesNotExistException.h"
 #include "InvalidStateException.h"
@@ -169,7 +170,7 @@ extern "C"
     if ( nullptr == pBuffer )
     {
       // Should never reach this.
-      throw InvalidStateException( __FUNCTION__ " - Could not allocate buffer." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Could not allocate buffer." ) );
     }
 
     memcpy( pBuffer, utf8String.c_str(), utf8String.length() );
@@ -201,7 +202,8 @@ extern "C"
     JNIEnvExported *pInternal = reinterpret_cast<JNIEnvExported *>( pEnv );
     IVirtualMachineState *pVirtualMachineState = reinterpret_cast<IVirtualMachineState *>( pInternal->m_pInternal );
 
-    boost::intrusive_ptr<ObjectReference> pStringObject = pVirtualMachineState->CreateStringObject( bytes );
+    JavaString value = JavaString::FromModifiedUtf8ByteArray( strlen( bytes ), reinterpret_cast<const uint8_t *>( bytes ) );
+    boost::intrusive_ptr<ObjectReference> pStringObject = pVirtualMachineState->CreateStringObject( value );
 
     // Note, this string is cleaned up in the garbage collector!
 
@@ -210,12 +212,12 @@ extern "C"
 
   JNIEXPORT void JNICALL JNIEnvInternal::ReleaseStringChars( JNIEnv *pEnv, jstring string, const jchar *chars )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT const jchar *JNICALL JNIEnvInternal::GetStringChars( JNIEnv *pEnv, jstring string, jboolean *isCopy )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jsize JNICALL JNIEnvInternal::GetStringLength( JNIEnv *pEnv, jstring string )
@@ -242,262 +244,262 @@ extern "C"
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetStaticDoubleField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID, jdouble value )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetStaticFloatField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID, jfloat value )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetStaticLongField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID, jlong value )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetStaticIntField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID, jint value )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetStaticShortField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID, jshort value )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetStaticCharField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID, jchar value )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetStaticByteField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID, jbyte value )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetStaticBooleanField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID, jboolean value )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetStaticObjectField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID, jobject value )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jdouble JNICALL JNIEnvInternal::GetStaticDoubleField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jfloat JNICALL JNIEnvInternal::GetStaticFloatField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jlong JNICALL JNIEnvInternal::GetStaticLongField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jint JNICALL JNIEnvInternal::GetStaticIntField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jshort JNICALL JNIEnvInternal::GetStaticShortField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jchar JNICALL JNIEnvInternal::GetStaticCharField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jbyte JNICALL JNIEnvInternal::GetStaticByteField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jboolean JNICALL JNIEnvInternal::GetStaticBooleanField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jobject JNICALL JNIEnvInternal::GetStaticObjectField( JNIEnv *pEnv, jclass clazz, jfieldID fieldID )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jfieldID JNICALL JNIEnvInternal::GetStaticFieldID( JNIEnv *pEnv, jclass clazz, const char *name, const char *sig )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::CallStaticVoidMethodA( JNIEnv *pEnv, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::CallStaticVoidMethodV( JNIEnv *pEnv, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::CallStaticVoidMethod( JNIEnv *pEnv, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jdouble JNICALL JNIEnvInternal::CallStaticDoubleMethodA( JNIEnv *pEnv, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jdouble JNICALL JNIEnvInternal::CallStaticDoubleMethodV( JNIEnv *pEnv, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jdouble JNICALL JNIEnvInternal::CallStaticDoubleMethod( JNIEnv *pEnv, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jfloat JNICALL JNIEnvInternal::CallStaticFloatMethodA( JNIEnv *pEnv, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jfloat JNICALL JNIEnvInternal::CallStaticFloatMethodV( JNIEnv *pEnv, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jfloat JNICALL JNIEnvInternal::CallStaticFloatMethod( JNIEnv *pEnv, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jlong JNICALL JNIEnvInternal::CallStaticLongMethodA( JNIEnv *pEnv, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jlong JNICALL JNIEnvInternal::CallStaticLongMethodV( JNIEnv *pEnv, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jlong JNICALL JNIEnvInternal::CallStaticLongMethod( JNIEnv *pEnv, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jint JNICALL JNIEnvInternal::CallStaticIntMethodA( JNIEnv *pEnv, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jint JNICALL JNIEnvInternal::CallStaticIntMethodV( JNIEnv *pEnv, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jint JNICALL JNIEnvInternal::CallStaticIntMethod( JNIEnv *pEnv, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jshort JNICALL JNIEnvInternal::CallStaticShortMethodA( JNIEnv *pEnv, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jshort JNICALL JNIEnvInternal::CallStaticShortMethodV( JNIEnv *pEnv, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jshort JNICALL JNIEnvInternal::CallStaticShortMethod( JNIEnv *pEnv, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jchar JNICALL JNIEnvInternal::CallStaticCharMethodA( JNIEnv *pEnv, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jchar JNICALL JNIEnvInternal::CallStaticCharMethodV( JNIEnv *pEnv, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jchar JNICALL JNIEnvInternal::CallStaticCharMethod( JNIEnv *pEnv, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jbyte JNICALL JNIEnvInternal::CallStaticByteMethodA( JNIEnv *pEnv, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jbyte JNICALL JNIEnvInternal::CallStaticByteMethodV( JNIEnv *pEnv, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jbyte JNICALL JNIEnvInternal::CallStaticByteMethod( JNIEnv *pEnv, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jboolean JNICALL JNIEnvInternal::CallStaticBooleanMethodA( JNIEnv *pEnv, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jboolean JNICALL JNIEnvInternal::CallStaticBooleanMethodV( JNIEnv *pEnv, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jboolean JNICALL JNIEnvInternal::CallStaticBooleanMethod( JNIEnv *pEnv, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jobject JNICALL JNIEnvInternal::CallStaticObjectMethodA( JNIEnv *pEnv, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jobject JNICALL JNIEnvInternal::CallStaticObjectMethodV( JNIEnv *pEnv, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jobject JNICALL JNIEnvInternal::CallStaticObjectMethod( JNIEnv *pEnv, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jmethodID JNICALL JNIEnvInternal::GetStaticMethodID( JNIEnv *pEnv, jclass clazz, const char *name, const char *sig )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetDoubleField( JNIEnv *pEnv, jobject obj, jfieldID fieldID, jdouble value )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetFloatField( JNIEnv *pEnv, jobject obj, jfieldID fieldID, jfloat value )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetLongField( JNIEnv *pEnv, jobject obj, jfieldID fieldID, jlong value )
@@ -525,42 +527,42 @@ extern "C"
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetIntField( JNIEnv *pEnv, jobject obj, jfieldID fieldID, jint value )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetShortField( JNIEnv *pEnv, jobject obj, jfieldID fieldID, jshort value )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetCharField( JNIEnv *pEnv, jobject obj, jfieldID fieldID, jchar value )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetByteField( JNIEnv *pEnv, jobject obj, jfieldID fieldID, jbyte value )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetBooleanField( JNIEnv *pEnv, jobject obj, jfieldID fieldID, jboolean value )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetObjectField( JNIEnv *pEnv, jobject obj, jfieldID fieldID, jobject value )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jdouble JNICALL JNIEnvInternal::GetDoubleField( JNIEnv *pEnv, jobject obj, jfieldID fieldID )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jfloat JNICALL JNIEnvInternal::GetFloatField( JNIEnv *pEnv, jobject obj, jfieldID fieldID )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jlong JNICALL JNIEnvInternal::GetLongField( JNIEnv *pEnv, jobject obj, jfieldID fieldID )
@@ -592,22 +594,22 @@ extern "C"
 
   JNIEXPORT jshort JNICALL JNIEnvInternal::GetShortField( JNIEnv *pEnv, jobject obj, jfieldID fieldID )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jchar JNICALL JNIEnvInternal::GetCharField( JNIEnv *pEnv, jobject obj, jfieldID fieldID )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jbyte JNICALL JNIEnvInternal::GetByteField( JNIEnv *pEnv, jobject obj, jfieldID fieldID )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jboolean JNICALL JNIEnvInternal::GetBooleanField( JNIEnv *pEnv, jobject obj, jfieldID fieldID )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jobject JNICALL JNIEnvInternal::GetObjectField( JNIEnv *pEnv, jobject obj, jfieldID fieldID )
@@ -638,157 +640,157 @@ extern "C"
 
   JNIEXPORT void JNICALL JNIEnvInternal::CallNonvirtualVoidMethodA( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::CallNonvirtualVoidMethodV( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::CallNonvirtualVoidMethod( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jdouble JNICALL JNIEnvInternal::CallNonvirtualDoubleMethodA( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jdouble JNICALL JNIEnvInternal::CallNonvirtualDoubleMethodV( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jdouble JNICALL JNIEnvInternal::CallNonvirtualDoubleMethod( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jfloat JNICALL JNIEnvInternal::CallNonvirtualFloatMethodA( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jfloat JNICALL JNIEnvInternal::CallNonvirtualFloatMethodV( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jfloat JNICALL JNIEnvInternal::CallNonvirtualFloatMethod( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jlong JNICALL JNIEnvInternal::CallNonvirtualLongMethodA( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jlong JNICALL JNIEnvInternal::CallNonvirtualLongMethodV( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jlong JNICALL JNIEnvInternal::CallNonvirtualLongMethod( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jint JNICALL JNIEnvInternal::CallNonvirtualIntMethodA( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jint JNICALL JNIEnvInternal::CallNonvirtualIntMethodV( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jint JNICALL JNIEnvInternal::CallNonvirtualIntMethod( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jshort JNICALL JNIEnvInternal::CallNonvirtualShortMethodA( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jshort JNICALL JNIEnvInternal::CallNonvirtualShortMethodV( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jshort JNICALL JNIEnvInternal::CallNonvirtualShortMethod( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jchar JNICALL JNIEnvInternal::CallNonvirtualCharMethodA( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jchar JNICALL JNIEnvInternal::CallNonvirtualCharMethodV( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jchar JNICALL JNIEnvInternal::CallNonvirtualCharMethod( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jbyte JNICALL JNIEnvInternal::CallNonvirtualByteMethodA( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jbyte JNICALL JNIEnvInternal::CallNonvirtualByteMethodV( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jbyte JNICALL JNIEnvInternal::CallNonvirtualByteMethod( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jboolean JNICALL JNIEnvInternal::CallNonvirtualBooleanMethodA( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jboolean JNICALL JNIEnvInternal::CallNonvirtualBooleanMethodV( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jboolean JNICALL JNIEnvInternal::CallNonvirtualBooleanMethod( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jobject JNICALL JNIEnvInternal::CallNonvirtualObjectMethodA( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jobject JNICALL JNIEnvInternal::CallNonvirtualObjectMethodV( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jobject JNICALL JNIEnvInternal::CallNonvirtualObjectMethod( JNIEnv *pEnv, jobject obj, jclass clazz, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::CallVoidMethodA( JNIEnv *pEnv, jobject obj, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::CallVoidMethodV( JNIEnv *pEnv, jobject obj, jmethodID methodID, va_list args )
@@ -796,7 +798,7 @@ extern "C"
     boost::intrusive_ptr<ObjectReference> pTargetObject = ConvertJObjectToObjectPointer( obj );
     if ( nullptr == pTargetObject )
     {
-      throw NullPointerException( __FUNCTION__ " - NULL Object passed for object argument." );
+      throw NullPointerException( JVMX_FUNCTION_MESSAGE( " - NULL Object passed for object argument." ) );
     }
 
     std::shared_ptr<MethodInfo> pMethodInfo = methodID->m_pMethodInfo;
@@ -834,7 +836,7 @@ extern "C"
             break;
 
           default:
-            throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+            throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
             break;
         }
       }
@@ -869,127 +871,127 @@ extern "C"
 
   JNIEXPORT jdouble JNICALL JNIEnvInternal::CallDoubleMethodA( JNIEnv *pEnv, jobject obj, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jdouble JNICALL JNIEnvInternal::CallDoubleMethodV( JNIEnv *pEnv, jobject obj, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jdouble JNICALL JNIEnvInternal::CallDoubleMethod( JNIEnv *pEnv, jobject obj, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jfloat JNICALL JNIEnvInternal::CallFloatMethodA( JNIEnv *pEnv, jobject obj, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jfloat JNICALL JNIEnvInternal::CallFloatMethodV( JNIEnv *pEnv, jobject obj, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jfloat JNICALL JNIEnvInternal::CallFloatMethod( JNIEnv *pEnv, jobject obj, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jlong JNICALL JNIEnvInternal::CallLongMethodA( JNIEnv *pEnv, jobject obj, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jlong JNICALL JNIEnvInternal::CallLongMethodV( JNIEnv *pEnv, jobject obj, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jlong JNICALL JNIEnvInternal::CallLongMethod( JNIEnv *pEnv, jobject obj, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jint JNICALL JNIEnvInternal::CallIntMethodA( JNIEnv *pEnv, jobject obj, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jint JNICALL JNIEnvInternal::CallIntMethodV( JNIEnv *pEnv, jobject obj, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jint JNICALL JNIEnvInternal::CallIntMethod( JNIEnv *pEnv, jobject obj, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jshort JNICALL JNIEnvInternal::CallShortMethodA( JNIEnv *pEnv, jobject obj, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jshort JNICALL JNIEnvInternal::CallShortMethodV( JNIEnv *pEnv, jobject obj, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jshort JNICALL JNIEnvInternal::CallShortMethod( JNIEnv *pEnv, jobject obj, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jchar JNICALL JNIEnvInternal::CallCharMethodA( JNIEnv *pEnv, jobject obj, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jchar JNICALL JNIEnvInternal::CallCharMethodV( JNIEnv *pEnv, jobject obj, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jchar JNICALL JNIEnvInternal::CallCharMethod( JNIEnv *pEnv, jobject obj, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jbyte JNICALL JNIEnvInternal::CallByteMethodA( JNIEnv *pEnv, jobject obj, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jbyte JNICALL JNIEnvInternal::CallByteMethodV( JNIEnv *pEnv, jobject obj, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jbyte JNICALL JNIEnvInternal::CallByteMethod( JNIEnv *pEnv, jobject obj, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jboolean JNICALL JNIEnvInternal::CallBooleanMethodA( JNIEnv *pEnv, jobject obj, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jboolean JNICALL JNIEnvInternal::CallBooleanMethodV( JNIEnv *pEnv, jobject obj, jmethodID methodID, va_list args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jboolean JNICALL JNIEnvInternal::CallBooleanMethod( JNIEnv *pEnv, jobject obj, jmethodID methodID, ... )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jobject JNICALL JNIEnvInternal::CallObjectMethodA( JNIEnv *pEnv, jobject obj, jmethodID methodID, jvalue *args )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jobject JNICALL JNIEnvInternal::CallObjectMethodV( JNIEnv *pEnv, jobject obj, jmethodID methodID, va_list args )
@@ -997,7 +999,7 @@ extern "C"
     boost::intrusive_ptr<ObjectReference> pTargetObject = ConvertJObjectToObjectPointer( obj );
     if ( nullptr == pTargetObject )
     {
-      throw NullPointerException( __FUNCTION__ " - NULL Object passed for object argument." );
+      throw NullPointerException( JVMX_FUNCTION_MESSAGE( " - NULL Object passed for object argument." ) );
     }
 
     std::shared_ptr<MethodInfo> pMethodInfo = methodID->m_pMethodInfo;
@@ -1034,7 +1036,7 @@ extern "C"
           break;
 
         default:
-          throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+          throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
           break;
       }
     }
@@ -1044,7 +1046,7 @@ extern "C"
     boost::intrusive_ptr<IJavaVariableType> pReturnValue = pVirtualMachineState->PopOperand();
     if ( !pReturnValue->IsReferenceType() )
     {
-      throw InvalidStateException( __FUNCTION__ " - Expected reference on the stack." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected reference on the stack." ) );
     }
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -1079,7 +1081,7 @@ extern "C"
     boost::intrusive_ptr<ObjectReference> pJavaLangClass = ConvertJObjectToObjectPointer( clazz );
     if ( nullptr == pJavaLangClass )
     {
-      throw NullPointerException( __FUNCTION__ " - NULL Pointer passed for class argument." );
+      throw NullPointerException( JVMX_FUNCTION_MESSAGE( " - NULL Pointer passed for class argument." ) );
     }
 
     JNIEnvExported *pInternal = reinterpret_cast<JNIEnvExported *>( pEnv );
@@ -1110,7 +1112,7 @@ extern "C"
     boost::intrusive_ptr<ObjectReference> pJavaLangClass = ConvertJObjectToObjectPointer( clazz );
     if ( nullptr == pJavaLangClass )
     {
-      throw NullPointerException( __FUNCTION__ " - NULL Pointer passed for class argument." );
+      throw NullPointerException( JVMX_FUNCTION_MESSAGE( " - NULL Pointer passed for class argument." ) );
     }
 
     boost::intrusive_ptr<ObjectReference> pObject = ConvertJObjectToObjectPointer( obj );
@@ -1166,7 +1168,7 @@ extern "C"
 
     if ( nullptr == pNewObject )
     {
-      throw InvalidStateException( __FUNCTION__ " - Expected to be able to create an object." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected to be able to create an object." ) );
     }
 
     if ( nullptr != methodID )
@@ -1198,7 +1200,7 @@ extern "C"
     std::shared_ptr<JavaClass> pClass = pVirtualMachineState->InitialiseClass( *pClassName );
     if ( nullptr == pClass )
     {
-      throw InvalidStateException( __FUNCTION__ " - Java exception class could not be loaded." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Java exception class could not be loaded." ) );
     }
 
   /*  if ( !pVirtualMachineState->IsClassInitialised( *pClass->GetName() ) )
@@ -1209,7 +1211,7 @@ extern "C"
     boost::intrusive_ptr<ObjectReference> pNewObject = pVirtualMachineState->CreateObject( pClass );
     if ( nullptr == pNewObject )
     {
-      throw InvalidStateException( __FUNCTION__ " - Expected to be able to create an object." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected to be able to create an object." ) );
     }
 
     if ( nullptr != methodID )
@@ -1223,7 +1225,7 @@ extern "C"
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
       if (pVirtualMachineState->HasUserCodeStarted())
       {
-          pVirtualMachineState->GetLogger()->LogDebug(__FUNCTION__ " Calling (%s::%s) - Operand stack before:", pMethodInfo->GetClass()->GetName()->ToUtf8String().c_str(), pMethodInfo->GetName()->ToUtf8String().c_str());
+          pVirtualMachineState->GetLogger()->LogDebug(JVMX_FUNCTION_MESSAGE( " Calling (%s::%s) - Operand stack before:" ), pMethodInfo->GetClass()->GetName()->ToUtf8String().c_str(), pMethodInfo->GetName()->ToUtf8String().c_str());
           pVirtualMachineState->LogOperandStack();
       }
 #endif // _DEBUG
@@ -1274,7 +1276,7 @@ extern "C"
             break;
 
           default:
-            throw InvalidStateException( __FUNCTION__ " - Unexpected variable type:" );
+            throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Unexpected variable type:" ) );
             break;
         }
       }
@@ -1282,7 +1284,7 @@ extern "C"
 #if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
       if (pVirtualMachineState->HasUserCodeStarted())
       {
-          pVirtualMachineState->GetLogger()->LogDebug(__FUNCTION__ " Calling (%s::%s) - Operand stack after:", pMethodInfo->GetClass()->GetName()->ToUtf8String().c_str(), pMethodInfo->GetName()->ToUtf8String().c_str());
+          pVirtualMachineState->GetLogger()->LogDebug(JVMX_FUNCTION_MESSAGE( " Calling (%s::%s) - Operand stack after:" ), pMethodInfo->GetClass()->GetName()->ToUtf8String().c_str(), pMethodInfo->GetName()->ToUtf8String().c_str());
           pVirtualMachineState->LogOperandStack();
       }
 #endif // _DEBUG
@@ -1319,7 +1321,7 @@ extern "C"
     std::shared_ptr<JavaClass> pClass = pVirtualMachineState->InitialiseClass( *pClassName );
     if ( nullptr == pClass )
     {
-      throw InvalidStateException( __FUNCTION__ " - Java exception class could not be loaded." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Java exception class could not be loaded." ) );
     }
 
     //if ( !pVirtualMachineState->IsClassInitialised( *pClass->GetName() ) )
@@ -1330,7 +1332,7 @@ extern "C"
     boost::intrusive_ptr<ObjectReference> pNewObject = pVirtualMachineState->CreateObject( pClass );
     if ( nullptr == pNewObject )
     {
-      throw InvalidStateException( __FUNCTION__ " - Expected to be able to create an object." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected to be able to create an object." ) );
     }
 
     return ConvertObjectPointerToJObject( pVirtualMachineState, pNewObject );
@@ -1338,7 +1340,7 @@ extern "C"
 
   JNIEXPORT jint JNICALL JNIEnvInternal::EnsureLocalCapacity( JNIEnv *pEnv, jint capacity )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jobject JNICALL JNIEnvInternal::NewLocalRef( JNIEnv *pEnv, jobject ref )
@@ -1449,7 +1451,7 @@ extern "C"
 
   JNIEXPORT void JNICALL JNIEnvInternal::FatalError( JNIEnv *pEnv, const char *msg )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::ExceptionClear( JNIEnv *pEnv )
@@ -1499,14 +1501,14 @@ extern "C"
     boost::intrusive_ptr<ObjectReference> pJavaLangClass = ConvertJObjectToObjectPointer( clazz );
     if ( nullptr == pJavaLangClass )
     {
-      throw NullPointerException( __FUNCTION__ " - NULL Pointer passed for class argument." );
+      throw NullPointerException( JVMX_FUNCTION_MESSAGE( " - NULL Pointer passed for class argument." ) );
     }
 
     boost::intrusive_ptr<JavaString> pClassName = boost::dynamic_pointer_cast<JavaString>( pJavaLangClass->GetContainedObject()->GetJVMXFieldByName( c_SyntheticField_ClassName ) );
     std::shared_ptr<JavaClass> pClass = pVirtualMachineState->InitialiseClass( *pClassName );
     if ( nullptr == pClass )
     {
-      throw InvalidStateException( __FUNCTION__ " - Java exception class could not be loaded." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Java exception class could not be loaded." ) );
     }
 
     //if ( !pVirtualMachineState->IsClassInitialised( *pClass->GetName() ) )
@@ -1536,7 +1538,7 @@ extern "C"
     boost::intrusive_ptr<ObjectReference> pObjectToThrow = ConvertJObjectToObjectPointer( obj );
     if ( nullptr == pObjectToThrow )
     {
-      throw NullPointerException( __FUNCTION__ " - NULL Pointer passed for class argument." );
+      throw NullPointerException( JVMX_FUNCTION_MESSAGE( " - NULL Pointer passed for class argument." ) );
     }
 
     pVirtualMachineState->SetExceptionThrown( pObjectToThrow );
@@ -1566,13 +1568,13 @@ extern "C"
     boost::intrusive_ptr<ObjectReference> pVMFieldObject = pVirtualMachineState->CreateObject( pJavaLangRefectVMFieldClass );
     if ( nullptr == pVMFieldObject )
     {
-      throw InvalidStateException( __FUNCTION__ " - Expected to be able to create an object." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected to be able to create an object." ) );
     }
 
     auto pVMFieldConstructor = pJavaLangRefectVMFieldClass->GetMethodByNameAndType( c_InstanceInitialisationMethodName, JavaString::FromCString( u"(Ljava/lang/Class;Ljava/lang/String;I)V" ) );
     if ( nullptr == pVMFieldConstructor )
     {
-      throw InvalidStateException( __FUNCTION__ " - Could not get constructor for VMField." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Could not get constructor for VMField." ) );
     }
 
     pVirtualMachineState->PushOperand( pVMFieldObject );
@@ -1593,13 +1595,13 @@ extern "C"
     boost::intrusive_ptr<ObjectReference> pResultObject = pVirtualMachineState->CreateObject( pJavaLangRefectFieldClass );
     if ( nullptr == pResultObject )
     {
-      throw InvalidStateException( __FUNCTION__ " - Expected to be able to create an object." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected to be able to create an object." ) );
     }
 
     auto pFieldConstructor = pJavaLangRefectFieldClass->GetMethodByNameAndType( c_InstanceInitialisationMethodName, JavaString::FromCString( u"(Ljava/lang/reflect/VMField;)V" ) );
     if ( nullptr == pFieldConstructor )
     {
-      throw InvalidStateException( __FUNCTION__ " - Could not get constructor for VMField." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Could not get constructor for VMField." ) );
     }
 
     pVirtualMachineState->PushOperand( pResultObject );
@@ -1612,7 +1614,7 @@ extern "C"
 
   JNIEXPORT jboolean JNICALL JNIEnvInternal::IsAssignableFrom( JNIEnv *pEnv, jclass clazz1, jclass clazz2 )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jclass JNICALL JNIEnvInternal::GetSuperclass( JNIEnv *pEnv, jclass clazz )
@@ -1637,17 +1639,17 @@ extern "C"
 
   JNIEXPORT jobject JNICALL JNIEnvInternal::ToReflectedMethod( JNIEnv *pEnv, jclass cls, jmethodID methodID, jboolean isStatic )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jfieldID JNICALL JNIEnvInternal::FromReflectedField( JNIEnv *pEnv, jobject field )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jmethodID JNICALL JNIEnvInternal::FromReflectedMethod( JNIEnv *pEnv, jobject method )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jclass JNICALL JNIEnvInternal::FindClass( JNIEnv *pEnv, const char *name )
@@ -1665,7 +1667,7 @@ extern "C"
       pClassFile = pVirtualMachineState->InitialiseClass( *pClassName );
       if ( nullptr == pClassFile )
       {
-        throw FileDoesNotExistException( __FUNCTION__ " - Could not load class" );
+        throw FileDoesNotExistException( JVMX_FUNCTION_MESSAGE( " - Could not load class" ) );
       }
     }
 
@@ -1681,7 +1683,7 @@ extern "C"
 
   JNIEXPORT jclass JNICALL JNIEnvInternal::DefineClass( JNIEnv *pEnv, const char *name, jobject loader, const jbyte *buf, jsize bufLen )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jint JNICALL JNIEnvInternal::GetVersion( JNIEnv *pEnv )
@@ -1691,172 +1693,172 @@ extern "C"
 
   JNIEXPORT jboolean *JNICALL JNIEnvInternal::GetBooleanArrayElements( JNIEnv *pEnv, jbooleanArray array, jboolean *isCopy )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jbyte *JNICALL JNIEnvInternal::GetByteArrayElements( JNIEnv *pEnv, jbyteArray array, jboolean *isCopy )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jchar *JNICALL JNIEnvInternal::GetCharArrayElements( JNIEnv *pEnv, jcharArray array, jchar *isCopy )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jshort *JNICALL JNIEnvInternal::GetShortArrayElements( JNIEnv *pEnv, jshortArray array, jshort *isCopy )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jint *JNICALL JNIEnvInternal::GetIntArrayElements( JNIEnv *pEnv, jintArray array, jint *isCopy )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jlong *JNICALL JNIEnvInternal::GetLongArrayElements( JNIEnv *pEnv, jlongArray array, jlong *isCopy )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jfloat *JNICALL JNIEnvInternal::GetFloatArrayElements( JNIEnv *pEnv, jfloatArray array, jfloat *isCopy )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jdouble *JNICALL JNIEnvInternal::GetDoubleArrayElements( JNIEnv *pEnv, jdoubleArray array, jdouble *isCopy )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::ReleaseBooleanArrayElements( JNIEnv *pEnv, jbooleanArray array, jboolean *elems, jint mode )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::ReleaseByteArrayElements( JNIEnv *pEnv, jbyteArray array, jbyte *elems, jint mode )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::ReleaseCharArrayElements( JNIEnv *pEnv, jcharArray array, jchar *elems, jint mode )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::ReleaseShortArrayElements( JNIEnv *pEnv, jshortArray array, jshort *elems, jint mode )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::ReleaseIntArrayElements( JNIEnv *pEnv, jintArray array, jint *elems, jint mode )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::ReleaseLongArrayElements( JNIEnv *pEnv, jlongArray array, jlong *elems, jint mode )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::ReleaseFloatArrayElements( JNIEnv *pEnv, jfloatArray array, jfloat *elems, jint mode )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::ReleaseDoubleArrayElements( JNIEnv *pEnv, jdoubleArray array, jdouble *elems, jint mode )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::GetBooleanArrayRegion( JNIEnv *pEnv, jbooleanArray array, jsize start, jsize len, jboolean *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::GetByteArrayRegion( JNIEnv *pEnv, jbyteArray array, jsize start, jsize len, jbyte *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::GetCharArrayRegion( JNIEnv *pEnv, jcharArray array, jsize start, jsize len, jchar *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::GetShortArrayRegion( JNIEnv *pEnv, jshortArray array, jsize start, jsize len, jshort *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::GetIntArrayRegion( JNIEnv *pEnv, jintArray array, jsize start, jsize len, jint *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::GetLongArrayRegion( JNIEnv *pEnv, jlongArray array, jsize start, jsize len, jlong *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::GetFloatArrayRegion( JNIEnv *pEnv, jfloatArray array, jsize start, jsize len, jfloat *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::GetDoubleArrayRegion( JNIEnv *pEnv, jdoubleArray array, jsize start, jsize len, jdouble *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetBooleanArrayRegion( JNIEnv *pEnv, jbooleanArray array, jsize start, jsize len, jboolean *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetByteArrayRegion( JNIEnv *pEnv, jbyteArray array, jsize start, jsize len, jbyte *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetCharArrayRegion( JNIEnv *pEnv, jcharArray array, jsize start, jsize len, jchar *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetShortArrayRegion( JNIEnv *pEnv, jshortArray array, jsize start, jsize len, jshort *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetIntArrayRegion( JNIEnv *pEnv, jintArray array, jsize start, jsize len, jint *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetLongArrayRegion( JNIEnv *pEnv, jlongArray array, jsize start, jsize len, jlong *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetFloatArrayRegion( JNIEnv *pEnv, jfloatArray array, jsize start, jsize len, jfloat *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::SetDoubleArrayRegion( JNIEnv *pEnv, jdoubleArray array, jsize start, jsize len, jdouble *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jint JNICALL JNIEnvInternal::RegisterNatives( JNIEnv *pEnv, jclass clazz, const JNINativeMethod *methods, jint nMethods )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jint JNICALL JNIEnvInternal::UnregisterNatives( JNIEnv *pEnv, jclass clazz )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jint JNICALL JNIEnvInternal::MonitorEnter( JNIEnv *pEnv, jobject obj )
@@ -1917,42 +1919,42 @@ extern "C"
 
   JNIEXPORT void JNICALL JNIEnvInternal::GetStringRegion( JNIEnv *pEnv, jstring str, jsize start, jsize len, jchar *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::GetStringUTFRegion( JNIEnv *pEnv, jstring str, jsize start, jsize len, char *buf )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void *JNICALL JNIEnvInternal::GetPrimitiveArrayCritical( JNIEnv *pEnv, jarray array, jboolean *isCopy )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::ReleasePrimitiveArrayCritical( JNIEnv *pEnv, jarray array, void *carray, jint mode )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT const jchar *JNICALL JNIEnvInternal::GetStringCritical( JNIEnv *pEnv, jstring string, jboolean *isCopy )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::ReleaseStringCritical( JNIEnv *pEnv, jstring string, const jchar *carray )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jweak JNICALL JNIEnvInternal::NewWeakGlobalRef( JNIEnv *pEnv, jobject obj )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT void JNICALL JNIEnvInternal::DeleteWeakGlobalRef( JNIEnv *pEnv, jobject wref )
   {
-    throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+    throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
   JNIEXPORT jboolean JNICALL JNIEnvInternal::ExceptionCheck( JNIEnv *pEnv )
@@ -2146,9 +2148,10 @@ extern "C"
     return m_Class < other.m_Class && m_Name < other.m_Name && m_Signature < other.m_Signature;
   }
 
-  // Static Variables
-  std::map< JNIEnvInternal::MethodKey, jmethodID > JNIEnvInternal::s_MethodCache;
 } // extern "C"
+
+  // Static Variables
+std::map< JNIEnvInternal::MethodKey, jmethodID > JNIEnvInternal::s_MethodCache;
 
 void JNIEnvInternal::ExecuteMethodImpl( std::shared_ptr<MethodInfo> pMethodInfo, IVirtualMachineState *pVirtualMachineState, boost::intrusive_ptr<ObjectReference> pObject )
 {
@@ -2216,7 +2219,7 @@ jstring JNIEnvInternal::ConvertObjectPointerToJString( IVirtualMachineState *pVM
 #ifdef _DEBUG
   if ( *pObj->GetContainedObject()->GetClass()->GetName() != JavaString::FromCString( "java/lang/String" ) )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Object is not an instance of String" );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Object is not an instance of String" ) );
   }
 #endif // _DEBUG
 
@@ -2313,7 +2316,7 @@ boost::intrusive_ptr<IJavaVariableType> CreateJavaVariableFromJValue( jvalue arg
       break;
 
     default:
-      throw InvalidArgumentException( __FUNCTION__ " - Unknown type. " );
+      throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Unknown type. " ) );
       break;
   }
 
@@ -2337,10 +2340,10 @@ JNIEXPORT jint JNICALL JavaVMInternal::DestroyJavaVM( JavaVM *vm )
 
 JNIEXPORT jint JNICALL JavaVMInternal::AttachCurrentThread( JavaVM *env, void **, void * )
 {
-  throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+  throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
 }
 
 JNIEXPORT jint JNICALL JavaVMInternal::DetachCurrentThread( JavaVM *vm )
 {
-  throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+  throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
 }

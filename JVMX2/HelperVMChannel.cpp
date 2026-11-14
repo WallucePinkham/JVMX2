@@ -1,6 +1,17 @@
+#if defined(_WIN32) || defined(_WIN64)
 #include <io.h>
+#include <sys/stat.h>
+#elif defined(__linux__)
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#else
+#error "Unsupported platform."
+#endif
 #include <iostream>
 #include <fcntl.h>
+#include <cerrno>
+#include <cstring>
 
 #include "JavaNativeInterface.h"
 
@@ -40,6 +51,83 @@ const int FILEMODE_APPEND = 4;
 const int FILEMODE_EXCLUSIVE = 8;
 const int FILEMODE_SYNC = 16;
 const int FILEMODE_DSYNC = 32;
+
+#if defined(_WIN32) || defined(_WIN64)
+const int FILE_OPEN_APPEND = _O_APPEND;
+const int FILE_OPEN_READ_WRITE = _O_RDWR;
+const int FILE_OPEN_READ = _O_RDONLY;
+const int FILE_OPEN_TRUNCATE = _O_TRUNC;
+const int FILE_OPEN_WRITE = _O_WRONLY;
+const int FILE_OPEN_CREATE = _O_CREAT;
+const int FILE_OPEN_EXCLUSIVE = _O_EXCL;
+const int FILE_OPEN_BINARY = _O_BINARY;
+const int FILE_PERMISSION_READ = _S_IREAD;
+const int FILE_PERMISSION_WRITE = _S_IWRITE;
+#else
+const int FILE_OPEN_APPEND = O_APPEND;
+const int FILE_OPEN_READ_WRITE = O_RDWR;
+const int FILE_OPEN_READ = O_RDONLY;
+const int FILE_OPEN_TRUNCATE = O_TRUNC;
+const int FILE_OPEN_WRITE = O_WRONLY;
+const int FILE_OPEN_CREATE = O_CREAT;
+const int FILE_OPEN_EXCLUSIVE = O_EXCL;
+const int FILE_OPEN_BINARY = 0;
+const int FILE_PERMISSION_READ = S_IRUSR;
+const int FILE_PERMISSION_WRITE = S_IWUSR;
+#endif
+
+namespace
+{
+int ReadFileDescriptor( int fd, void *pBuffer, size_t count )
+{
+#if defined(_WIN32) || defined(_WIN64)
+  return _read( fd, pBuffer, static_cast<unsigned int>( count ) );
+#else
+  return static_cast<int>( read( fd, pBuffer, count ) );
+#endif
+}
+
+int WriteFileDescriptor( int fd, const void *pBuffer, size_t count )
+{
+#if defined(_WIN32) || defined(_WIN64)
+  return _write( fd, pBuffer, static_cast<unsigned int>( count ) );
+#else
+  return static_cast<int>( write( fd, pBuffer, count ) );
+#endif
+}
+
+int CloseFileDescriptor( int fd )
+{
+#if defined(_WIN32) || defined(_WIN64)
+  return _close( fd );
+#else
+  return close( fd );
+#endif
+}
+
+int OpenFileDescriptor( const char *pPath, int flags, int mode )
+{
+#if defined(_WIN32) || defined(_WIN64)
+  return _open( pPath, flags, mode );
+#else
+  return open( pPath, flags, static_cast<mode_t>( mode ) );
+#endif
+}
+
+int64_t SeekFileDescriptor( int fd, int64_t offset, int origin )
+{
+#if defined(_WIN32) || defined(_WIN64)
+  return _lseeki64( fd, offset, origin );
+#else
+  return static_cast<int64_t>( lseek( fd, static_cast<off_t>( offset ), origin ) );
+#endif
+}
+
+int64_t TellFileDescriptor( int fd )
+{
+  return SeekFileDescriptor( fd, 0, SEEK_CUR );
+}
+}
 
 
 void JNICALL HelperVMChannel::gnu_java_nio_VMChannel_initIDs( JNIEnv *pEnv, jobject obj )
@@ -92,7 +180,7 @@ void JNICALL HelperVMChannel::gnu_java_nio_VMChannel_write( JNIEnv *pEnv, jobjec
   boost::intrusive_ptr<ObjectReference> pObject = JNIEnvInternal::ConvertJObjectToObjectPointer( byteBufferSrc );
   if ( nullptr == pObject )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Object parameter was invalid." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Object parameter was invalid." ) );
   }
 
   JNIEnvExported *pInternal = reinterpret_cast<JNIEnvExported *>(pEnv);
@@ -101,7 +189,7 @@ void JNICALL HelperVMChannel::gnu_java_nio_VMChannel_write( JNIEnv *pEnv, jobjec
   boost::intrusive_ptr<IJavaVariableType> pFieldValue = pObject->GetContainedObject()->GetFieldByName( JavaString::FromCString( "backing_buffer" ) );
   if ( e_JavaVariableTypes::Array != pFieldValue->GetVariableType() )
   {
-    throw InvalidStateException( __FUNCTION__ " - Expected array type in backing_buffer." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected array type in backing_buffer." ) );
   }
 
   boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>(pFieldValue);
@@ -109,7 +197,7 @@ void JNICALL HelperVMChannel::gnu_java_nio_VMChannel_write( JNIEnv *pEnv, jobjec
   pFieldValue = pObject->GetContainedObject()->GetFieldByName( JavaString::FromCString( "pos" ) );
   if ( e_JavaVariableTypes::Integer != pFieldValue->GetVariableType() )
   {
-    throw InvalidStateException( __FUNCTION__ " - Expected integer type in pos." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected integer type in pos." ) );
   }
   boost::intrusive_ptr<JavaInteger> pPos = boost::dynamic_pointer_cast<JavaInteger>(pFieldValue);
 
@@ -117,7 +205,7 @@ void JNICALL HelperVMChannel::gnu_java_nio_VMChannel_write( JNIEnv *pEnv, jobjec
   pFieldValue = pObject->GetContainedObject()->GetFieldByName( JavaString::FromCString( "limit" ) );
   if ( e_JavaVariableTypes::Integer != pFieldValue->GetVariableType() )
   {
-    throw InvalidStateException( __FUNCTION__ " - Expected integer type in limit." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected integer type in limit." ) );
   }
   boost::intrusive_ptr<JavaInteger> pLimit = boost::dynamic_pointer_cast<JavaInteger>(pFieldValue);
 
@@ -139,7 +227,7 @@ void JNICALL HelperVMChannel::gnu_java_nio_VMChannel_write( JNIEnv *pEnv, jobjec
   else
   {
     const uint8_t *pbuffer = reinterpret_cast<const uint8_t *>(buffer.ToCharacterArray());
-    _write( fd, pbuffer + pPos->ToHostInt32(), buffer.GetLengthInBytes() - pPos->ToHostInt32() );
+    WriteFileDescriptor( fd, pbuffer + pPos->ToHostInt32(), buffer.GetLengthInBytes() - pPos->ToHostInt32() );
   }
 }
 
@@ -153,7 +241,7 @@ jint JNICALL HelperVMChannel::gnu_java_nio_VMChannel_read(JNIEnv* pEnv, jobject 
   boost::intrusive_ptr<ObjectReference> pObject = JNIEnvInternal::ConvertJObjectToObjectPointer(byteBufferSrc);
   if (nullptr == pObject)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Object parameter was invalid.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Object parameter was invalid." ));
   }
 
   JNIEnvExported* pInternal = reinterpret_cast<JNIEnvExported*>(pEnv);
@@ -162,7 +250,7 @@ jint JNICALL HelperVMChannel::gnu_java_nio_VMChannel_read(JNIEnv* pEnv, jobject 
   boost::intrusive_ptr<IJavaVariableType> pFieldValue = pObject->GetContainedObject()->GetFieldByName(JavaString::FromCString("backing_buffer"));
   if (e_JavaVariableTypes::Array != pFieldValue->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected array type in backing_buffer.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected array type in backing_buffer." ));
   }
 
   boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>(pFieldValue);
@@ -170,7 +258,7 @@ jint JNICALL HelperVMChannel::gnu_java_nio_VMChannel_read(JNIEnv* pEnv, jobject 
   pFieldValue = pObject->GetContainedObject()->GetFieldByName(JavaString::FromCString("pos"));
   if (e_JavaVariableTypes::Integer != pFieldValue->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected integer type in pos.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected integer type in pos." ));
   }
   boost::intrusive_ptr<JavaInteger> pPos = boost::dynamic_pointer_cast<JavaInteger>(pFieldValue);
 
@@ -178,7 +266,7 @@ jint JNICALL HelperVMChannel::gnu_java_nio_VMChannel_read(JNIEnv* pEnv, jobject 
   pFieldValue = pObject->GetContainedObject()->GetFieldByName(JavaString::FromCString("limit"));
   if (e_JavaVariableTypes::Integer != pFieldValue->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected integer type in limit.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected integer type in limit." ));
   }
   boost::intrusive_ptr<JavaInteger> pLimit = boost::dynamic_pointer_cast<JavaInteger>(pFieldValue);
 
@@ -201,10 +289,10 @@ jint JNICALL HelperVMChannel::gnu_java_nio_VMChannel_read(JNIEnv* pEnv, jobject 
     try
     {
 #ifdef _DEBUG
-      int64_t pos = _telli64(fd);
+      int64_t pos = TellFileDescriptor( fd );
 #endif // _DEBUG
 
-      result = _read(fd, pBuffer, remaining);
+      result = ReadFileDescriptor( fd, pBuffer, remaining );
 
       if (result == 0) // eof
       {
@@ -259,9 +347,9 @@ jlong JNICALL HelperVMChannel::gnu_java_nio_VMChannel_size(JNIEnv* pEnv, jobject
   //}
   //else
   //{
-  jlong oldPos = _telli64(fd);
-  jlong fileSize = _lseeki64(fd, 0, SEEK_END);
-  _lseeki64(fd, oldPos, SEEK_SET);
+  jlong oldPos = TellFileDescriptor( fd );
+  jlong fileSize = SeekFileDescriptor( fd, 0, SEEK_END );
+  SeekFileDescriptor( fd, oldPos, SEEK_SET );
 
   return fileSize;
 }
@@ -288,7 +376,7 @@ void JNICALL HelperVMChannel::gnu_java_nio_VMChannel_seek(JNIEnv* pEnv, jobject 
   //}
   //else
   //{
-  _lseeki64(fd, pos, SEEK_SET);
+  SeekFileDescriptor( fd, pos, SEEK_SET );
 }
 
 
@@ -301,7 +389,7 @@ void JNICALL HelperVMChannel::gnu_java_nio_VMChannel_close( JNIEnv *pEnv, jobjec
 
   if ( MustCloseFile( fd ) )
   {
-    _close( fd );
+    CloseFileDescriptor( fd );
   }
 }
 
@@ -315,7 +403,7 @@ jint JNICALL HelperVMChannel::gnu_java_nio_VMChannel_open( JNIEnv *pEnv, jobject
   boost::intrusive_ptr<ObjectReference> pPath = JNIEnvInternal::ConvertJObjectToObjectPointer( path );
   if ( nullptr == pPath )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Path parameter was invalid." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Path parameter was invalid." ) );
   }
 
   //boost::intrusive_ptr<ObjectReference> pValue = boost::dynamic_pointer_cast<ObjectReference>( pPath->GetContainedObject()->GetFieldByName( JavaString::FromCString( u"value" ) ) );
@@ -328,43 +416,43 @@ jint JNICALL HelperVMChannel::gnu_java_nio_VMChannel_open( JNIEnv *pEnv, jobject
 
   if ( (mode & FILEMODE_APPEND) == FILEMODE_APPEND )
   {
-    openFlags |= _O_APPEND;
+    openFlags |= FILE_OPEN_APPEND;
   }
 
   if ( (mode & FILEMODE_READ) == FILEMODE_READ && (mode & FILEMODE_WRITE) == FILEMODE_WRITE )
   {
-    openFlags |= _O_RDWR;
+    openFlags |= FILE_OPEN_READ_WRITE;
   }
   else if ( (mode & FILEMODE_READ) == FILEMODE_READ )
   {
-    openFlags |= _O_RDONLY;
+    openFlags |= FILE_OPEN_READ;
   }
   else if ( (mode & FILEMODE_WRITE) == FILEMODE_WRITE )
   {
     if ( (mode & FILEMODE_APPEND) == 0 )
     {
-      openFlags |= _O_TRUNC;
+      openFlags |= FILE_OPEN_TRUNCATE;
     }
 
-    openFlags |= _O_WRONLY;
+    openFlags |= FILE_OPEN_WRITE;
   }
 
   if ( (mode & FILEMODE_EXCLUSIVE) == FILEMODE_EXCLUSIVE )
   {
-    openFlags |= _O_CREAT | _O_EXCL;
+    openFlags |= FILE_OPEN_CREATE | FILE_OPEN_EXCLUSIVE;
 
     if ( (mode & FILEMODE_READ) == FILEMODE_READ )
     {
-      openMode |= _S_IREAD;
+      openMode |= FILE_PERMISSION_READ;
     }
     
     if ( (mode & FILEMODE_WRITE) == FILEMODE_WRITE )
     {
-      openMode |= _S_IWRITE;
+      openMode |= FILE_PERMISSION_WRITE;
     }
   }
 
-  int fd = _open( pathAsString.ToUtf8String().c_str(), openFlags | _O_BINARY, openMode );
+  int fd = OpenFileDescriptor( pathAsString.ToUtf8String().c_str(), openFlags | FILE_OPEN_BINARY, openMode );
   if ( -1 == fd )
   {
     JNIEnvExported *pInternal = reinterpret_cast<JNIEnvExported *>(pEnv);

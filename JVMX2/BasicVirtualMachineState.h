@@ -99,7 +99,7 @@ public:
   virtual boost::intrusive_ptr<ObjectReference> CreateStringObject( const JavaString &string ) JVMX_OVERRIDE;
 
   virtual boost::intrusive_ptr<ObjectReference> CreateObject( std::shared_ptr<JavaClass> pClass ) JVMX_OVERRIDE;
-  __declspec( deprecated ) virtual boost::intrusive_ptr<ObjectReference> CreateAndInitialiseObject( std::shared_ptr<JavaClass> pClass ) JVMX_OVERRIDE;
+  JVMX_DEPRECATED virtual boost::intrusive_ptr<ObjectReference> CreateAndInitialiseObject( std::shared_ptr<JavaClass> pClass ) JVMX_OVERRIDE;
 
   virtual boost::intrusive_ptr<ObjectReference> CreateArray( e_JavaArrayTypes type, size_t size ) JVMX_OVERRIDE;
 

@@ -62,7 +62,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteOpCodeInvokeStatic(const s
     pVirtualMachineState->LogLocalVariables();
 
 #ifdef _DEBUG
-    GetLogger()->LogDebug(__FUNCTION__ " - Throwing exception because method is not static or is abstract: %s", pMethodInfo->GetName()->ToUtf8String().c_str());
+    GetLogger()->LogDebug(JVMX_FUNCTION_MESSAGE( " - Throwing exception because method is not static or is abstract: %s" ), pMethodInfo->GetName()->ToUtf8String().c_str());
 #endif // _DEBUG
 
     HelperClasses::ThrowJavaException(pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException);
@@ -148,7 +148,7 @@ std::shared_ptr<MethodInfo> BasicExecutionEngine::ResolveMethodReference(const s
   std::shared_ptr<ConstantPoolEntry> methodEntry = pVirtualMachineState->GetConstantFromCurrentClass(methodIndex);
   if (e_ConstantPoolEntryTypeMethodReference != methodEntry->GetType())
   {
-    GetLogger()->LogError(__FUNCTION__ " - Could not resolve method reference: %hu", methodIndex);
+    GetLogger()->LogError(JVMX_FUNCTION_MESSAGE( " - Could not resolve method reference: %hu" ), methodIndex);
     HelperClasses::ThrowJavaException(pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException);
     return nullptr;
   }
@@ -156,7 +156,7 @@ std::shared_ptr<MethodInfo> BasicExecutionEngine::ResolveMethodReference(const s
   const ConstantPoolMethodReference* pMethodRef = dynamic_cast<const ConstantPoolMethodReference*>(methodEntry->GetValue());
   if (nullptr == pMethodRef)
   {
-    throw TypeMismatchException(__FUNCTION__ " - Could not convert constant pool entry to field reference.");
+    throw TypeMismatchException(JVMX_FUNCTION_MESSAGE( " - Could not convert constant pool entry to field reference." ));
   }
 
   // The referenced field is resolved
@@ -177,7 +177,7 @@ void BasicExecutionEngine::ExecuteOpCodeMonitorEnter(const std::shared_ptr<IVirt
     boost::intrusive_ptr<ObjectReference> pReference = boost::dynamic_pointer_cast<ObjectReference>(pOperand);
     if (nullptr == pReference)
     {
-      throw InvalidStateException(__FUNCTION__ " - Expected object on operand stack.");
+      throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected object on operand stack." ));
     }
 
 #ifdef _DEBUG
@@ -194,7 +194,7 @@ void BasicExecutionEngine::ExecuteOpCodeMonitorEnter(const std::shared_ptr<IVirt
     boost::intrusive_ptr<ObjectReference> pReference = boost::dynamic_pointer_cast<ObjectReference>(pOperand);
     if (nullptr == pReference)
     {
-      throw InvalidStateException(__FUNCTION__ " - Expected array on operand stack.");
+      throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected array on operand stack." ));
     }
 
     pReference->GetContainedArray()->MonitorEnter(pVirtualMachineState->GetCurrentClassAndMethodName().ToUtf8String().c_str());
@@ -204,14 +204,14 @@ void BasicExecutionEngine::ExecuteOpCodeMonitorEnter(const std::shared_ptr<IVirt
     boost::intrusive_ptr<JavaClassReference> pReference = boost::dynamic_pointer_cast<JavaClassReference>(pOperand);
     if (nullptr == pReference)
     {
-      throw InvalidStateException(__FUNCTION__ " - Expected class on operand stack.");
+      throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected class on operand stack." ));
     }
 
     pReference->GetClassFile()->MonitorEnter(pVirtualMachineState->GetCurrentClassAndMethodName().ToUtf8String().c_str());
   }
   else
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected object, class or array on operand stack.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected object, class or array on operand stack." ));
   }
 }
 
@@ -221,7 +221,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteOpCodeInvokeVirtual(const 
   if (pConstant->GetType() != e_ConstantPoolEntryTypeMethodReference)
   {
     pVirtualMachineState->LogCallStack();
-    throw InvalidStateException(__FUNCTION__ " - Expected Method reference.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected Method reference." ));
   }
 
   return ExecuteVirtualMethod(pVirtualMachineState, pConstant);
@@ -236,7 +236,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteOpCodeInvokeSpecial(const 
 
   if (nullptr == pMethodInfo)
   {
-    throw InvalidStateException(__FUNCTION__ " - Could not resolve method.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not resolve method." ));
   }
 
   // Finally, if the resolved method is protected, and it is a member of a superclass of the current class, and the method is not
@@ -348,7 +348,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteOpCodeInvokeSpecial(const 
 
   if (nullptr == pObject)
   {
-    throw InvalidStateException(__FUNCTION__ " - Could not find object on the operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not find object on the operand stack." ));
   }
 
   if (pFinalMethod->IsStatic())
@@ -445,7 +445,7 @@ void BasicExecutionEngine::ExecuteOpCodeMonitorExit(const std::shared_ptr<IVirtu
     boost::intrusive_ptr<ObjectReference> pReference = boost::dynamic_pointer_cast<ObjectReference>(pOperand);
     if (nullptr == pReference)
     {
-      throw InvalidStateException(__FUNCTION__ " - Expected object on operand stack.");
+      throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected object on operand stack." ));
     }
 
     pReference->GetContainedObject()->MonitorExit(pVirtualMachineState->GetCurrentClassAndMethodName().ToUtf8String().c_str());
@@ -455,7 +455,7 @@ void BasicExecutionEngine::ExecuteOpCodeMonitorExit(const std::shared_ptr<IVirtu
     boost::intrusive_ptr<ObjectReference> pReference = boost::dynamic_pointer_cast<ObjectReference>(pOperand);
     if (nullptr == pReference)
     {
-      throw InvalidStateException(__FUNCTION__ " - Expected array on operand stack.");
+      throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected array on operand stack." ));
     }
 
     pReference->GetContainedArray()->MonitorExit(pVirtualMachineState->GetCurrentClassAndMethodName().ToUtf8String().c_str());
@@ -465,14 +465,14 @@ void BasicExecutionEngine::ExecuteOpCodeMonitorExit(const std::shared_ptr<IVirtu
     boost::intrusive_ptr<JavaClassReference> pReference = boost::dynamic_pointer_cast<JavaClassReference>(pOperand);
     if (nullptr == pReference)
     {
-      throw InvalidStateException(__FUNCTION__ " - Expected array on operand stack.");
+      throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected array on operand stack." ));
     }
 
     pReference->GetClassFile()->MonitorExit(pVirtualMachineState->GetCurrentClassAndMethodName().ToUtf8String().c_str());
   }
   else
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected object or array on operand stack.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected object or array on operand stack." ));
   }
 }
 
@@ -538,7 +538,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteOpCodeInvokeInterfaceMetho
   std::shared_ptr<ConstantPoolEntry> pConstant = pVirtualMachineState->GetConstantFromCurrentClass(methodIndex);
   if (pConstant->GetType() != e_ConstantPoolEntryTypeInterfaceMethodReference)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected Method reference.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected Method reference." ));
   }
 
   std::shared_ptr<ConstantPoolMethodReference> pMethodRef = pConstant->AsMethodReference();
@@ -554,7 +554,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteOpCodeInvokeInterfaceMetho
     pVirtualMachineState->LogLocalVariables();
 #endif
 
-    throw InvalidStateException(__FUNCTION__ " - Expected object pointer to be valid.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected object pointer to be valid." ));
   }
 
   if (pObject->IsNull())
@@ -617,7 +617,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteVirtualMethod(const std::s
 #endif
 
     GetLogger()->LogError("Could not resolve method (%s) on class: (%s).", pMethodInfo->GetName()->ToUtf8String().c_str(), pMethodInfo->GetClass()->GetName()->ToUtf8String().c_str());
-    throw InvalidStateException(__FUNCTION__ " - Could not resolve method on class.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not resolve method on class." ));
   }
 
   // TODO: Access Checks as per 5.4.3.1 (.3)
@@ -648,7 +648,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteVirtualMethod(const std::s
     return e_IncreaseCallStackDepth::No;
   }
 
-  throw InvalidStateException(__FUNCTION__ " - Object or Array Expected.");
+  throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Object or Array Expected." ));
 }
 
 void BasicExecutionEngine::ExecuteVirtualMethodForArray(const std::shared_ptr<IVirtualMachineState>& pVirtualMachineState, std::vector<boost::intrusive_ptr<IJavaVariableType> > paramArray, std::shared_ptr<MethodInfo> pMethodInfo)
@@ -657,7 +657,7 @@ void BasicExecutionEngine::ExecuteVirtualMethodForArray(const std::shared_ptr<IV
 
   if (*pMethodInfo->GetClass()->GetName() != JavaString::FromCString("java/lang/Object"))
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected class name to be Object.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected class name to be Object." ));
   }
 
   if (*pMethodInfo->GetName() == JavaString::FromCString("clone"))
@@ -690,7 +690,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteVirtualMethodForObject(con
     pVirtualMachineState->LogLocalVariables();
 #endif
 
-    throw InvalidStateException(__FUNCTION__ " - Expected object pointer to be valid.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected object pointer to be valid." ));
   }
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -717,7 +717,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteVirtualMethodInternal(cons
         // then the class of *objectref* must be either the current class or a subclass of the current class.
         if (!IsInstanceOf(pVirtualMachineState, pVirtualMachineState->GetCurrentClass()->GetName(), pObject->GetContainedObject()->GetClass()->GetName()))
         {
-          throw InvalidStateException(__FUNCTION__ " - Expected object reference to be of the current class or a subclass.");
+          throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected object reference to be of the current class or a subclass." ));
         }
       }
     }
@@ -725,7 +725,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteVirtualMethodInternal(cons
 
   if (pMethodInfo->IsStatic())
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Method to invoke was meant to be non-static.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Method to invoke was meant to be non-static." ));
   }
 
   if (!pMethodInfo->IsSignaturePolymorphic())
@@ -837,7 +837,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteVirtualMethodInternal(cons
     }
     catch (std::exception& ex)
     {
-      GetLogger()->LogDebug(__FUNCTION__ " - Exception Caught:\n\t%s", ex.what());
+      GetLogger()->LogDebug(JVMX_FUNCTION_MESSAGE( " - Exception Caught:\n\t%s" ), ex.what());
 
       pVirtualMachineState->PopState();
       pVirtualMachineState->ReleaseLocalVariables();
@@ -847,7 +847,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteVirtualMethodInternal(cons
     catch (...)
     {
 #ifdef _DEBUG
-      GetLogger()->LogDebug(__FUNCTION__ " - Exception Caught.");
+      GetLogger()->LogDebug(JVMX_FUNCTION_MESSAGE( " - Exception Caught." ));
 #endif // _DEBUG
       pVirtualMachineState->PopState();
       pVirtualMachineState->ReleaseLocalVariables();
@@ -857,7 +857,7 @@ e_IncreaseCallStackDepth BasicExecutionEngine::ExecuteVirtualMethodInternal(cons
   }
   else
   {
-    throw NotImplementedException(__FUNCTION__ " - Not implemented yet.");
+    throw NotImplementedException(JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ));
   }
 
   return e_IncreaseCallStackDepth::No;

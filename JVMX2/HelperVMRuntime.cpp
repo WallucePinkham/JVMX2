@@ -117,6 +117,24 @@ jint JNICALL HelperVMRuntime::java_lang_VMRuntime_nativeLoad( JNIEnv *pEnv, jobj
 
   try
   {
+#if defined(__linux__)
+    const char *libraryPath = reinterpret_cast<const char *>(bytes);
+    const char *libraryBaseName = strrchr( libraryPath, '/' );
+    const char *windowsBaseName = strrchr( libraryPath, '\\' );
+    if ( nullptr == libraryBaseName || ( nullptr != windowsBaseName && windowsBaseName > libraryBaseName ) )
+    {
+      libraryBaseName = windowsBaseName;
+    }
+    libraryBaseName = nullptr == libraryBaseName ? libraryPath : libraryBaseName + 1;
+    if ( 0 == strcmp( libraryBaseName, "javalang.dll" ) ||
+         0 == strcmp( libraryBaseName, "javanio.dll" ) ||
+         0 == strcmp( libraryBaseName, "javanet.dll" ) )
+    {
+      pEnv->ReleaseStringUTFChars( pEnv, fileName, reinterpret_cast<const char *>(bytes) );
+      return 1;
+    }
+#endif
+
     if ( 0 == strcmp( reinterpret_cast<const char *>(bytes), "c:\\javalang.dll" ) )
     {
       pEnv->ReleaseStringUTFChars( pEnv, fileName, reinterpret_cast<const char *>(bytes) );

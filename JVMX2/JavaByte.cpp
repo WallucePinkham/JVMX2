@@ -95,7 +95,7 @@ JavaByte &JavaByte::operator=( const IJavaVariableType &other )
 
   if ( !other.IsIntegerCompatible() )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Expected a type that was integer compatible." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected a type that was integer compatible." ) );
   }
 
   pResult = boost::dynamic_pointer_cast<JavaByte>(TypeParser::DownCastFromInteger( TypeParser::UpCastToInteger( &other ), e_JavaVariableTypes::Byte ));
@@ -116,8 +116,7 @@ bool JavaByte::IsIntegerCompatible() const
 
 JavaString JavaByte::ToString() const
 {
-  char dest[ c_IToABufferSize ] = { 0 };
-  return JavaString::FromCString( _itoa( m_Value, dest, 10 ) );
+  return JavaString::FromCString( std::to_string( m_Value ).c_str() );
 }
 
 bool JavaByte::IsNull() const

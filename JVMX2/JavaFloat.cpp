@@ -1,5 +1,6 @@
 
 #include <cfloat>
+#include <cmath>
 #include <limits>
 
 #include "JavaString.h"
@@ -154,11 +155,10 @@ JavaString JavaFloat::ToString() const
 
 bool JavaFloat::IsNan() const
 {
-  return _isnan( m_Value ) != 0;
+  return std::isnan( m_Value );
 }
 
 bool JavaFloat::IsNull() const
 {
   return false;
 }
-

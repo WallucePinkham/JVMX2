@@ -47,7 +47,7 @@ JavaClass::JavaClass( uint16_t minorVersion, uint16_t majorVersion, std::shared_
   if ( nullptr == pConstantPool )
   {
     throw InvalidArgumentException(
-      __FUNCTION__ " - NULL constant pool was passed on creation of JavaClassFile" );
+      JVMX_FUNCTION_MESSAGE( " - NULL constant pool was passed on creation of JavaClassFile" ) );
   }
 
   SetupClassName();
@@ -274,7 +274,7 @@ const JavaString &JavaClass::GetInterfaceName( size_t interfaceIndex ) const
   }
   catch ( std::out_of_range & )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Could not get interface name. Index out of bounds." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Could not get interface name. Index out of bounds." ) );
   }
 }
 
@@ -376,7 +376,7 @@ std::shared_ptr<ConstantPoolNameAndTypeDescriptor> JavaClass::GetNameAndTypeDesc
 
   if ( entry.GetType() != e_ConstantPoolEntryTypeNameAndTypeDescriptor )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Constant pool entry is not a name and type descriptor as expected." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Constant pool entry is not a name and type descriptor as expected." ) );
   }
 
   return entry.AsNameAndTypeDescriptorPointer();
@@ -386,7 +386,7 @@ std::shared_ptr<MethodInfo> JavaClass::GetMethodByIndex( size_t methodIndex ) co
 {
   if ( methodIndex > m_Methods.size() || methodIndex < 0 )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Could not get Method name. Index out of bounds." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Could not get Method name. Index out of bounds." ) );
   }
 
   size_t currentIndex = 0;
@@ -401,7 +401,7 @@ std::shared_ptr<MethodInfo> JavaClass::GetMethodByIndex( size_t methodIndex ) co
     ++ currentIndex;
   }
 
-  throw InternalErrorException( __FUNCTION__ " - Method index not found. We should not have reached this." );
+  throw InternalErrorException( JVMX_FUNCTION_MESSAGE( " - Method index not found. We should not have reached this." ) );
 }
 
 size_t JavaClass::GetMethodCount() const
@@ -422,7 +422,7 @@ std::shared_ptr<JavaCodeAttribute> JavaClass::GetAttribute( size_t attributeInde
   }
   catch ( std::out_of_range & )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Could not get Method. Index out of bounds." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Could not get Method. Index out of bounds." ) );
   }
 }
 
@@ -439,7 +439,7 @@ std::shared_ptr<FieldInfo> JavaClass::GetFieldByIndex( size_t fieldIndex ) const
   }
   catch ( std::out_of_range & )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Could not get Filed. Index out of bounds." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Could not get Filed. Index out of bounds." ) );
   }
 }
 
@@ -472,7 +472,7 @@ void JavaClass::SetupClassName()
 {
   if ( 0 == m_ThisClassReferenceIndex )
   {
-    throw FileInvalidException( __FUNCTION__ " - This Class Reference Index is 0, which is not valid." );
+    throw FileInvalidException( JVMX_FUNCTION_MESSAGE( " - This Class Reference Index is 0, which is not valid." ) );
   }
 
   std::shared_ptr<ConstantPoolClassReference> entry = m_pConstantPool->GetConstant( m_ThisClassReferenceIndex )->AsClassReferencePointer();
@@ -539,7 +539,7 @@ size_t JavaClass::GetMethodIndexByNameAndType( const JavaString &name, const Jav
     ++ index;
   }
 
-  throw InternalErrorException( __FUNCTION__ " - Method not found." );
+  throw InternalErrorException( JVMX_FUNCTION_MESSAGE( " - Method not found." ) );
 }
 
 void JavaClass::SetupMethods()

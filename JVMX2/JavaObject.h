@@ -36,8 +36,8 @@ public:
 
   JavaObject &operator=( const JavaObject &other );
 
-  void operator delete ( void *pObject ) throw();
-  void operator delete ( void *pObject, void * ) throw();
+  void operator delete ( void *pObject ) JVMX_NOEXCEPT;
+  void operator delete ( void *pObject, void * ) JVMX_NOEXCEPT;
 
   virtual e_JavaVariableTypes GetVariableType() const JVMX_OVERRIDE;
   virtual bool IsReferenceType() const JVMX_OVERRIDE;

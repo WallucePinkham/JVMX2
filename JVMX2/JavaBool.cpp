@@ -90,7 +90,7 @@ JavaBool & JavaBool::operator=( const IJavaVariableType &other )
 
   if ( !other.IsIntegerCompatible() )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Expected a type that was integer compatible." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected a type that was integer compatible." ) );
   }
 
   pResult = boost::dynamic_pointer_cast<JavaBool>(TypeParser::DownCastFromInteger( TypeParser::UpCastToInteger( &other ), e_JavaVariableTypes::Bool ));

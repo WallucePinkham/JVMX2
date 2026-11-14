@@ -43,7 +43,7 @@ const std::shared_ptr<AnnotationsEntry> ParameterAnnotationsEntry::GetAnnotation
   }
   catch ( std::out_of_range & )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Index out of bounds looking for exception table index." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Index out of bounds looking for exception table index." ) );
   }
 }
 

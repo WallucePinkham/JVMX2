@@ -1,3 +1,5 @@
+#include <cstdio>
+
 #include "MallocFreeMemoryManager.h"
 
 #include "IndexOutOfBoundsException.h"
@@ -84,7 +86,7 @@ size_t JavaArray::GetSizeOfValueType( e_JavaArrayTypes type )
       break;
 
     default:
-      throw InvalidStateException( __FUNCTION__ " - Unknown type." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Unknown type." ) );
       break;
   }
 
@@ -153,7 +155,7 @@ IJavaVariableType *JavaArray::At( size_t index )
 
   if ( index > m_size )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed into array." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Invalid index passed into array." ) );
   }
 
   DebugAssert();
@@ -273,17 +275,17 @@ void JavaArray::SetAt( const uint32_t &index, const JavaInteger &value )
 {
   if ( !AreTypesCompatible( m_ContainedType, e_JavaArrayTypes::Integer ) )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Array Types are not compatible." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Array Types are not compatible." ) );
   }
 
   if ( index < 0 )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in. Less than zero." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Invalid index passed in. Less than zero." ) );
   }
 
   if ( index >= m_size )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Invalid index passed in." ) );
   }
 
   if ( GetValueAtIndex( 0 )->GetVariableType() != value.GetVariableType() &&
@@ -304,17 +306,17 @@ void JavaArray::SetAt( const uint32_t &index, const JavaChar &value )
 {
   if ( m_ContainedType != e_JavaArrayTypes::Char )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Trying to add characters to an array that does not contain characters." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Trying to add characters to an array that does not contain characters." ) );
   }
 
   if ( index < 0 )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in. Less than zero." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Invalid index passed in. Less than zero." ) );
   }
 
   if ( index > m_size )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Invalid index passed in." ) );
   }
 
   InternalSetValue( index, &value );
@@ -324,17 +326,17 @@ void JavaArray::SetAt(const uint32_t& index, const JavaByte& value)
 {
   if (m_ContainedType != e_JavaArrayTypes::Byte)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Trying to add byte to an array that does not contain bytes.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Trying to add byte to an array that does not contain bytes." ));
   }
 
   if (index < 0)
   {
-    throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in. Less than zero.");
+    throw IndexOutOfBoundsException(JVMX_FUNCTION_MESSAGE( " - Invalid index passed in. Less than zero." ));
   }
 
   if (index > m_size)
   {
-    throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in.");
+    throw IndexOutOfBoundsException(JVMX_FUNCTION_MESSAGE( " - Invalid index passed in." ));
   }
 
   InternalSetValue(index, &value);
@@ -344,17 +346,17 @@ void JavaArray::SetAt(const uint32_t& index, JavaLong value)
 {
   if (m_ContainedType != e_JavaArrayTypes::Long)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Trying to add long to an array that does not contain longs.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Trying to add long to an array that does not contain longs." ));
   }
 
   if (index < 0)
   {
-    throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in. Less than zero.");
+    throw IndexOutOfBoundsException(JVMX_FUNCTION_MESSAGE( " - Invalid index passed in. Less than zero." ));
   }
 
   if (index > m_size)
   {
-    throw IndexOutOfBoundsException(__FUNCTION__ " - Invalid index passed in.");
+    throw IndexOutOfBoundsException(JVMX_FUNCTION_MESSAGE( " - Invalid index passed in." ));
   }
 
   InternalSetValue(index, &value);
@@ -364,17 +366,17 @@ void JavaArray::SetAt( const uint32_t &index, const IJavaVariableType *pValue )
 {
   if ( !AreTypesCompatible( m_ContainedType, pValue->GetVariableType() ) )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Trying to add array element types are incompatible." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Trying to add array element types are incompatible." ) );
   }
 
   if ( index < 0 )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in. Less than zero." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Invalid index passed in. Less than zero." ) );
   }
 
   if ( index > m_size )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed in." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Invalid index passed in." ) );
   }
 
   if ( GetValueAtIndex( 0 )->GetVariableType() != pValue->GetVariableType() &&
@@ -396,7 +398,7 @@ JavaString JavaArray::ConvertCharArrayToString() const
 {
   /*  if ( m_ContainedType != e_JavaArrayTypes::Char )
     {
-      throw InvalidStateException( __FUNCTION__ " - Array does not contain Characters." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Array does not contain Characters." ) );
     }
 
     JavaString result = JavaString::EmptyString();
@@ -414,7 +416,7 @@ JavaString JavaArray::ConvertByteArrayToString() const
 {
   if ( m_ContainedType != e_JavaArrayTypes::Byte )
   {
-    throw InvalidStateException( __FUNCTION__ " - Array does not contain Bytes." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Array does not contain Bytes." ) );
   }
 
   JavaString result = JavaString::EmptyString();
@@ -501,7 +503,7 @@ void JavaArray::Initialise()
         break;
 
       default:
-        throw InvalidArgumentException( __FUNCTION__ " - Unknown type." );
+        throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Unknown type." ) );
         break;
     }
   }
@@ -541,7 +543,7 @@ void JavaArray::CloneOther( const JavaArray *pObjectToClone )
 
   if ( m_ContainedType != pObjectToClone->m_ContainedType )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Contained types do not match." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Contained types do not match." ) );
   }
 
   JVMX_ASSERT( pObjectToClone->m_size == m_size );
@@ -661,7 +663,7 @@ DataBuffer JavaArray::ConvertByteArrayToBuffer() const
 {
   if ( m_ContainedType != e_JavaArrayTypes::Byte )
   {
-    throw InvalidStateException( __FUNCTION__ " - Array does not contain Bytes." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Array does not contain Bytes." ) );
   }
 
   DataBuffer result = DataBuffer::EmptyBuffer();
@@ -716,7 +718,7 @@ e_JavaArrayTypes JavaArray::ConvertTypeFromChar( char16_t charType )
       break;
 
     default:
-      throw UnsupportedTypeException( __FUNCTION__ " - Unknown type found." );
+      throw UnsupportedTypeException( JVMX_FUNCTION_MESSAGE( " - Unknown type found." ) );
       break;
   }
 }
@@ -739,7 +741,7 @@ JavaString JavaArray::ToString() const
   int count = 0;
 
   char buffer[ 38 ] = { 0 };
-  _snprintf( buffer, 37, "(%d)", m_size );
+  std::snprintf( buffer, sizeof( buffer ), "(%zu)", m_size );
 
   std::basic_stringstream<char16_t> outputStream;
 
@@ -817,7 +819,7 @@ bool JavaArray::IsNull() const
 //   else
 //   {
 //     JVMX_ASSERT( false );
-//     throw UnsupportedTypeException( __FUNCTION__ " - Type not supported in an array while trying to cast from reference." );
+//     throw UnsupportedTypeException( JVMX_FUNCTION_MESSAGE( " - Type not supported in an array while trying to cast from reference." ) );
 //   }
 //
 //   return pConvertedValue;
@@ -861,7 +863,7 @@ boost::intrusive_ptr<IJavaVariableType> JavaArray::ConvertIntegerTypeForArraySto
 
     default:
       JVMX_ASSERT( false );
-      throw InvalidArgumentException( __FUNCTION__ " - Array Types are not compatible. This should have been caught before." );
+      throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Array Types are not compatible. This should have been caught before." ) );
       break;
   }
 
@@ -902,19 +904,19 @@ void JavaArray::CopyRangeFrom( const JavaArray *pSourceArray, size_t sourceIndex
 {
   if ( nullptr == pSourceArray )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Source array cannot be null." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Source array cannot be null." ) );
   }
 
   if ( m_ContainedType != pSourceArray->m_ContainedType )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Source and destination array types do not match." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Source and destination array types do not match." ) );
   }
 
   if ( sourceIndex > pSourceArray->m_size || destIndex > m_size ||
        length > pSourceArray->m_size - sourceIndex ||
        length > m_size - destIndex )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Attempting to copy outside the bounds of the array." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Attempting to copy outside the bounds of the array." ) );
   }
 
   if ( 0 == length )

@@ -55,7 +55,7 @@ const StackFrame &CodeAttributeStackMapTable::GetStackFrame( size_t index ) cons
   }
   catch ( std::out_of_range & )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Index out of bounds for stack frame in StackMapTable." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Index out of bounds for stack frame in StackMapTable." ) );
   }
 }
 

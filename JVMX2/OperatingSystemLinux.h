@@ -1,0 +1,42 @@
+#pragma once
+
+#ifndef __OPERATINGSYSTEMLINUX_H__
+#define __OPERATINGSYSTEMLINUX_H__
+
+#include "IOperatingSystemDelegate.h"
+
+class OperatingSystemLinux : public IOperatingSystemDelegate
+{
+public:
+  virtual std::wstring ConvertCharToWChar( const std::string &input ) JVMX_OVERRIDE;
+  virtual std::string ConvertCharToUTF8( const std::string &input ) JVMX_OVERRIDE;
+  virtual std::string ConvertWCharToUTF8( const std::wstring &input ) JVMX_OVERRIDE;
+
+  virtual bool IsDirectory( const JVMX_ANSI_CHAR_TYPE *pFunctionName ) JVMX_OVERRIDE;
+
+  virtual void *FindFunction( const JavaNativeInterfaceLibrary &lib, const JVMX_ANSI_CHAR_TYPE *pFunctionName ) JVMX_OVERRIDE;
+  virtual std::shared_ptr<JavaNativeInterfaceLibrary> LoadOsLibrary( const JVMX_ANSI_CHAR_TYPE *pLibraryName ) JVMX_OVERRIDE;
+
+  virtual const char *GetPathAnsi() JVMX_OVERRIDE;
+
+  virtual void SuspendThread( std::thread::native_handle_type threadHandle ) JVMX_OVERRIDE;
+  virtual void ResumeThread( std::thread::native_handle_type threadHandle ) JVMX_OVERRIDE;
+
+  virtual std::string MapLibraryName( const std::string &shortName ) JVMX_OVERRIDE;
+
+  virtual void SetThreadName( const char *pName ) JVMX_OVERRIDE;
+  virtual intptr_t GetProcessID() JVMX_OVERRIDE;
+
+  virtual std::string GetHostName() JVMX_OVERRIDE;
+
+  virtual const char* GetPathSeparator() JVMX_OVERRIDE;
+  virtual const char* GetFileSeparator() JVMX_OVERRIDE;
+  virtual const char* GetLineSeparator() JVMX_OVERRIDE;
+
+  virtual std::u16string GetCanonicalFormUtf16( const JVMX_WIDE_CHAR_TYPE *pRelativePath ) JVMX_OVERRIDE;
+
+  virtual void GetInetAddrAnyIpV4( uint8_t pBytes[4] ) JVMX_OVERRIDE;
+  virtual bool Ip4StringToBytes( const char *pIPAddress, uint8_t pBytes[4] ) JVMX_OVERRIDE;
+};
+
+#endif // __OPERATINGSYSTEMLINUX_H__

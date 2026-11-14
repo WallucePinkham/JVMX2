@@ -39,6 +39,11 @@ public:
   static boost::intrusive_ptr<JavaString> MakeJNINameWithoutArgumentDescriptor( boost::intrusive_ptr<JavaString> pClassName, boost::intrusive_ptr<JavaString> pMethodName );
 
   void RegisterFunction( const JavaString &name, void *pFunction );
+  template <typename Function>
+  void RegisterFunction( const JavaString &name, Function pFunction )
+  {
+    RegisterFunction( name, reinterpret_cast<void *>( pFunction ) );
+  }
 
   void ExecuteFunctionStatic( boost::intrusive_ptr<JavaString> pName, boost::intrusive_ptr<JavaString> pParameterTypes, boost::intrusive_ptr<ObjectReference> pJavaLangClass );
   void ExecuteFunction( boost::intrusive_ptr<JavaString> pName, boost::intrusive_ptr<JavaString> pParameterTypes, boost::intrusive_ptr<ObjectReference> pObject );
@@ -58,6 +63,9 @@ private:
   void ExecuteFunctionInternal( boost::intrusive_ptr<JavaString> pName, boost::intrusive_ptr<JavaString> pParameterTypes, boost::intrusive_ptr<ObjectReference> pObjectOrClass, e_IsFunctionStatic isStatic );
 
   void ExecuteFunctionStdCall( void *pFunction, int *pIntParams, int paramCount, char16_t returnType, boost::intrusive_ptr<ObjectReference> pObjectOrClass );
+#if defined(__linux__)
+  void ExecuteFunctionFFI( void *pFunction, const JavaString &parameterTypes, boost::intrusive_ptr<ObjectReference> pObjectOrClass );
+#endif
   static intptr_t ConvertReferencePointerToIntValue( boost::intrusive_ptr<IJavaVariableType> pValue );
   void PushParametersStandardCall( int *pInteger, std::vector<boost::intrusive_ptr<JavaString> > parameterList, size_t sizeAsIntegers );
 

@@ -4,7 +4,7 @@
 #define _REDISGARBAGECOLLECTOR__H_
 
 #include <mutex>
-#include <cpp_redis\cpp_redis>
+#include <cpp_redis/cpp_redis>
 
 #include "ThreadManager.h"
 #include "IGarbageCollector.h"

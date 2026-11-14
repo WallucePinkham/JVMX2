@@ -8,6 +8,7 @@
     "boost-intrusive",
     "boost-program-options",
     "boost-smart-ptr",
-    "boost-thread"
+    "boost-thread",
+    "libffi"
   ]
 }

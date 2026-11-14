@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <functional>
 #include <codecvt>
+#include <sstream>
+#include <iomanip>
 
 #include <boost/algorithm/string.hpp>
 
@@ -108,8 +110,9 @@ size_t JavaString::GetLengthInCodePoints() const
 
 JavaString JavaString::AppendHex( int32_t intVal ) const
 {
-  static char buffer[ 65 ];
-  return this->Append( JavaString::FromCString( _itoa( intVal, buffer, 16 ) ) );
+  std::ostringstream buffer;
+  buffer << std::hex << intVal;
+  return this->Append( JavaString::FromCString( buffer.str().c_str() ) );
 }
 
 void JavaString::swap( JavaString &left, JavaString &right ) JVMX_NOEXCEPT
@@ -146,6 +149,11 @@ const JavaString JavaString::EmptyString()
 JavaString JavaString::FromUtf8ByteArray( size_t length, const uint8_t *pBuffer )
 {
   return JavaString( HelperConversion::ConvertUtf8ByteArrayToUtf16String( pBuffer, length ) );
+}
+
+JavaString JavaString::FromModifiedUtf8ByteArray( size_t length, const uint8_t *pBuffer )
+{
+  return JavaString( HelperConversion::ConvertModifiedUtf8ByteArrayToUtf16String( pBuffer, length ) );
 }
 
 
@@ -200,12 +208,21 @@ const char16_t *JavaString::ToCharacterArray() const
 
 JavaString JavaString::Append( const JVMX_CHAR_TYPE *pString ) const
 {
+#if defined(__linux__)
+  return Append( JavaString::FromCString( pString ) );
+#else
   return JavaString( m_Data.get() + pString );
+#endif
 }
 
 JavaString JavaString::Append( const JVMX_CHAR_TYPE value ) const
 {
+#if defined(__linux__)
+  const std::string utf8Character( 1, value );
+  return Append( JavaString::FromCString( utf8Character.c_str() ) );
+#else
   return JavaString( m_Data.get() + value );
+#endif
 }
 
 JavaString JavaString::Append( const JavaString &pString ) const
@@ -220,8 +237,7 @@ JavaString JavaString::Append( const JavaString &pString ) const
 
 JavaString JavaString::Append( int32_t intVal ) const
 {
-  char buffer[ 65 ];
-  return this->Append( JavaString::FromCString( _itoa( intVal, buffer, 10 ) ) );
+  return this->Append( JavaString::FromCString( std::to_string( intVal ).c_str() ) );
 }
 
 /*JavaString JavaString::FromDataBuffer( DataBuffer dataBuffer )
@@ -243,7 +259,7 @@ char16_t JavaString::At( size_t index ) const
 {
   if ( index > m_Data.get().length() )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Invalid index passed." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Invalid index passed." ) );
   }
 
   return m_Data.get().at( index );
@@ -374,6 +390,11 @@ bool JavaString::Equals( const char16_t *pString ) const
   return 0 == m_Data.get().compare( pString );
 }
 
+bool JavaString::Equals( const JVMX_ANSI_CHAR_TYPE *pString ) const
+{
+  return *this == JavaString::FromCString( pString );
+}
+
 bool JavaString::IsNull() const
 {
   return false;
@@ -383,7 +404,7 @@ JavaString JavaString::FromArray( const JavaArray &array )
 {
   if ( e_JavaArrayTypes::Char != array.GetContainedType() )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Expected array to contain chars." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected array to contain chars." ) );
   }
 
   std::u16string result;

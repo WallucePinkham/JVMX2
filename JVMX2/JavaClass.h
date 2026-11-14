@@ -88,7 +88,7 @@ public:
   virtual std::shared_ptr<FieldInfo> GetFieldByName( const JavaString &fieldName ) const;
 
   virtual size_t GetMethodCount() const;
-  __declspec(deprecated) std::shared_ptr<MethodInfo> GetMethodByName( const JavaString &name ) const;
+  JVMX_DEPRECATED std::shared_ptr<MethodInfo> GetMethodByName( const JavaString &name ) const;
   virtual std::shared_ptr<MethodInfo> GetMethodByNameAndType( const JavaString &name, const JavaString &type ) const;
 
   virtual size_t GetMethodIndexByNameAndType( const JavaString &name, const JavaString &type ) const;

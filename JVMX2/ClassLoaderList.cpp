@@ -8,7 +8,7 @@ void ClassLoaderList::AddClassLoader(boost::intrusive_ptr<ObjectReference> pClas
 {
     if (pClassLoader == nullptr)
     {
-        throw NullPointerException(__FUNCTION__ " - ClassLoader pointer is NULL.");
+        throw NullPointerException(JVMX_FUNCTION_MESSAGE( " - ClassLoader pointer is NULL." ));
     }
     m_classLoaders[pClassLoader->GetContainedObject()] = std::make_shared< BasicClassLibrary>();
 }
@@ -17,7 +17,7 @@ std::shared_ptr<JavaClass> ClassLoaderList::FindLoadedClass(boost::intrusive_ptr
 {
   if (pClassLoader == nullptr)
   {
-    throw NullPointerException(__FUNCTION__ " - ClassLoader pointer is NULL.");
+    throw NullPointerException(JVMX_FUNCTION_MESSAGE( " - ClassLoader pointer is NULL." ));
   }
   
   auto it = m_classLoaders.find(pClassLoader->GetContainedObject());
@@ -35,7 +35,7 @@ void ClassLoaderList::AddLoadedClass(boost::intrusive_ptr<ObjectReference> pClas
 {
   if (pClassLoader == nullptr)
   {
-    throw NullPointerException(__FUNCTION__ " - ClassLoader pointer is NULL.");
+    throw NullPointerException(JVMX_FUNCTION_MESSAGE( " - ClassLoader pointer is NULL." ));
   }
 
   auto it = m_classLoaders.find(pClassLoader->GetContainedObject());

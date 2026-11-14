@@ -327,7 +327,7 @@ boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::GetCallStackOfSt
   std::shared_ptr<JavaClass> pClassOfStackTraceElement = LoadClass(JavaString::FromCString("java/lang/StackTraceElement"), false);
   if (nullptr == pClassOfStackTraceElement)
   {
-    throw InvalidStateException(__FUNCTION__ " - Could not load class StackTraceElement.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not load class StackTraceElement." ));
   }
 
   if (!pClassOfStackTraceElement->IsInitialsed())
@@ -426,7 +426,7 @@ void BasicVirtualMachineState::Execute(const JavaString& startingClassName, cons
   {
     if (methodName != c_ClassInitialisationMethodName && methodName != c_InstanceInitialisationMethodName)
     {
-      throw InvalidStateException(__FUNCTION__ " - Initial Method was not found");
+      throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Initial Method was not found" ));
     }
     else
     {
@@ -450,7 +450,7 @@ void BasicVirtualMachineState::Execute(const JavaString& startingClassName, cons
 
   //   if ( !pInitialMethod->IsStatic( ) )
   //   {
-  //     throw InvalidStateException( __FUNCTION__ " - Initial Method was not static" );
+  //     throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Initial Method was not static" ) );
   //   }
 
   if (!pInitialMethod->GetClass()->IsInitialsed() && methodName == c_ClassInitialisationMethodName)
@@ -535,7 +535,7 @@ std::shared_ptr<JavaClass> BasicVirtualMachineState::GetClassByName(std::shared_
     pClass = LoadClass(className, true);
     if (nullptr == pClass)
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Could not load class.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Could not load class." ));
     }
   }
 
@@ -553,7 +553,7 @@ ClassAttributeCode BasicVirtualMachineState::FindCodeAttribute(const MethodInfo&
     }
   }
 
-  throw InvalidStateException(__FUNCTION__ " - Code Attribute not found.");
+  throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Code Attribute not found." ));
 }
 
 void BasicVirtualMachineState::PushMethodStack(const JavaString& newClassName, const JavaString& newMethodName, const JavaString& newMethodType)
@@ -590,7 +590,7 @@ void BasicVirtualMachineState::AdvanceProgramCounter(int byteCount)
 {
   if (m_CurrentRegisters.m_ProgramCounter + byteCount < 0 || m_CurrentRegisters.m_ProgramCounter + byteCount > m_CurrentRegisters.m_CodeSegmentLength)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Trying to jump to an address outside of the current code block.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Trying to jump to an address outside of the current code block." ));
   }
 
   m_CurrentRegisters.m_ProgramCounter += byteCount;
@@ -714,7 +714,7 @@ void BasicVirtualMachineState::PushOperand(const boost::intrusive_ptr<IJavaVaria
 {
   if (nullptr == pOperand)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Invalid argument passed. Operand was NULL");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Invalid argument passed. Operand was NULL" ));
   }
 
   // TODO: There should be a way to avoid the string copies here. This is too expensive and kills performance.
@@ -727,7 +727,7 @@ boost::intrusive_ptr<IJavaVariableType> BasicVirtualMachineState::PopOperand()
   if (m_OperandStack.size() < 1)
   {
     LogCallStack();
-    throw InvalidStateException(__FUNCTION__ " - PopOperand called on empty operand stack.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - PopOperand called on empty operand stack." ));
   }
 
   boost::intrusive_ptr<IJavaVariableType> pOperand = PeekOperand();
@@ -775,7 +775,7 @@ boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::SetupLocalVariab
       LogOperandStack();
 #endif
 
-      throw InvalidStateException(__FUNCTION__ " - Expected object pointer to be valid.");
+      throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected object pointer to be valid." ));
     }
   }
 
@@ -836,7 +836,7 @@ boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::SetupLocalVariab
 //       case c_JavaTypeSpecifierInteger:
 //         if ( paramArray[ paramIndex ]->GetVariableType() != e_JavaVariableTypes::Integer )
 //         {
-//           throw InvalidStateException( __FUNCTION__ " - Expected integer on the operand stack." );
+//           throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected integer on the operand stack." ) );
 //         }
 //         SetLocalVariable( localVariableIndex, boost::dynamic_pointer_cast<JavaInteger>(paramArray[ paramIndex ]) );
 //         break;
@@ -859,7 +859,7 @@ boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::SetupLocalVariab
 //       case c_JavaTypeSpecifierFloat:
 //         if ( paramArray[ paramIndex ]->GetVariableType() != e_JavaVariableTypes::Float )
 //         {
-//           throw InvalidStateException( __FUNCTION__ " - Expected float on the operand stack." );
+//           throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected float on the operand stack." ) );
 //         }
 //
 //         SetLocalVariable( localVariableIndex, boost::dynamic_pointer_cast<JavaFloat>(paramArray[ paramIndex ]) );
@@ -893,7 +893,7 @@ boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::SetupLocalVariab
 //       break;
 //
 //       default:
-//         throw UnsupportedTypeException( __FUNCTION__ " - Unknown type found." );
+//         throw UnsupportedTypeException( JVMX_FUNCTION_MESSAGE( " - Unknown type found." ) );
 //         break;
 //     }
 //
@@ -986,7 +986,7 @@ void BasicVirtualMachineState::SetupLocalVariables(std::shared_ptr<MethodInfo> p
     case c_JavaTypeSpecifierInteger:
       if (paramArray[paramIndex]->GetVariableType() != e_JavaVariableTypes::Integer)
       {
-        throw InvalidStateException(__FUNCTION__ " - Expected integer on the operand stack.");
+        throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected integer on the operand stack." ));
       }
       SetLocalVariable(localVariableIndex, boost::dynamic_pointer_cast<JavaInteger>(paramArray[paramIndex]));
       break;
@@ -1016,7 +1016,7 @@ void BasicVirtualMachineState::SetupLocalVariables(std::shared_ptr<MethodInfo> p
     case c_JavaTypeSpecifierFloat:
       if (paramArray[paramIndex]->GetVariableType() != e_JavaVariableTypes::Float)
       {
-        throw InvalidStateException(__FUNCTION__ " - Expected float on the operand stack.");
+        throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected float on the operand stack." ));
       }
 
       SetLocalVariable(localVariableIndex, boost::dynamic_pointer_cast<JavaFloat>(paramArray[paramIndex]));
@@ -1052,7 +1052,7 @@ void BasicVirtualMachineState::SetupLocalVariables(std::shared_ptr<MethodInfo> p
     break;
 
     default:
-      throw UnsupportedTypeException(__FUNCTION__ " - Unknown type found.");
+      throw UnsupportedTypeException(JVMX_FUNCTION_MESSAGE( " - Unknown type found." ));
       break;
     }
 
@@ -1132,7 +1132,7 @@ void BasicVirtualMachineState::SetupLocalVariableTypeReference(const std::vector
     }
     else
     {
-      throw NotImplementedException(__FUNCTION__ " - Not yet implemented");
+      throw NotImplementedException(JVMX_FUNCTION_MESSAGE( " - Not yet implemented" ));
     }
   }
 }
@@ -1141,7 +1141,7 @@ void BasicVirtualMachineState::SetLocalVariable(uint16_t localVariableIndex, boo
 {
   if (nullptr == pValue)
   {
-    throw NullPointerException(__FUNCTION__ " - Value argument was NULL.");
+    throw NullPointerException(JVMX_FUNCTION_MESSAGE( " - Value argument was NULL." ));
   }
 
   m_LocalVariableStack[m_LocalVariableStackFramePointer + localVariableIndex].m_pValue = pValue;
@@ -1151,7 +1151,7 @@ void BasicVirtualMachineState::NameLocalVariable(uint16_t localVariableIndex, bo
 {
   if (nullptr == pName)
   {
-    throw NullPointerException(__FUNCTION__ " - Value argument was NULL.");
+    throw NullPointerException(JVMX_FUNCTION_MESSAGE( " - Value argument was NULL." ));
   }
 
   m_LocalVariableStack[m_LocalVariableStackFramePointer + localVariableIndex].m_pName = pName;
@@ -1215,7 +1215,12 @@ std::shared_ptr<JavaClass> BasicVirtualMachineState::LoadClass(const JavaString&
     }
 
     JavaString finalClassName = className.Append(JVMX_T(".class"));
+#if defined(__linux__)
+    const std::string classFileName = finalClassName.ToUtf8String();
+    pClass = loader.LoadClass(classFileName.c_str());
+#else
     pClass = loader.LoadClass(finalClassName.ToUtf16String().c_str());
+#endif
   }
   catch (FileInvalidException&)
   {
@@ -1286,7 +1291,7 @@ std::shared_ptr<JavaClass> BasicVirtualMachineState::LoadClassFromSystemClassLoa
       auto pLoadedClass = PopOperand();
       if (nullptr != pLoadedClass && pLoadedClass->GetVariableType() != e_JavaVariableTypes::Object)
       {
-        throw InvalidStateException(__FUNCTION__ " - Expected a valid object reference to be returned from the system class loader.");
+        throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected a valid object reference to be returned from the system class loader." ));
         //pClass = boost::dynamic_pointer_cast<ObjectReference>(pLoadedClass)->GetContainedObject()->;
       }
 
@@ -1356,7 +1361,7 @@ void BasicVirtualMachineState::UpdateCurrentClassName(boost::intrusive_ptr<JavaS
 {
   if (m_CurrentDisplayCallStackEntry.m_ClassName.IsEmpty())
   {
-    throw InvalidStateException(__FUNCTION__ " - Tried to update the current class name when it already exists.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Tried to update the current class name when it already exists." ));
   }
 
   UpdateCurrentClassName(*pNewName);
@@ -1499,7 +1504,7 @@ std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethod(JavaClass* p
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
     if (HasUserCodeStarted())
     {
-      GetLogger()->LogDebug(__FUNCTION__ " - Method %s with type %s *not* found on class %s. Trying Super class %s ", methodName.ToUtf8String().c_str(), methodSignature.ToUtf8String().c_str(), pClassFile->GetName()->ToUtf8String().c_str(), pClassFile->GetSuperClassName()->ToUtf8String().c_str());
+      GetLogger()->LogDebug(JVMX_FUNCTION_MESSAGE( " - Method %s with type %s *not* found on class %s. Trying Super class %s " ), methodName.ToUtf8String().c_str(), methodSignature.ToUtf8String().c_str(), pClassFile->GetName()->ToUtf8String().c_str(), pClassFile->GetSuperClassName()->ToUtf8String().c_str());
     }
 #endif // _DEBUG
 
@@ -1509,7 +1514,7 @@ std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethod(JavaClass* p
       pSuperClass = pClassFile->GetSuperClass().get();
       if (nullptr == pSuperClass)
       {
-        GetLogger()->LogError(__FUNCTION__ " - %s Could not load class file %s", GetCurrentClassAndMethodName(), pClassFile->GetSuperClass()->GetName()->ToUtf8String().c_str());
+        GetLogger()->LogError(JVMX_FUNCTION_MESSAGE( " - %s Could not load class file %s" ), GetCurrentClassAndMethodName(), pClassFile->GetSuperClass()->GetName()->ToUtf8String().c_str());
 
         // Assume Java Exception already thrown.
         return nullptr;
@@ -1524,7 +1529,7 @@ std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethod(JavaClass* p
   {
     if (nullptr != pMethodInfo)
     {
-      GetLogger()->LogDebug(__FUNCTION__ " - Method %s with type %s  found on class %s. ", methodName.ToUtf8String().c_str(), methodSignature.ToUtf8String().c_str(), pMethodInfo->GetClass()->GetName()->ToUtf8String().c_str());
+      GetLogger()->LogDebug(JVMX_FUNCTION_MESSAGE( " - Method %s with type %s  found on class %s. " ), methodName.ToUtf8String().c_str(), methodSignature.ToUtf8String().c_str(), pMethodInfo->GetClass()->GetName()->ToUtf8String().c_str());
     }
   }
 #endif // _DEBUG
@@ -1597,7 +1602,7 @@ std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethodOnClass(boost
     pClassFile = LoadClass(realClassName, true);
     if (nullptr == pClassFile)
     {
-      GetLogger()->LogError(__FUNCTION__ " - %s Could not load class file %s", GetCurrentClassAndMethodName(), realClassName.ToUtf8String().c_str());
+      GetLogger()->LogError(JVMX_FUNCTION_MESSAGE( " - %s Could not load class file %s" ), GetCurrentClassAndMethodName(), realClassName.ToUtf8String().c_str());
 
       // Assume Java Exception already thrown.
       return nullptr;
@@ -1615,7 +1620,7 @@ std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethodOnClass(boost
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
     if (HasUserCodeStarted())
     {
-      GetLogger()->LogDebug(__FUNCTION__ " - Method %s with type %s *not* found on class %s. Trying Super class %s ", pMethodRef->GetName()->ToUtf8String().c_str(), pMethodRef->GetType()->ToUtf8String().c_str(), pClassName->ToUtf8String().c_str(), pClassFile->GetSuperClassName()->ToUtf8String().c_str());
+      GetLogger()->LogDebug(JVMX_FUNCTION_MESSAGE( " - Method %s with type %s *not* found on class %s. Trying Super class %s " ), pMethodRef->GetName()->ToUtf8String().c_str(), pMethodRef->GetType()->ToUtf8String().c_str(), pClassName->ToUtf8String().c_str(), pClassFile->GetSuperClassName()->ToUtf8String().c_str());
     }
 #endif // _DEBUG
     pMethodInfo = ResolveMethodOnClass(pClassFile->GetSuperClass()->GetName(), pMethodRef);
@@ -1624,7 +1629,7 @@ std::shared_ptr<MethodInfo> BasicVirtualMachineState::ResolveMethodOnClass(boost
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (HasUserCodeStarted())
   {
-    GetLogger()->LogDebug(__FUNCTION__ " - Method %s with type %s  found on class %s. ", pMethodRef->GetName()->ToUtf8String().c_str(), pMethodRef->GetType()->ToUtf8String().c_str(), pMethodInfo->GetClass()->GetName()->ToUtf8String().c_str());
+    GetLogger()->LogDebug(JVMX_FUNCTION_MESSAGE( " - Method %s with type %s  found on class %s. " ), pMethodRef->GetName()->ToUtf8String().c_str(), pMethodRef->GetType()->ToUtf8String().c_str(), pMethodInfo->GetClass()->GetName()->ToUtf8String().c_str());
   }
 #endif // _DEBUG
 
@@ -1673,7 +1678,7 @@ std::shared_ptr<JavaClass> BasicVirtualMachineState::InitialiseClass(const JavaS
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
     if (HasUserCodeStarted())
     {
-      GetLogger()->LogDebug(__FUNCTION__ " - Class %s not loaded. Loading now.", className.ToUtf8String().c_str());
+      GetLogger()->LogDebug(JVMX_FUNCTION_MESSAGE( " - Class %s not loaded. Loading now." ), className.ToUtf8String().c_str());
     }
 #endif // defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
 
@@ -1681,7 +1686,7 @@ std::shared_ptr<JavaClass> BasicVirtualMachineState::InitialiseClass(const JavaS
     if (nullptr == pClassFile)
     {
 #ifdef _DEBUG
-      GetLogger()->LogDebug(__FUNCTION__ " - Returning because of load failure. Assume JavaException has been thrown.");
+      GetLogger()->LogDebug(JVMX_FUNCTION_MESSAGE( " - Returning because of load failure. Assume JavaException has been thrown." ));
 #endif // _DEBUG
       // We'd already have thrown a Java Exception.
       return pClassFile;
@@ -1700,7 +1705,7 @@ std::shared_ptr<JavaClass> BasicVirtualMachineState::InitialiseClass(std::shared
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
     if (HasUserCodeStarted())
     {
-      GetLogger()->LogDebug(__FUNCTION__ " - Class %s already initialized.", (*pClassFile->GetName().get()).ToUtf8String().c_str());
+      GetLogger()->LogDebug(JVMX_FUNCTION_MESSAGE( " - Class %s already initialized." ), (*pClassFile->GetName().get()).ToUtf8String().c_str());
     }
 #endif // _DEBUG
     return pClassFile;
@@ -1787,7 +1792,7 @@ boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateAndInitial
 
   if (nullptr == pMethodInfo)
   {
-    throw InvalidStateException(__FUNCTION__ " - Default constructor not found.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Default constructor not found." ));
   }
 
   std::vector<boost::intrusive_ptr<IJavaVariableType> > paramArray;
@@ -1883,7 +1888,7 @@ boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateJavaLangCl
 
     if (nullptr == pClassClass)
     {
-      throw InvalidStateException(__FUNCTION__ " - Expected to find class: java.lang.Class");
+      throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected to find class: java.lang.Class" ));
     }
   }
 
@@ -1896,7 +1901,7 @@ boost::intrusive_ptr<ObjectReference> BasicVirtualMachineState::CreateJavaLangCl
   pResult = CreateObject(pClassClass);
   if (nullptr == pResult)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected to create an instance of: java.lang.Class");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected to create an instance of: java.lang.Class" ));
   }
 
   pResult->GetContainedObject()->SetJVMXField(c_SyntheticField_ClassName, boost::intrusive_ptr<JavaString>(new JavaString(className)));
@@ -1983,7 +1988,7 @@ void BasicVirtualMachineState::DoSynchronisation(std::shared_ptr<MethodInfo> pIn
       }
       else
       {
-        throw InvalidStateException(__FUNCTION__ " - Expected an array or an object on top of the operand stack.");
+        throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected an array or an object on top of the operand stack." ));
       }
     }
   }

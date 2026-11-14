@@ -16,6 +16,7 @@
 #include "InvalidStateException.h"
 
 #include "CheneyGarbageCollector.h"
+#include "DebugBreak.h"
 #include <cinttypes>
 
 const JavaString c_FinalizeMethodName = JavaString::FromCString( JVMX_T( "finalize" ) );
@@ -117,7 +118,7 @@ void *CheneyGarbageCollector::Allocate( size_t sizeInBytes, e_GarbageCollectionO
 
   if ( ( m_pAllocPtr + finalSize ) > m_pToSpace + ( m_PoolSizeInBytes / 2 ) )
   {
-    throw OutOfMemoryException( __FUNCTION__ " - Out of memory." );
+    throw OutOfMemoryException( JVMX_FUNCTION_MESSAGE( " - Out of memory." ) );
   }
 
   //   if ( (m_pAllocPtr + finalSize) > m_pToSpace + (m_PoolSizeInBytes / 2) )
@@ -258,7 +259,7 @@ void CheneyGarbageCollector::Collect()
       }
       else
       {
-        throw InvalidStateException( __FUNCTION__ " - Unknown type of object in garbage collector." );
+        throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Unknown type of object in garbage collector." ) );
       }
 
       m_pScanPtr += pHeader->size + sizeof( GCHeader );
@@ -321,7 +322,7 @@ void CheneyGarbageCollector::CopyObjectFields( GCHeader *pHeader )
   JavaObject *pOldObject = reinterpret_cast<JavaObject *>( reinterpret_cast<char *>( pHeader ) + sizeof( GCHeader ) );
   if ( pOldObject->GetVariableType() != e_JavaVariableTypes::Object )
   {
-    throw InvalidStateException( __FUNCTION__ " - Pointer does not point to an object, as expected." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Pointer does not point to an object, as expected." ) );
   }
 
   CopyObjectFieldsInternal( pOldObject, pOldObject->GetClass() );
@@ -444,7 +445,7 @@ void CheneyGarbageCollector::CopyReferencesInArray( GCHeader *pHeader )
   JavaArray *pArray = reinterpret_cast<JavaArray *>( reinterpret_cast<char *>( pHeader ) + sizeof( GCHeader ) );
   if ( pArray->GetVariableType() != e_JavaVariableTypes::Array )
   {
-    throw InvalidStateException( __FUNCTION__ " - Pointer does not point to an array as expected." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Pointer does not point to an array as expected." ) );
   }
 
   if ( pArray->GetContainedType() != e_JavaArrayTypes::Reference )
@@ -519,7 +520,7 @@ GCHeader *CheneyGarbageCollector::Copy( GCHeader *pHeader )
 #ifdef _DEBUG
   if ( !( m_pAllocPtr + pHeader->size + sizeof( GCHeader ) < m_pMemoryPool + m_PoolSizeInBytes ) )
   {
-    __asm int 3;
+    JvmxDebugBreak();
   }
 #endif // _DEBUG
 

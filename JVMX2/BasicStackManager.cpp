@@ -45,7 +45,7 @@ uintptr_t BasicStackManager::PeekPointer() const
 {
   if ( m_UsedBytes < sizeof( uintptr_t ) )
   {
-    throw StackUnderrunException( __FUNCTION__ " - Not enough bytes on the stack to peek at the next uint16." );
+    throw StackUnderrunException( JVMX_FUNCTION_MESSAGE( " - Not enough bytes on the stack to peek at the next uint16." ) );
   }
 
   return *reinterpret_cast<uintptr_t *>(m_pBuffer.get() + m_UsedBytes - sizeof( uintptr_t ));
@@ -55,7 +55,7 @@ void BasicStackManager::AllocateBytes( uint16_t byteCount )
 {
   if ( m_UsedBytes > m_StackSize - byteCount )
   {
-    throw StackOverflowException( __FUNCTION__ " - Not enough space on the stack to allocate bytes. This stack manager will not resize the stack." );
+    throw StackOverflowException( JVMX_FUNCTION_MESSAGE( " - Not enough space on the stack to allocate bytes. This stack manager will not resize the stack." ) );
   }
 
   m_UsedBytes += byteCount;
@@ -72,7 +72,7 @@ uint16_t BasicStackManager::GetUint16( uint16_t index ) const
 
   if ( m_UsedBytes < byteIndex )
   {
-    throw StackUnderrunException( __FUNCTION__ " - Not enough bytes on the stack to get variable." );
+    throw StackUnderrunException( JVMX_FUNCTION_MESSAGE( " - Not enough bytes on the stack to get variable." ) );
   }
 
   return *reinterpret_cast<uint16_t *>(m_pBuffer.get() + m_UsedBytes - byteIndex);
@@ -83,7 +83,7 @@ void BasicStackManager::SetUint16( uint16_t index, uint16_t value )
   uint16_t byteIndex = index * sizeof( uint16_t );
   if ( m_UsedBytes < byteIndex )
   {
-    throw StackUnderrunException( __FUNCTION__ " - Not enough bytes on the stack to get variable." );
+    throw StackUnderrunException( JVMX_FUNCTION_MESSAGE( " - Not enough bytes on the stack to get variable." ) );
   }
 
   uint16_t *pNextValue = reinterpret_cast<uint16_t *>(m_pBuffer.get() + m_UsedBytes - byteIndex);

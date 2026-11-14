@@ -28,7 +28,7 @@ SimpleGreedyMemoryManager::~SimpleGreedyMemoryManager()
   {
     if ( nullptr != static_cast<std::shared_ptr<ILogger>>( m_pLogger ) )
     {
-      m_pLogger->LogWarning( __FUNCTION__ " - Exception Caught in destructor" );
+      m_pLogger->LogWarning( JVMX_FUNCTION_MESSAGE( " - Exception Caught in destructor" ) );
     }
   }
 }
@@ -59,8 +59,8 @@ void SimpleGreedyMemoryManager::Free( uint8_t *pBuffer )
       JVMX_ASSERT( m_allocatedByteCount - byteCount < c_UnderflowDetection );
       if ( m_allocatedByteCount - byteCount > c_UnderflowDetection )
       {
-        m_pLogger->LogWarning( __FUNCTION__ " - Freeing more bytes that we actually have allocated." );
-        throw InvalidStateException( __FUNCTION__ " - Freeing more bytes that we actually have allocated." );
+        m_pLogger->LogWarning( JVMX_FUNCTION_MESSAGE( " - Freeing more bytes that we actually have allocated." ) );
+        throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Freeing more bytes that we actually have allocated." ) );
       }
 
       m_AllocatedBlocks.erase( it );
@@ -71,7 +71,7 @@ void SimpleGreedyMemoryManager::Free( uint8_t *pBuffer )
     }
   }
 
-  throw InvalidArgumentException( __FUNCTION__ " - Trying to free an invalid pointer." );
+  throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Trying to free an invalid pointer." ) );
 }
 
 uint8_t *SimpleGreedyMemoryManager::Allocate( size_t byteCount )

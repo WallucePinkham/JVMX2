@@ -15,7 +15,7 @@ StackFrameChop::StackFrameChop( uint8_t tag, uint16_t offset )
 {
   if ( tag < c_MinValidStackFrameChopTagNo || tag > c_MaxValidStackFrameChopTagNo )
   {
-    throw UnsupportedTypeException( __FUNCTION__ " - Tag was not int he valid range for StackFrameChop" );
+    throw UnsupportedTypeException( JVMX_FUNCTION_MESSAGE( " - Tag was not int he valid range for StackFrameChop" ) );
   }
 
   m_NumberOfLastAbsentLocals = c_LastLocalsAbsentOffset - tag;

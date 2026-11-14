@@ -64,7 +64,7 @@ std::shared_ptr<JavaClass> HelperClasses::ResolveClass(IVirtualMachineState* pVi
     }
     catch (JVMXException& ex)
     {
-      pLogger->LogWarning(__FUNCTION__ " - Throwing linkage exception because class could not be loaded: %s", ex.what());
+      pLogger->LogWarning(JVMX_FUNCTION_MESSAGE( " - Throwing linkage exception because class could not be loaded: %s" ), ex.what());
       ThrowJavaException(pVirtualMachineState, c_JavaLinkageErrorException);
     }
   }
@@ -95,13 +95,13 @@ void HelperClasses::ThrowJavaException(IVirtualMachineState* pVirtualMachineStat
 {
   if (nullptr == javaExceptionName)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Java Exception name was NULL");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Java Exception name was NULL" ));
   }
 
   auto pClass = pVirtualMachineState->InitialiseClass(JavaString::FromCString(javaExceptionName));
   if (nullptr == pClass)
   {
-    throw InvalidStateException(__FUNCTION__ " - Java exception class could not be loaded.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Java exception class could not be loaded." ));
   }
 
   //if (nullptr != pMessage)

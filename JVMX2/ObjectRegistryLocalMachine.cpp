@@ -94,7 +94,7 @@ void ObjectRegistryLocalMachine::UpdateObjectPointer( const ObjectReference &ref
 #ifdef _DEBUG
   if ( m_Objects.cend() == m_Objects.find( ref.GetIndex() ) )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Expected object to be found, before updating." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected object to be found, before updating." ) );
   }
 #endif // _DEBUG
 
@@ -139,7 +139,7 @@ void ObjectRegistryLocalMachine::VerifyEntry( ObjectIndexT ref )
 
   if ( pos == notFound )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Requested object not found." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Requested object not found." ) );
   }
 
   char *pObj = (char *)(m_Objects[ ref ].pObject);
@@ -147,14 +147,14 @@ void ObjectRegistryLocalMachine::VerifyEntry( ObjectIndexT ref )
   int32_t baba = 0xbabababa;
   if (0 == memcmp(pObj, &baba, 4))
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Object not valid." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Object not valid." ) );
   }
 
   int32_t cccc = 0xcccccccc;
   if ( 0 == memcmp( pObj, &cccc, 4 ) )
   //if ( *pObj == (char)0xcc )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Object not valid." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Object not valid." ) );
   }
 }
 
@@ -172,7 +172,7 @@ IJavaVariableType * ObjectRegistryLocalMachine::GetObject_( ObjectIndexT ref )
 
     if ( pos == notFound )
     {
-      throw IndexOutOfBoundsException( __FUNCTION__ " - Requested object not found." );
+      throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Requested object not found." ) );
     }
   }
 #endif // _DEBUG

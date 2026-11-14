@@ -102,6 +102,6 @@ ClassAttributeInnerClasses::InnerClassListEntry ClassAttributeInnerClasses::GetI
   }
   catch ( std::out_of_range & )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Index out of bounds looking for inner class list entry." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Index out of bounds looking for inner class list entry." ) );
   }
 }

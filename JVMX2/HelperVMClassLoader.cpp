@@ -19,6 +19,7 @@
 #include "ClassLoaderList.h"
 
 #include "HelperVMClassLoader.h"
+#include "DebugBreak.h"
 
 jobject JNICALL HelperVMClassLoader::java_lang_VMClassLoader_getPrimitiveClass(JNIEnv* pEnv, jobject obj, jchar typeAsChar)
 {
@@ -56,7 +57,7 @@ jobject JNICALL HelperVMClassLoader::java_lang_VMClassLoader_defineClass(
 
   if (offset != 0)
   {
-    throw NotImplementedException(__FUNCTION__ " - Not implented. Non-zero offsets are not yet supported.");
+    throw NotImplementedException(JVMX_FUNCTION_MESSAGE( " - Not implented. Non-zero offsets are not yet supported." ));
   }
 
   boost::intrusive_ptr<ObjectReference> pClassLoader = JNIEnvInternal::ConvertJObjectToObjectPointer(classLoaderObj);
@@ -69,7 +70,7 @@ jobject JNICALL HelperVMClassLoader::java_lang_VMClassLoader_defineClass(
 
   if (buffer.GetByteLength() != len - offset)
   {
-    throw InternalErrorException(__FUNCTION__ " - Something went wrong reading array of bytes into a buffer.");
+    throw InternalErrorException(JVMX_FUNCTION_MESSAGE( " - Something went wrong reading array of bytes into a buffer." ));
   }
 
   //BigEndianStream stream = BigEndianStream::FromDataBuffer(buffer);
@@ -175,7 +176,7 @@ jobject JNICALL HelperVMClassLoader::java_lang_VMClassLoader_loadClass(JNIEnv* p
   if (resolve)
   {
 #ifdef _DEBUG
-    __asm int 3;
+    JvmxDebugBreak();
 #endif
 
     throw NotImplementedException("Not implemented yet");

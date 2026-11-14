@@ -96,7 +96,7 @@ JavaShort &JavaShort::operator=( const IJavaVariableType &other )
 
   if ( !other.IsIntegerCompatible() )
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected a type that was integer compatible." );
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected a type that was integer compatible." ) );
   }
 
   pResult = boost::dynamic_pointer_cast<JavaShort>( TypeParser::DownCastFromInteger( TypeParser::UpCastToInteger( &other ), e_JavaVariableTypes::Short ) );
@@ -117,8 +117,7 @@ bool JavaShort::IsIntegerCompatible() const
 
 JavaString JavaShort::ToString() const
 {
-  char dest[ 38 ] = { 0 };
-  return JavaString::FromCString( _itoa( m_Value, dest, 10 ) );
+  return JavaString::FromCString( std::to_string( m_Value ).c_str() );
 }
 
 bool JavaShort::IsNull() const

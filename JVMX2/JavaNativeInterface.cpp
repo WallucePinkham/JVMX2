@@ -1,6 +1,11 @@
 
 #include <cinttypes>
 #include <thread>
+#include <limits>
+
+#if defined(__linux__)
+#include <ffi.h>
+#endif
 
 #include "OsFunctions.h"
 
@@ -27,14 +32,28 @@
 #define ASM_POP_INT( value ) __asm pop value;
 #define ASM_GET_RETVAL( value ) __asm mov value, eax;
 #define ASM_GET_RETVAL_EXTRABITS( value ) __asm mov value, edx;
-#else // _MSC_VER
-#error "You need to implement a ASM_PUSH_INT and ASM_PUSH_FLOAT for your platform."
 #endif // _MSC_VER
 
 #define ADD_INT_TO_STACK( array, index, value ) array[( index )] = ( value );
 
 
 typedef void *JniMethodImplementation;
+
+#if defined(__linux__)
+union NativeCallValue
+{
+  ffi_arg integerReturnValue;
+  jboolean booleanValue;
+  jbyte byteValue;
+  jchar charValue;
+  jshort shortValue;
+  jint intValue;
+  jlong longValue;
+  jfloat floatValue;
+  jdouble doubleValue;
+  void *pointerValue;
+};
+#endif
 
 const JavaString c_JavaNativeInterfaceInitialMethodString = JavaString( u"Java_" );
 
@@ -117,6 +136,7 @@ void JavaNativeInterface::ExecuteFunctionStdCall( void *pFunction, int *pIntPara
   JVMX_ASSERT( m_DebugThreadID == std::this_thread::get_id() );
 #endif // _DEBUG
 
+#if defined(_MSC_VER) && defined(_M_IX86)
   intptr_t env = reinterpret_cast<intptr_t>( GetEnvironment() );
   int index = 0;
   intptr_t retValInt = 0;
@@ -241,7 +261,7 @@ void JavaNativeInterface::ExecuteFunctionStdCall( void *pFunction, int *pIntPara
       break;
 
     default:
-      throw NotImplementedException( __FUNCTION__ " - Not implemented yet." );
+      throw NotImplementedException( JVMX_FUNCTION_MESSAGE( " - Not implemented yet." ) );
   }
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -259,7 +279,248 @@ void JavaNativeInterface::ExecuteFunctionStdCall( void *pFunction, int *pIntPara
 #endif // _DEBUG
 
   // TODO: Do something with the return value
+#else
+  static_cast<void>( pFunction );
+  static_cast<void>( pIntParams );
+  static_cast<void>( paramCount );
+  static_cast<void>( returnType );
+  static_cast<void>( pObjectOrClass );
+  throw NotImplementedException( "JavaNativeInterface::ExecuteFunctionStdCall - Dynamic JNI calls are not implemented for this platform." );
+#endif
 }
+
+#if defined(__linux__)
+void JavaNativeInterface::ExecuteFunctionFFI( void *pFunction, const JavaString &parameterTypes, boost::intrusive_ptr<ObjectReference> pObjectOrClass )
+{
+  const TypeParser::ParsedMethodType parsedType = TypeParser::ParseMethodType( parameterTypes );
+  const size_t parameterCount = parsedType.parameters.size();
+  const size_t argumentCount = parameterCount + 2;
+  if ( argumentCount > std::numeric_limits<unsigned int>::max() )
+  {
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Native method has too many parameters." ) );
+  }
+
+  std::vector<ffi_type *> argumentTypes( argumentCount );
+  std::vector<void *> argumentValues( argumentCount );
+  std::vector<NativeCallValue> values( argumentCount );
+  NativeCallValue returnValue = {};
+
+  JNIEnv *environment = GetEnvironment();
+  argumentTypes[0] = &ffi_type_pointer;
+  values[0].pointerValue = environment;
+  argumentValues[0] = &values[0].pointerValue;
+
+  argumentTypes[1] = &ffi_type_pointer;
+  values[1].pointerValue = pObjectOrClass->ToJObject();
+  argumentValues[1] = &values[1].pointerValue;
+
+  for ( size_t parameterIndex = parameterCount; parameterIndex > 0; --parameterIndex )
+  {
+    const size_t argumentIndex = parameterIndex + 1;
+    const char16_t type = parsedType.parameters[parameterIndex - 1]->At( 0 );
+    boost::intrusive_ptr<IJavaVariableType> value = GetVMState()->PopOperand();
+
+    switch ( type )
+    {
+      case c_JavaTypeSpecifierBool:
+      {
+        boost::intrusive_ptr<JavaBool> booleanValue = boost::dynamic_pointer_cast<JavaBool>( value );
+        if ( nullptr == booleanValue && e_JavaVariableTypes::Integer == value->GetVariableType() )
+        {
+          booleanValue = boost::dynamic_pointer_cast<JavaBool>(
+            TypeParser::DownCastFromInteger( boost::dynamic_pointer_cast<JavaInteger>( value ), e_JavaVariableTypes::Bool ) );
+        }
+        if ( nullptr == booleanValue )
+        {
+          throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected a boolean argument for the native method." ) );
+        }
+        argumentTypes[argumentIndex] = &ffi_type_uint8;
+        values[argumentIndex].booleanValue = booleanValue->ToBool() ? JNI_TRUE : JNI_FALSE;
+        argumentValues[argumentIndex] = &values[argumentIndex].booleanValue;
+        break;
+      }
+      case c_JavaTypeSpecifierByte:
+      {
+        boost::intrusive_ptr<JavaByte> byteValue = boost::dynamic_pointer_cast<JavaByte>( value );
+        if ( nullptr == byteValue )
+        {
+          throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected a byte argument for the native method." ) );
+        }
+        argumentTypes[argumentIndex] = &ffi_type_sint8;
+        values[argumentIndex].byteValue = byteValue->ToHostInt8();
+        argumentValues[argumentIndex] = &values[argumentIndex].byteValue;
+        break;
+      }
+      case c_JavaTypeSpecifierChar:
+      {
+        if ( !value->IsIntegerCompatible() )
+        {
+          throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected a char-compatible argument for the native method." ) );
+        }
+        boost::intrusive_ptr<JavaInteger> integerValue = TypeParser::UpCastToInteger( value.get() );
+        argumentTypes[argumentIndex] = &ffi_type_uint16;
+        values[argumentIndex].charValue = static_cast<jchar>( integerValue->ToHostInt32() & USHRT_MAX );
+        argumentValues[argumentIndex] = &values[argumentIndex].charValue;
+        break;
+      }
+      case c_JavaTypeSpecifierShort:
+      {
+        boost::intrusive_ptr<JavaShort> shortValue = boost::dynamic_pointer_cast<JavaShort>( value );
+        if ( nullptr == shortValue )
+        {
+          throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected a short argument for the native method." ) );
+        }
+        argumentTypes[argumentIndex] = &ffi_type_sint16;
+        values[argumentIndex].shortValue = shortValue->ToHostInt16();
+        argumentValues[argumentIndex] = &values[argumentIndex].shortValue;
+        break;
+      }
+      case c_JavaTypeSpecifierInteger:
+      {
+        boost::intrusive_ptr<JavaInteger> integerValue = boost::dynamic_pointer_cast<JavaInteger>( value );
+        if ( nullptr == integerValue )
+        {
+          throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected an integer argument for the native method." ) );
+        }
+        argumentTypes[argumentIndex] = &ffi_type_sint32;
+        values[argumentIndex].intValue = integerValue->ToHostInt32();
+        argumentValues[argumentIndex] = &values[argumentIndex].intValue;
+        break;
+      }
+      case c_JavaTypeSpecifierLong:
+      {
+        boost::intrusive_ptr<JavaLong> longValue = boost::dynamic_pointer_cast<JavaLong>( value );
+        if ( nullptr == longValue )
+        {
+          throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected a long argument for the native method." ) );
+        }
+        argumentTypes[argumentIndex] = &ffi_type_sint64;
+        values[argumentIndex].longValue = longValue->ToHostInt64();
+        argumentValues[argumentIndex] = &values[argumentIndex].longValue;
+        break;
+      }
+      case c_JavaTypeSpecifierFloat:
+      {
+        boost::intrusive_ptr<JavaFloat> floatValue = boost::dynamic_pointer_cast<JavaFloat>( value );
+        if ( nullptr == floatValue )
+        {
+          throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected a float argument for the native method." ) );
+        }
+        argumentTypes[argumentIndex] = &ffi_type_float;
+        values[argumentIndex].floatValue = floatValue->ToHostFloat();
+        argumentValues[argumentIndex] = &values[argumentIndex].floatValue;
+        break;
+      }
+      case c_JavaTypeSpecifierDouble:
+      {
+        boost::intrusive_ptr<JavaDouble> doubleValue = boost::dynamic_pointer_cast<JavaDouble>( value );
+        if ( nullptr == doubleValue )
+        {
+          throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected a double argument for the native method." ) );
+        }
+        argumentTypes[argumentIndex] = &ffi_type_double;
+        values[argumentIndex].doubleValue = doubleValue->ToHostDouble();
+        argumentValues[argumentIndex] = &values[argumentIndex].doubleValue;
+        break;
+      }
+      case c_JavaTypeSpecifierReference:
+      case c_JavaTypeSpecifierArray:
+      {
+        argumentTypes[argumentIndex] = &ffi_type_pointer;
+        values[argumentIndex].pointerValue = reinterpret_cast<void *>( ConvertReferencePointerToIntValue( value ) );
+        argumentValues[argumentIndex] = &values[argumentIndex].pointerValue;
+        break;
+      }
+      default:
+        throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Unsupported native method parameter type." ) );
+    }
+  }
+
+  ffi_type *returnType = nullptr;
+  const char16_t returnDescriptor = parsedType.returnType.At( 0 );
+  switch ( returnDescriptor )
+  {
+    case c_JavaTypeSpecifierVoid: returnType = &ffi_type_void; break;
+    case c_JavaTypeSpecifierBool: returnType = &ffi_type_uint8; break;
+    case c_JavaTypeSpecifierByte: returnType = &ffi_type_sint8; break;
+    case c_JavaTypeSpecifierChar: returnType = &ffi_type_uint16; break;
+    case c_JavaTypeSpecifierShort: returnType = &ffi_type_sint16; break;
+    case c_JavaTypeSpecifierInteger: returnType = &ffi_type_sint32; break;
+    case c_JavaTypeSpecifierLong: returnType = &ffi_type_sint64; break;
+    case c_JavaTypeSpecifierFloat: returnType = &ffi_type_float; break;
+    case c_JavaTypeSpecifierDouble: returnType = &ffi_type_double; break;
+    case c_JavaTypeSpecifierReference:
+    case c_JavaTypeSpecifierArray: returnType = &ffi_type_pointer; break;
+    default:
+      throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Unsupported native method return type." ) );
+  }
+
+  ffi_cif callInterface;
+  ffi_status status = ffi_prep_cif( &callInterface, FFI_DEFAULT_ABI, static_cast<unsigned int>( argumentCount ), returnType, argumentTypes.data() );
+  if ( FFI_OK != status )
+  {
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Could not prepare the native method call interface." ) );
+  }
+
+#if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  if ( GetVMState()->HasUserCodeStarted() )
+  {
+    GetVMState()->LogOperandStack();
+  }
+#endif
+
+  GetVMState()->AddLocalReferenceFrame();
+  GetVMState()->SetExecutingNative();
+  try
+  {
+    ffi_call( &callInterface, reinterpret_cast<void ( *)( void )>( pFunction ),
+      c_JavaTypeSpecifierVoid == returnDescriptor ? nullptr : &returnValue.integerReturnValue,
+      argumentValues.data() );
+  }
+  catch ( ... )
+  {
+    GetVMState()->SetExecutingHosted();
+    GetVMState()->DeleteLocalReferenceFrame();
+    throw;
+  }
+  GetVMState()->SetExecutingHosted();
+  GetVMState()->DeleteLocalReferenceFrame();
+
+  switch ( returnDescriptor )
+  {
+    case c_JavaTypeSpecifierVoid:
+      break;
+    case c_JavaTypeSpecifierBool:
+      GetVMState()->PushOperand( new JavaBool( JavaBool::FromBool( returnValue.booleanValue != JNI_FALSE ) ) );
+      break;
+    case c_JavaTypeSpecifierByte:
+      GetVMState()->PushOperand( new JavaByte( JavaByte::FromHostInt8( returnValue.byteValue ) ) );
+      break;
+    case c_JavaTypeSpecifierChar:
+      GetVMState()->PushOperand( new JavaChar( JavaChar::FromUInt16( returnValue.charValue ) ) );
+      break;
+    case c_JavaTypeSpecifierShort:
+      GetVMState()->PushOperand( new JavaShort( JavaShort::FromHostInt16( returnValue.shortValue ) ) );
+      break;
+    case c_JavaTypeSpecifierInteger:
+      GetVMState()->PushOperand( new JavaInteger( JavaInteger::FromHostInt32( returnValue.intValue ) ) );
+      break;
+    case c_JavaTypeSpecifierLong:
+      GetVMState()->PushOperand( new JavaLong( JavaLong::FromHostInt64( returnValue.longValue ) ) );
+      break;
+    case c_JavaTypeSpecifierFloat:
+      GetVMState()->PushOperand( new JavaFloat( JavaFloat::FromHostFloat( returnValue.floatValue ) ) );
+      break;
+    case c_JavaTypeSpecifierDouble:
+      GetVMState()->PushOperand( new JavaDouble( JavaDouble::FromHostDouble( returnValue.doubleValue ) ) );
+      break;
+    case c_JavaTypeSpecifierReference:
+    case c_JavaTypeSpecifierArray:
+      GetVMState()->PushOperand( new ObjectReference( reinterpret_cast<jobject>( returnValue.pointerValue ) ) );
+      break;
+  }
+}
+#endif
 
 intptr_t JavaNativeInterface::ConvertReferencePointerToIntValue( boost::intrusive_ptr<IJavaVariableType> pValue )
 {
@@ -278,7 +539,7 @@ intptr_t JavaNativeInterface::ConvertReferencePointerToIntValue( boost::intrusiv
       break;
 
     default:
-      throw InvalidArgumentException( __FUNCTION__ " - Unexpected type." );
+      throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Unexpected type." ) );
       break;
   }
 
@@ -328,7 +589,7 @@ void JavaNativeInterface::PushParametersStandardCall( int *pInteger, std::vector
 
           if ( !pStackValue->IsIntegerCompatible() )
           {
-            throw InvalidArgumentException( __FUNCTION__ " - Expected argument that could be converted to integer." );
+            throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected argument that could be converted to integer." ) );
           }
 
           boost::intrusive_ptr<JavaInteger> pIntegerValue = TypeParser::UpCastToInteger( pStackValue.get() );
@@ -495,7 +756,7 @@ void JavaNativeInterface::PushParametersStandardCall( int *pInteger, std::vector
         break;
 
       default:
-        throw InvalidArgumentException( __FUNCTION__ " - Unknown parameter type received." );
+        throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Unknown parameter type received." ) );
         break;
     }
 
@@ -782,7 +1043,7 @@ void JavaNativeInterface::ExecuteFunctionInternal( boost::intrusive_ptr<JavaStri
 
   if ( nullptr == pObjectOrClass )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - We need to the object or the class to operate on." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - We need to the object or the class to operate on." ) );
   }
 
   void *pFoundFunction = nullptr;
@@ -801,14 +1062,21 @@ void JavaNativeInterface::ExecuteFunctionInternal( boost::intrusive_ptr<JavaStri
   {
     GetLogger()->LogError( "Native function (%s) (%s) not found.", pName->ToUtf8String().c_str(), pParameterTypes->ToUtf8String().c_str() );
 
-    throw InvalidArgumentException( __FUNCTION__ " - Native function not found." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Native function not found." ) );
   }
 
   JniMethodImplementation pFinalFunction = static_cast<JniMethodImplementation>( pFoundFunction );
 
+#if defined(__linux__)
+#if defined(_DEBUG) && defined(JVMX_LOG_VERBOSE)
+  GetLogger()->LogDebug( "Calling native function %s with descriptor %s.",
+    pName->ToUtf8String().c_str(), pParameterTypes->ToUtf8String().c_str() );
+#endif
+  ExecuteFunctionFFI( pFinalFunction, *pParameterTypes, pObjectOrClass );
+#else
   TypeParser::ParsedMethodType parsedType = TypeParser::ParseMethodType( *pParameterTypes );
   size_t paramCountAsIntegers = parsedType.GetParameterCountAsIntegers();
-  std::unique_ptr<int> pParamArray( new int[ paramCountAsIntegers ] );
+  std::unique_ptr<int[]> pParamArray( new int[ paramCountAsIntegers ] );
 
   PushParametersStandardCall( pParamArray.get(), parsedType.parameters, paramCountAsIntegers );
 
@@ -820,6 +1088,7 @@ void JavaNativeInterface::ExecuteFunctionInternal( boost::intrusive_ptr<JavaStri
 #endif // _DEBUG
 
   ExecuteFunctionStdCall( pFinalFunction, pParamArray.get(), paramCountAsIntegers, parsedType.returnType.At( 0 ), pObjectOrClass );
+#endif
 }
 
 void JavaNativeInterface::ExecuteFunctionStatic( boost::intrusive_ptr<JavaString> pName, boost::intrusive_ptr<JavaString> pParameterTypes, boost::intrusive_ptr<ObjectReference> pJavaLangClass )
@@ -849,7 +1118,7 @@ const std::shared_ptr<IVirtualMachineState> &JavaNativeInterface::GetVMState()
 
   if ( nullptr == m_pVMState )
   {
-    throw InvalidStateException( __FUNCTION__ " - Java Native Interface was not initialized with the VM state object." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Java Native Interface was not initialized with the VM state object." ) );
   }
 
   return m_pVMState;

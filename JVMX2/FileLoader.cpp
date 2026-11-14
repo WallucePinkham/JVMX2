@@ -1,4 +1,10 @@
+#if defined(_WIN32) || defined(_WIN64)
 #include <io.h>
+#elif defined(__linux__)
+#include <unistd.h>
+#else
+#error "Unsupported platform."
+#endif
 
 #include "GlobalConstants.h"
 
@@ -52,7 +58,7 @@ void FileLoader::Open( const JVMX_CHAR_TYPE *pFileName )
 {
   if ( nullptr == pFileName )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Filename can't be NULL" );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Filename can't be NULL" ) );
   }
 
   std::shared_ptr<FileSearchPathCollection> allSearchPaths = GlobalCatalog::GetInstance().Get("SearchPaths");
@@ -108,14 +114,19 @@ void FileLoader::ReadBytes( uint8_t *pBuffer, size_t length )
 
   if ( elementsRead < 1 )
   {
-    throw FileInvalidException( __FUNCTION__ " - Could not read bytes." );
+    throw FileInvalidException( JVMX_FUNCTION_MESSAGE( " - Could not read bytes." ) );
   }
 }
 
 void FileLoader::AddSearchPath(const JavaString& path)
 {
     std::shared_ptr<FileSearchPathCollection> paths = GlobalCatalog::GetInstance().Get("SearchPaths");
+#if defined(__linux__)
+    const std::string utf8Path = path.ToUtf8String();
+    paths->AddSearchPath(utf8Path.c_str());
+#else
     paths->AddSearchPath(path.ToCharacterArray());
+#endif
 }
 
 void FileLoader::AddSearchPath(const JVMX_CHAR_TYPE* pPath)

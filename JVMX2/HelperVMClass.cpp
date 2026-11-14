@@ -1,4 +1,4 @@
-#include <boost\intrusive_ptr.hpp>
+#include <boost/intrusive_ptr.hpp>
 
 #include "GlobalConstants.h"
 
@@ -113,7 +113,7 @@ jboolean JNICALL HelperVMClass::java_lang_VMClass_isArray( JNIEnv *pEnv, jobject
 
   if ( nullptr == pClassName )
   {
-    throw InvalidStateException( __FUNCTION__ " - Expected class name to be valid." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected class name to be valid." ) );
   }
 
   if ( '[' == pClassName->At( 0 ) )
@@ -753,4 +753,3 @@ boost::intrusive_ptr<ObjectReference> HelperVMClass::InitialiseNewFieldObject( b
 
   return pNewField;
 }
-

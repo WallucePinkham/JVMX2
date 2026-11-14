@@ -31,18 +31,27 @@
 #endif
 #else
 #define JVMX_NOEXCEPT noexcept
-#define JVMX_PURE abstract
+#define JVMX_PURE = 0
 #define JVMX_FN_DELETE = delete
 #define JVMX_OVERRIDE override
 #endif
 
+#if defined (_MSC_VER)
 #define JVMX_ABSTRACT abstract
+#define JVMX_DEPRECATED __declspec( deprecated )
+#else
+#define JVMX_ABSTRACT
+#define JVMX_DEPRECATED __attribute__(( deprecated ))
+#endif
+
+#define JVMX_FUNCTION_MESSAGE( message ) ( std::string( __FUNCTION__ ) + ( message ) ).c_str()
 
 #define _CRT_SECURE_NO_WARNINGS 1
 #define _CRT_SECURE_NO_DEPRECATE 1
 #define _CRT_NONSTDC_NO_WARNINGS 1
 
 // Disable these warnings completely.
+#if defined (_MSC_VER)
 #pragma warning ( disable: 4996 ) // _CRT_SECURE_NO_WARNINGS
 #pragma warning ( disable: 4481 ) // nonstandard extension used: override specifier 'override'
 #pragma warning ( disable: 4480 ) // nonstandard extension used: specifying underlying type for enum
@@ -50,6 +59,7 @@
 // Treat these warnings as errors. They indicate we are doing something wrong.
 #pragma warning ( error: 4717 )   // function recursive on all control paths
 #pragma warning ( error: 4244 )   // conversion from 'int64_t' to 'uint32_t', possible loss of data
+#endif
 
 #define JVMX_WIDE_CHAR_TYPE char16_t
 #define JVMX_ANSI_CHAR_TYPE char
@@ -62,9 +72,13 @@
 
 #ifdef _UNICODE
 #define JVMX_T( param ) u##param
+#elif defined(__linux__)
+#define JVMX_T( param ) param
 #else // _UNICODE
 #define JVMX_T( param ) u8##param
 #endif // _UNICODE
+
+#define JVMX_UTF16_T( param ) u##param
 
 // #ifdef _UNICODE
 // #define JVMX_STRCMP( str1, str2 ) wcscmp( (str1), (str2) )

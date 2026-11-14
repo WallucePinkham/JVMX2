@@ -204,7 +204,7 @@ JavaObject *ObjectReference::GetObject() const
 
   if ( c_NullIndex == m_Index )
   {
-    throw InvalidStateException( __FUNCTION__ " - Trying to de-reference null object." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Trying to de-reference null object." ) );
   }
 
   IJavaVariableType *pVariable = InternalGetObject( m_Index );
@@ -215,7 +215,7 @@ JavaObject *ObjectReference::GetObject() const
 
   if ( e_JavaVariableTypes::Object != pVariable->GetVariableType() )
   {
-    throw InvalidStateException( __FUNCTION__ " - Expected variable to be an object. " );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected variable to be an object. " ) );
   }
 
   return reinterpret_cast<JavaObject *>(pVariable);
@@ -230,7 +230,7 @@ JavaArray *ObjectReference::GetArray() const
 
   if ( c_NullIndex == m_Index )
   {
-    throw InvalidStateException( __FUNCTION__ " - Trying to de-reference null object." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Trying to de-reference null object." ) );
   }
 
   IJavaVariableType *pVariable = InternalGetObject( m_Index );
@@ -241,7 +241,7 @@ JavaArray *ObjectReference::GetArray() const
 
   if ( e_JavaVariableTypes::Array != pVariable->GetVariableType() )
   {
-    throw InvalidStateException( __FUNCTION__ " - Expected variable to be an array. " );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected variable to be an array. " ) );
   }
 
   return reinterpret_cast<JavaArray *>(pVariable);
@@ -256,27 +256,27 @@ void ObjectReference::CloneOther( const ObjectReference &other )
 
   if ( c_NullIndex == m_Index )
   {
-    throw InvalidStateException( __FUNCTION__ " - This is a null reference." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - This is a null reference." ) );
   }
 
   if ( c_NullIndex == other.m_Index )
   {
-    throw InvalidStateException( __FUNCTION__ " - Trying to clone null object." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Trying to clone null object." ) );
   }
   
   if ( e_JavaVariableTypes::Object != GetVariableType() && e_JavaVariableTypes::Array != GetVariableType() )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Expected this to be an object or array." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected this to be an object or array." ) );
   }
 
   if ( e_JavaVariableTypes::Object != other.GetVariableType() && e_JavaVariableTypes::Array != other.GetVariableType() )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Expected parameter to be an object or array." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected parameter to be an object or array." ) );
   }
 
   if ( GetVariableType() != other.GetVariableType() )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Expected both types to be the same." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected both types to be the same." ) );
   }
 
   if ( e_JavaVariableTypes::Object == GetVariableType() )
@@ -300,7 +300,7 @@ ObjectReference &ObjectReference::operator=( const IJavaVariableType &other )
   }
   else if ( e_JavaVariableTypes::Object != other.GetVariableType() && e_JavaVariableTypes::Array != other.GetVariableType() )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Expected reference type." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected reference type." ) );
   }
   else
   {
@@ -410,10 +410,7 @@ JavaString ObjectReference::ToString() const
 
 #ifdef _DEBUG
   AssertValid();
-  char pBuffer[ 31 ];
-  _i64toa_s( m_Index, pBuffer, 30, 10 );
-
-  JavaString refString = JavaString::FromCString( pBuffer );
+  JavaString refString = JavaString::FromCString( std::to_string( m_Index ).c_str() );
 
   return refString.Append( u" : " ).Append( InternalGetObject( m_Index )->ToString() );
 #else

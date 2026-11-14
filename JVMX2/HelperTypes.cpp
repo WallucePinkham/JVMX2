@@ -24,7 +24,7 @@ JavaString HelperTypes::ExtractValueFromStringObject(const JavaObject* pStringOb
 
   if (nullptr == pField)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected Field (value) to exist.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected Field (value) to exist." ));
   }
 
 #ifdef _DEBUG
@@ -37,13 +37,13 @@ JavaString HelperTypes::ExtractValueFromStringObject(const JavaObject* pStringOb
   }
   else if (pField->GetVariableType() != e_JavaVariableTypes::Array)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected Field (value) to be an array.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected Field (value) to be an array." ));
   }
 
   boost::intrusive_ptr<ObjectReference> pStringValue = boost::dynamic_pointer_cast<ObjectReference>(pField);
   if (nullptr == pStringValue)
   {
-    throw InvalidStateException(__FUNCTION__ " - Cast failed.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Cast failed." ));
   }
 
   JavaString result = pStringValue->GetContainedArray()->ConvertCharArrayToString();

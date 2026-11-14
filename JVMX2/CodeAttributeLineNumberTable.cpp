@@ -93,7 +93,7 @@ uint16_t CodeAttributeLineNumberTable::GetLineNumberAt( size_t at ) const
   }
   catch ( std::out_of_range & )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Index out of bounds looking for exception table index." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Index out of bounds looking for exception table index." ) );
   }
 }
 
@@ -105,6 +105,6 @@ uint16_t CodeAttributeLineNumberTable::GetStartPositionAt( size_t at ) const
   }
   catch ( std::out_of_range & )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Index out of bounds looking for exception table index." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Index out of bounds looking for exception table index." ) );
   }
 }

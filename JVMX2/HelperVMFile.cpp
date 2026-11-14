@@ -1,4 +1,12 @@
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <sys/stat.h>
+#elif defined(__linux__)
+#include <sys/stat.h>
+#else
+#error "Unsupported platform."
+#endif
+
 #include "JavaNativeInterface.h"
 
 #include "IVirtualMachineState.h"
@@ -53,8 +61,13 @@ jboolean JNICALL HelperVMFile::java_io_VMFile_exists(JNIEnv* pEnv, jobject obj, 
 
   try
   {
+#if defined(_WIN32) || defined(_WIN64)
     struct _stat buffer = { 0 };
     if (0 == _stat(reinterpret_cast<const char*>(bytes), &buffer))
+#else
+    struct stat buffer = { 0 };
+    if (0 == stat(reinterpret_cast<const char*>(bytes), &buffer))
+#endif
     {
       result = JNI_TRUE;
     }

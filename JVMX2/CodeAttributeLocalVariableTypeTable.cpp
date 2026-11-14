@@ -96,7 +96,7 @@ uint16_t CodeAttributeLocalVariableTypeTable::GetStartPositionAt( size_t at ) co
   }
   catch ( std::out_of_range & )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Index out of bounds looking for local variable table index." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Index out of bounds looking for local variable table index." ) );
   }
 }
 
@@ -108,7 +108,7 @@ uint16_t CodeAttributeLocalVariableTypeTable::GetLengthAt( size_t at ) const
   }
   catch ( std::out_of_range & )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Index out of bounds looking for local variable table index." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Index out of bounds looking for local variable table index." ) );
   }
 }
 
@@ -120,7 +120,7 @@ std::shared_ptr<ConstantPoolStringReference> CodeAttributeLocalVariableTypeTable
   }
   catch ( std::out_of_range & )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Index out of bounds looking for local variable table index." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Index out of bounds looking for local variable table index." ) );
   }
 }
 
@@ -132,7 +132,7 @@ uint16_t CodeAttributeLocalVariableTypeTable::GetSignatureIndexAt( size_t at ) c
   }
   catch ( std::out_of_range & )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Index out of bounds looking for local variable table index." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Index out of bounds looking for local variable table index." ) );
   }
 }
 
@@ -144,6 +144,6 @@ uint16_t CodeAttributeLocalVariableTypeTable::GetIndexAt( size_t at ) const
   }
   catch ( std::out_of_range & )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Index out of bounds looking for local variable table index." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Index out of bounds looking for local variable table index." ) );
   }
 }

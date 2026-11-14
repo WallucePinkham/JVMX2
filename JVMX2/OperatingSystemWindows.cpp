@@ -39,7 +39,7 @@ std::wstring OperatingSystemWindows::ConvertCharToWChar( const std::string &inpu
 
   if ( c_CouldNotDetermineBufferLength == bytesRequired )
   {
-    throw CharacterCoversionFailedException( __FUNCTION__ " - Could not get buffer length.", bytesRequired );
+    throw CharacterCoversionFailedException( JVMX_FUNCTION_MESSAGE( " - Could not get buffer length." ), bytesRequired );
   }
 
   WCHAR *pBuffer = nullptr;
@@ -51,7 +51,7 @@ std::wstring OperatingSystemWindows::ConvertCharToWChar( const std::string &inpu
     int conversionResult = MultiByteToWideChar( CP_UTF8, 0, input.c_str(), -1, pBuffer, bytesRequired );
     if ( 0 == conversionResult )
     {
-      throw CharacterCoversionFailedException( __FUNCTION__ " - Conversion failed.", GetLastError() );
+      throw CharacterCoversionFailedException( JVMX_FUNCTION_MESSAGE( " - Conversion failed." ), GetLastError() );
     }
   }
   catch ( ... )
@@ -79,7 +79,7 @@ std::string OperatingSystemWindows::ConvertWCharToUTF8( const std::wstring &inpu
 
   if ( c_CouldNotDetermineBufferLength == bytesRequired )
   {
-    throw CharacterCoversionFailedException( __FUNCTION__ " - Could not get buffer length.", bytesRequired );
+    throw CharacterCoversionFailedException( JVMX_FUNCTION_MESSAGE( " - Could not get buffer length." ), bytesRequired );
   }
 
   CHAR *pBuffer = nullptr;
@@ -91,7 +91,7 @@ std::string OperatingSystemWindows::ConvertWCharToUTF8( const std::wstring &inpu
     int conversionResult = WideCharToMultiByte( CP_UTF8, WC_ERR_INVALID_CHARS, input.c_str(), -1, pBuffer, bytesRequired, NULL, NULL );
     if ( 0 == conversionResult )
     {
-      throw CharacterCoversionFailedException( __FUNCTION__ " - Conversion failed.", GetLastError() );
+      throw CharacterCoversionFailedException( JVMX_FUNCTION_MESSAGE( " - Conversion failed." ), GetLastError() );
     }
   }
   catch ( ... )
@@ -204,7 +204,7 @@ std::string OperatingSystemWindows::GetHostName()
 
   if ( !GetComputerNameA( pBuffer, &length ) )
   {
-    throw InternalErrorException( __FUNCTION__ " - Could not get host name. " );
+    throw InternalErrorException( JVMX_FUNCTION_MESSAGE( " - Could not get host name. " ) );
   }
 
   return std::string(pBuffer);
@@ -240,7 +240,7 @@ std::u16string OperatingSystemWindows::GetCanonicalFormUtf16(const JVMX_WIDE_CHA
   
   if (0 == result)
   {
-    throw InternalErrorException(__FUNCTION__ " - Could not get absolute path from relative path. ");
+    throw InternalErrorException(JVMX_FUNCTION_MESSAGE( " - Could not get absolute path from relative path. " ));
   }
 
   return std::u16string(reinterpret_cast<const char16_t*>(absolutePath));

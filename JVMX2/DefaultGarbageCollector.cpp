@@ -338,7 +338,7 @@ void DefaultGarbageCollector::FinaliseObject( boost::intrusive_ptr<IJavaVariable
   boost::intrusive_ptr<JavaObject> pJavaObject = boost::dynamic_pointer_cast<JavaObject>(pObject);
   if ( nullptr == pJavaObject )
   {
-    throw InvalidStateException( __FUNCTION__ " - Expected a valid object." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected a valid object." ) );
   }
 
   pVMState->PushOperand( pJavaObject );

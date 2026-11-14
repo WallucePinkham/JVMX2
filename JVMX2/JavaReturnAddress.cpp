@@ -69,8 +69,7 @@ bool JavaReturnAddress::IsIntegerCompatible() const
 
 JavaString JavaReturnAddress::ToString() const
 {
-  char dest[ 34 ] = { 0 };
-  return JavaString::FromCString( JVMX_T( "{" ) ).Append( JavaString::FromCString( _i64toa( *(reinterpret_cast<const intptr_t *>(&m_pAddress)), dest, 10 ) ) ).Append( JVMX_T( "}" ) );
+  return JavaString::FromCString( JVMX_T( "{" ) ).Append( JavaString::FromCString( std::to_string( m_pAddress ).c_str() ) ).Append( JVMX_T( "}" ) );
 }
 
 bool JavaReturnAddress::IsNull() const

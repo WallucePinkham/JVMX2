@@ -31,7 +31,7 @@ FieldInfo::FieldInfo( const ConstantPool &pPool, uint16_t flags, boost::intrusiv
         m_pStaticValue = pPool.GetConstant( pAttribute->ToConstantValue().GetValueIndex() )->AsJavaVariable();
         if ( nullptr == m_pStaticValue )
         {
-          throw InvalidStateException( __FUNCTION__ " - Expected some value here." );
+          throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected some value here." ) );
         }
       }
     }
@@ -127,7 +127,7 @@ size_t FieldInfo::GetByteSize() const
       break;
 
     default:
-      throw InvalidStateException( __FUNCTION__ " - Unknown type." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Unknown type." ) );
       break;
   }
 
@@ -169,7 +169,7 @@ ConstantPoolIndex FieldInfo::GetConstantValueIndex() const
 {
   if ( !IsStatic() )
   {
-    throw InvalidStateException( __FUNCTION__ " - This field is not static and therefor does not have a constant value." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - This field is not static and therefor does not have a constant value." ) );
   }
 
   for ( const std::shared_ptr<JavaCodeAttribute> attribute : m_Attributes )
@@ -192,7 +192,7 @@ void FieldInfo::SetStaticValue( boost::intrusive_ptr<IJavaVariableType> pValue )
 {
   if ( !IsStatic() )
   {
-    throw InvalidStateException( __FUNCTION__ " - Expected this type to be static." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected this type to be static." ) );
   }
 
   m_pStaticValue = pValue;
@@ -202,7 +202,7 @@ boost::intrusive_ptr<IJavaVariableType> FieldInfo::GetStaticValue() const
 {
   if ( !IsStatic() )
   {
-    throw InvalidStateException( __FUNCTION__ " - Expected this type to be static." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Expected this type to be static." ) );
   }
 
   return m_pStaticValue;

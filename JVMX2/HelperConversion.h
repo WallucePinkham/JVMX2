@@ -11,6 +11,7 @@ public:
   static std::string ConvertWideStringToUtf8String( const wchar_t *pFileName );
 
   static std::u16string ConvertUtf8ByteArrayToUtf16String( const uint8_t *pBuffer, size_t length );
+  static std::u16string ConvertModifiedUtf8ByteArrayToUtf16String( const uint8_t *pBuffer, size_t length );
 
   static std::string ConvertJVMXCharToUtf8( const JVMX_ANSI_CHAR_TYPE *pFileName );
   static std::string ConvertJVMXCharToUtf8( const JVMX_WIDE_CHAR_TYPE *pFileName );

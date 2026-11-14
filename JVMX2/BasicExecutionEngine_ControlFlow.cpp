@@ -300,7 +300,7 @@ void BasicExecutionEngine::ExecuteOpCodeReturnReference(const std::shared_ptr<IV
   boost::intrusive_ptr<IJavaVariableType> pReference = pVirtualMachineState->PopOperand();
   if (!IsReference(pReference->GetVariableType()))
   {
-    throw InvalidStateException(__FUNCTION__ " - Value on the operand stack was not of type reference.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Value on the operand stack was not of type reference." ));
   }
 
   std::shared_ptr<MethodInfo> pMethodInfo = pVirtualMachineState->GetCurrentMethodInfo();
@@ -342,7 +342,7 @@ void BasicExecutionEngine::ExecuteOpCodeReturnInteger(const std::shared_ptr<IVir
     pReference = TypeParser::UpCastToInteger(pReference.get());
     if (nullptr == pReference)
     {
-      throw InvalidStateException(__FUNCTION__ " - Value on the operand stack was not of type integer or convertible to integer.");
+      throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Value on the operand stack was not of type integer or convertible to integer." ));
     }
   }
 
@@ -430,13 +430,13 @@ void BasicExecutionEngine::ExecuteOpCodeBranchIfReferencesAreEqual(const std::sh
   boost::intrusive_ptr<IJavaVariableType> pValue1 = pVirtualMachineState->PopOperand();
   if (!pValue1->IsReferenceType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected first operand to be an a reference type.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected first operand to be an a reference type." ));
   }
 
   boost::intrusive_ptr<IJavaVariableType> pValue2 = pVirtualMachineState->PopOperand();
   if (!pValue2->IsReferenceType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected second operand to be an a reference type.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected second operand to be an a reference type." ));
   }
 
   bool areValuesEqual = false;
@@ -458,13 +458,13 @@ void BasicExecutionEngine::ExecuteOpCodeBranchIfReferencesAreNotEqual(const std:
   boost::intrusive_ptr<IJavaVariableType> pValue1 = pVirtualMachineState->PopOperand();
   if (!pValue1->IsReferenceType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected first operand to be an a reference type.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected first operand to be an a reference type." ));
   }
 
   boost::intrusive_ptr<IJavaVariableType> pValue2 = pVirtualMachineState->PopOperand();
   if (!pValue2->IsReferenceType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected second operand to be an a reference type.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected second operand to be an a reference type." ));
   }
 
   bool areValuesEqual = false;
@@ -492,7 +492,7 @@ void BasicExecutionEngine::ExecuteOpCodeThrowReference(const std::shared_ptr<IVi
   auto pOperand = pVirtualMachineState->PopOperand();
   if (!pOperand->IsReferenceType())
   {
-    throw InvalidStateException(__FUNCTION__  " - Expected a reference type when throwing exception.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected a reference type when throwing exception." ));
   }
 
   if (pOperand->IsNull())
@@ -504,12 +504,12 @@ void BasicExecutionEngine::ExecuteOpCodeThrowReference(const std::shared_ptr<IVi
   boost::intrusive_ptr<ObjectReference> pObject = boost::dynamic_pointer_cast<ObjectReference>(pOperand);
   if (nullptr == pObject)
   {
-    throw NotImplementedException(__FUNCTION__ " - Arrays not yet implemented.");
+    throw NotImplementedException(JVMX_FUNCTION_MESSAGE( " - Arrays not yet implemented." ));
   }
 
   if (!IsInstanceOf(pVirtualMachineState, new JavaString(c_ThrowableClassName), pObject->GetContainedObject()->GetClass()->GetName()))
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected class to implement Throwable.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected class to implement Throwable." ));
   }
 
   HelperClasses::ThrowJavaExceptionInternal(pVirtualMachineState.get(), pObject);
@@ -525,13 +525,13 @@ std::shared_ptr<ExceptionTableEntry> BasicExecutionEngine::FindLocalExceptionTab
   std::shared_ptr< MethodInfo > pMethodInfo = pVirtualMachineState->GetCurrentMethodInfo();
   if (nullptr == pMethodInfo)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected to get a method info backs.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected to get a method info backs." ));
   }
 
   const ClassAttributeCode* pCodeAttributes = pMethodInfo->GetCodeInfo();
   if (nullptr == pCodeAttributes)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected code attributes to be non-null.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected code attributes to be non-null." ));
   }
 
   const ExceptionTable& exceptionTable = pCodeAttributes->GetExceptionTable();
@@ -557,7 +557,7 @@ void BasicExecutionEngine::CatchException(const std::shared_ptr<IVirtualMachineS
   std::shared_ptr<ExceptionTableEntry> pEntry = FindLocalExceptionTableEntry(pVirtualMachineState, programCounterBeforeLastInstruction);
   if (nullptr == pEntry)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected exception table entry to be valid.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected exception table entry to be valid." ));
   }
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -669,7 +669,7 @@ void BasicExecutionEngine::ExecuteOpCodeReturnFromSubRoutine(const std::shared_p
   boost::intrusive_ptr<IJavaVariableType> pLocalVariable = pVirtualMachineState->GetLocalVariable(localVariableIndex);
   if (e_JavaVariableTypes::ReturnAddress != pLocalVariable->GetVariableType())
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected return address as local variable.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected return address as local variable." ));
   }
 
   boost::intrusive_ptr<JavaReturnAddress> pAddress = boost::dynamic_pointer_cast<JavaReturnAddress>(pLocalVariable);
@@ -712,7 +712,7 @@ void BasicExecutionEngine::ExecuteOpCodeReturnLong(const std::shared_ptr<IVirtua
   boost::intrusive_ptr<IJavaVariableType> pReference = pVirtualMachineState->PopOperand();
   if (pReference->GetVariableType() != e_JavaVariableTypes::Long)
   {
-    throw InvalidStateException(__FUNCTION__ " - Value on the operand stack was not of type long.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Value on the operand stack was not of type long." ));
   }
 
   pVirtualMachineState->PopState();
@@ -745,7 +745,7 @@ void BasicExecutionEngine::ExecuteOpCodeReturnDouble(const std::shared_ptr<IVirt
   boost::intrusive_ptr<IJavaVariableType> pReference = pVirtualMachineState->PopOperand();
   if (pReference->GetVariableType() != e_JavaVariableTypes::Double)
   {
-    throw InvalidStateException(__FUNCTION__ " - Value on the operand stack was not of type double.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Value on the operand stack was not of type double." ));
   }
 
   pVirtualMachineState->PopState();
@@ -778,7 +778,7 @@ void BasicExecutionEngine::ExecuteOpCodeReturnFloat(const std::shared_ptr<IVirtu
   boost::intrusive_ptr<IJavaVariableType> pReference = pVirtualMachineState->PopOperand();
   if (pReference->GetVariableType() != e_JavaVariableTypes::Float)
   {
-    throw InvalidStateException(__FUNCTION__ " - Value on the operand stack was not of type float.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Value on the operand stack was not of type float." ));
   }
 
   pVirtualMachineState->PopState();

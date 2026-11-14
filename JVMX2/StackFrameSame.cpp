@@ -13,7 +13,7 @@ StackFrameSame::StackFrameSame( uint8_t tag ) :
 {
   if ( tag > c_MaxValidSameFrameTagNo )
   {
-    throw UnsupportedTypeException( __FUNCTION__ " - Tag was not int he valid range for StackFrameSame" );
+    throw UnsupportedTypeException( JVMX_FUNCTION_MESSAGE( " - Tag was not int he valid range for StackFrameSame" ) );
   }
 }
 

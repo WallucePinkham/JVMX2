@@ -21,13 +21,13 @@ StackFrameSameLocals1StackItem StackFrame::ToStackFrameSameLocals1StackItem() co
 {
   if ( m_FrameType != e_StackFrameTypeSameLocals1StackItem )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Trying to convert to StackFrameSameLocals1StackItem when the type is not a StackFrameSameLocals1StackItem." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Trying to convert to StackFrameSameLocals1StackItem when the type is not a StackFrameSameLocals1StackItem." ) );
   }
 
   const StackFrameSameLocals1StackItem *pResult = dynamic_cast<const StackFrameSameLocals1StackItem *>(this);
   if ( nullptr == pResult )
   {
-    throw TypeMismatchException( __FUNCTION__ " - Dynamic cast to StackFrameSameLocals1StackItem failed." );
+    throw TypeMismatchException( JVMX_FUNCTION_MESSAGE( " - Dynamic cast to StackFrameSameLocals1StackItem failed." ) );
   }
 
   return StackFrameSameLocals1StackItem( *pResult );

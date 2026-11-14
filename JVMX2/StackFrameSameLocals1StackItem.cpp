@@ -13,7 +13,7 @@ StackFrameSameLocals1StackItem::StackFrameSameLocals1StackItem( uint8_t tag, std
 {
   if ( tag < c_MinValidLocals1StackItemTagNo || tag > c_MaxValidLocals1StackItemTagNo )
   {
-    throw UnsupportedTypeException( __FUNCTION__ " - Tag was not int he valid range for StackFrameSameLocals1StackItem" );
+    throw UnsupportedTypeException( JVMX_FUNCTION_MESSAGE( " - Tag was not int he valid range for StackFrameSameLocals1StackItem" ) );
   }
 
   m_OffsetDelta = tag - c_MinValidLocals1StackItemTagNo;

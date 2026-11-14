@@ -284,7 +284,7 @@ int BasicExecutionEngine::CompareFloatValues(const std::shared_ptr<IVirtualMachi
   boost::intrusive_ptr<JavaFloat> pFloat2 = operands.second;
 
   int32_t result = 0;
-  if (_isnan(pFloat1->ToHostFloat()) || _isnan(pFloat2->ToHostFloat()))
+  if (std::isnan(pFloat1->ToHostFloat()) || std::isnan(pFloat2->ToHostFloat()))
   {
     result = nanResult;
   }
@@ -312,7 +312,7 @@ int BasicExecutionEngine::CompareDoubleValues(const std::shared_ptr<IVirtualMach
   boost::intrusive_ptr<JavaDouble> pDouble2 = operands.second;
 
   int32_t result = 0;
-  if (_isnan(pDouble1->ToHostDouble()) || _isnan(pDouble2->ToHostDouble()))
+  if (std::isnan(pDouble1->ToHostDouble()) || std::isnan(pDouble2->ToHostDouble()))
   {
     result = nanResult;
   }

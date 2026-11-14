@@ -21,6 +21,7 @@ public:
   static JavaString FromCString(const JVMX_ANSI_CHAR_TYPE* pString);
   static JavaString FromCString(const JVMX_WIDE_CHAR_TYPE* pString);
   static JavaString FromUtf8ByteArray(size_t length, const uint8_t* pBuffer);
+  static JavaString FromModifiedUtf8ByteArray(size_t length, const uint8_t* pBuffer);
 
   //static JavaString FromUtf16ByteArray( size_t length, const uint8_t *pBuffer );
   static JavaString FromArray(const JavaArray& array);
@@ -103,6 +104,7 @@ public:
 
   bool Contains(const char16_t* pString) const;
   bool Equals(const char16_t* pString) const;
+  bool Equals(const JVMX_ANSI_CHAR_TYPE* pString) const;
 
   size_t Hash() const;
 

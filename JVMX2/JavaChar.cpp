@@ -1,5 +1,6 @@
 
 #include <string>
+#include <climits>
 
 #include "JavaString.h"
 #include "InvalidArgumentException.h"
@@ -34,7 +35,7 @@ JavaChar &JavaChar::operator=( const IJavaVariableType &other )
 
   if ( !other.IsIntegerCompatible() )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Expected a type that was integer compatible." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected a type that was integer compatible." ) );
   }
 
   if ( e_JavaVariableTypes::Char != other.GetVariableType() )
@@ -89,7 +90,12 @@ JavaChar JavaChar::FromCChar( const char value )
 
 JavaChar JavaChar::FromCWChar( const wchar_t value )
 {
-  static_assert(sizeof( wchar_t ) == sizeof( uint16_t ), "This might be interesting on Linux or any OS that uses UTF32. We'll need to test.");
+#if WCHAR_MAX > 0xFFFF
+  if ( value < 0 || static_cast<uint32_t>( value ) > 0xFFFFu )
+  {
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Wide character is outside the Java char range." ) );
+  }
+#endif
   return JavaChar( static_cast<uint16_t>(value) );
 }
 

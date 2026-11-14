@@ -48,7 +48,7 @@ std::shared_ptr<VerificationTypeInfo> StackFrameFullFrame::GetLocalsVerification
   }
   catch ( std::out_of_range & )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Index out of bounds for local verification type info in StackFrameFullFrame." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Index out of bounds for local verification type info in StackFrameFullFrame." ) );
   }
 }
 
@@ -60,7 +60,7 @@ std::shared_ptr<VerificationTypeInfo> StackFrameFullFrame::GetStackVerificationT
   }
   catch ( std::out_of_range & )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Index out of bounds for stack verification type info in StackFrameFullFrame." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Index out of bounds for stack verification type info in StackFrameFullFrame." ) );
   }
 }
 

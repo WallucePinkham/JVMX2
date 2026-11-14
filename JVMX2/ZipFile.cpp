@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include "ZipFile.h"
 
 #include "Zip/unzip.h"

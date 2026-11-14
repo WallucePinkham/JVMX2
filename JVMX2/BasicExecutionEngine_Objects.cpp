@@ -32,6 +32,7 @@
 #include "HelperClasses.h"
 
 #include "BasicExecutionEngine.h"
+#include "DebugBreak.h"
 
 extern const JavaString c_ClassInitialisationMethodName;
 extern const JavaString c_InstanceInitialisationMethodName;
@@ -49,7 +50,7 @@ void BasicExecutionEngine::ExecuteOpCodeGetStatic(const std::shared_ptr<IVirtual
   std::shared_ptr<ConstantPoolEntry> fieldEntry = pVirtualMachineState->GetConstantFromCurrentClass(ReadIndex(pVirtualMachineState));
   if (e_ConstantPoolEntryTypeFieldReference != fieldEntry->GetType())
   {
-    GetLogger()->LogError(__FUNCTION__ " - Could not resolve field reference for opcode: getstatic");
+    GetLogger()->LogError(JVMX_FUNCTION_MESSAGE( " - Could not resolve field reference for opcode: getstatic" ));
     HelperClasses::ThrowJavaException(pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException);
     return;
   }
@@ -57,7 +58,7 @@ void BasicExecutionEngine::ExecuteOpCodeGetStatic(const std::shared_ptr<IVirtual
   const ConstantPoolFieldReference* pFieldRef = dynamic_cast<const ConstantPoolFieldReference*>(fieldEntry->GetValue());
   if (nullptr == pFieldRef)
   {
-    throw TypeMismatchException(__FUNCTION__ " - Could not convert constant pool entry to field reference.");
+    throw TypeMismatchException(JVMX_FUNCTION_MESSAGE( " - Could not convert constant pool entry to field reference." ));
   }
 
   JavaString targetClassClassName = *pFieldRef->GetClassName();
@@ -73,7 +74,7 @@ void BasicExecutionEngine::ExecuteOpCodeGetStatic(const std::shared_ptr<IVirtual
   }
   catch (FileDoesNotExistException& ex)
   {
-    GetLogger()->LogDebug(__FUNCTION__ " - File not found: %s", ex.what());
+    GetLogger()->LogDebug(JVMX_FUNCTION_MESSAGE( " - File not found: %s" ), ex.what());
     HelperClasses::ThrowJavaException(pVirtualMachineState, c_JavaJavaClassNotFoundException);
     return;
   }
@@ -94,7 +95,7 @@ void BasicExecutionEngine::ExecuteOpCodeGetStatic(const std::shared_ptr<IVirtual
     }
     catch (FileDoesNotExistException& ex)
     {
-      GetLogger()->LogDebug(__FUNCTION__ " - File not found2: %s", ex.what());
+      GetLogger()->LogDebug(JVMX_FUNCTION_MESSAGE( " - File not found2: %s" ), ex.what());
       HelperClasses::ThrowJavaException(pVirtualMachineState, c_JavaJavaClassNotFoundException);
       return;
     }
@@ -160,7 +161,7 @@ std::shared_ptr<FieldInfo> BasicExecutionEngine::ResolveField(const std::shared_
   std::shared_ptr<JavaClass> pClass = ResolveClass(pVirtualMachineState, className);
   if (nullptr == pClass)
   {
-    GetLogger()->LogError(__FUNCTION__ " - Could not resolve Class %s.", className.ToUtf8String().c_str());
+    GetLogger()->LogError(JVMX_FUNCTION_MESSAGE( " - Could not resolve Class %s." ), className.ToUtf8String().c_str());
 
     // We would have already thrown a JavaException.
     return nullptr;
@@ -174,7 +175,7 @@ std::shared_ptr<FieldInfo> BasicExecutionEngine::ResolveField(const std::shared_
     {
       if (nullptr == pSuperClass)
       {
-        GetLogger()->LogError(__FUNCTION__ " - Could not resolve Super Class %s.", pClass->GetSuperClass()->GetName()->ToUtf8String().c_str());
+        GetLogger()->LogError(JVMX_FUNCTION_MESSAGE( " - Could not resolve Super Class %s." ), pClass->GetSuperClass()->GetName()->ToUtf8String().c_str());
 
         // We would have already thrown a JavaException.
         return nullptr;
@@ -305,7 +306,7 @@ void BasicExecutionEngine::ExecuteOpCodePutStatic(const std::shared_ptr<IVirtual
   std::shared_ptr<FieldInfo> pFieldInfo = ResolveField(pVirtualMachineState, *pFieldEntry->GetClassName(), *pFieldEntry->GetName());
   if (nullptr == pFieldInfo)
   {
-    GetLogger()->LogError(__FUNCTION__ " - Could not resolve field reference for opcode: getstatic");
+    GetLogger()->LogError(JVMX_FUNCTION_MESSAGE( " - Could not resolve field reference for opcode: getstatic" ));
     HelperClasses::ThrowJavaException(pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException);
     return;
   }
@@ -317,7 +318,7 @@ void BasicExecutionEngine::ExecuteOpCodePutStatic(const std::shared_ptr<IVirtual
 
   if (!pFieldInfo->IsStatic())
   {
-    GetLogger()->LogError(__FUNCTION__ " - Throwing Java Exception because field is not static.");
+    GetLogger()->LogError(JVMX_FUNCTION_MESSAGE( " - Throwing Java Exception because field is not static." ));
     HelperClasses::ThrowJavaException(pVirtualMachineState, c_JavaIncompatibleClassChangeErrorException);
   }
 
@@ -344,7 +345,7 @@ void BasicExecutionEngine::ExecuteOpCodeNewArrayOfReference(const std::shared_pt
   boost::intrusive_ptr< JavaInteger > pCount = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
   if (nullptr == pCount)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected an operand of type int.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected an operand of type int." ));
   }
 
   if (pCount->ToHostInt32() < 0)
@@ -376,7 +377,7 @@ void BasicExecutionEngine::ExecuteOpCodeNew(const std::shared_ptr<IVirtualMachin
   if (nullptr == pClass)
   {
     HelperClasses::ThrowJavaException(pVirtualMachineState, c_JavaInstantiationErrorException);
-    throw InvalidStateException(__FUNCTION__ " - Could not resolve class from index.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not resolve class from index." ));
   }
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -406,7 +407,7 @@ std::shared_ptr<JavaClass> BasicExecutionEngine::ResolveClassFromIndex(const std
   std::shared_ptr<ConstantPoolClassReference> pClassRef = pVirtualMachineState->GetConstantFromCurrentClass(index)->AsClassReferencePointer();
   if (nullptr == pClassRef)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected index to be a reference to a class/interface/array.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected index to be a reference to a class/interface/array." ));
   }
 
   return ResolveClass(pVirtualMachineState, *pClassRef->GetClassName());
@@ -422,7 +423,7 @@ void BasicExecutionEngine::ExecuteOpCodeNewArray(const std::shared_ptr<IVirtualM
   boost::intrusive_ptr< JavaInteger > pCount = boost::dynamic_pointer_cast<JavaInteger>(pVirtualMachineState->PopOperand());
   if (nullptr == pCount)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected an operand of type int.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected an operand of type int." ));
   }
 
   if (pCount->ToHostInt32() < 0)
@@ -454,7 +455,7 @@ void BasicExecutionEngine::ExecuteOpCodeGetField(const std::shared_ptr<IVirtualM
 
   if (nullptr == pFieldInfo)
   {
-    throw InvalidStateException(__FUNCTION__ " - Could not find field.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not find field." ));
   }
 
   if (pFieldInfo->IsStatic())
@@ -493,9 +494,9 @@ void BasicExecutionEngine::ExecuteOpCodeGetField(const std::shared_ptr<IVirtualM
   if (nullptr == pFieldValue)
   {
 #ifdef _DEBUG
-    __asm int 3;
+    JvmxDebugBreak();
 #endif
-    throw InvalidStateException(__FUNCTION__ " - Could not find expected field on object.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Could not find expected field on object." ));
   }
 
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
@@ -541,7 +542,7 @@ void BasicExecutionEngine::ExecuteOpCodePutField(const std::shared_ptr<IVirtualM
 #if defined (_DEBUG) && defined(JVMX_LOG_VERBOSE)
   if (pVirtualMachineState->HasUserCodeStarted())
   {
-    GetLogger()->LogDebug(__FUNCTION__ ":");
+    GetLogger()->LogDebug(JVMX_FUNCTION_MESSAGE( ":" ));
     pVirtualMachineState->LogOperandStack();
   }
 #endif // _DEBUG
@@ -551,7 +552,7 @@ void BasicExecutionEngine::ExecuteOpCodePutField(const std::shared_ptr<IVirtualM
   std::shared_ptr<ConstantPoolFieldReference> pFieldReference = pVirtualMachineState->GetConstantFromCurrentClass(index)->AsFieldReferencePointer();
   if (nullptr == pFieldReference)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected constant to be a field reference");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected constant to be a field reference" ));
   }
 
   std::shared_ptr<FieldInfo> pFieldInfo = ResolveField(pVirtualMachineState, *pFieldReference->GetClassName(), *pFieldReference->GetName());
@@ -658,7 +659,7 @@ bool BasicExecutionEngine::AreTypesCompatibile(boost::intrusive_ptr<JavaString> 
     break;
 
   default:
-    throw UnsupportedTypeException(__FUNCTION__ " - Type not supported.");
+    throw UnsupportedTypeException(JVMX_FUNCTION_MESSAGE( " - Type not supported." ));
     break;
   }
 
@@ -695,7 +696,7 @@ void BasicExecutionEngine::ExecuteOpCodeIsInstanceOf(const std::shared_ptr<IVirt
     {
       if (e_JavaVariableTypes::Array != pOperand->GetVariableType())
       {
-        throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be an object or a null reference type.");
+        throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected first operand to be an object or a null reference type." ));
       }
     }
   }
@@ -703,7 +704,7 @@ void BasicExecutionEngine::ExecuteOpCodeIsInstanceOf(const std::shared_ptr<IVirt
   std::shared_ptr<JavaClass> pResolvedClass = ResolveClassFromIndex(pVirtualMachineState, index);
   if (nullptr == pResolvedClass)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Could not resolve class reference.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Could not resolve class reference." ));
   }
 
   if (e_JavaVariableTypes::Object == pOperand->GetVariableType())
@@ -734,7 +735,7 @@ void BasicExecutionEngine::ExecuteOpCodeIsInstanceOf(const std::shared_ptr<IVirt
     boost::intrusive_ptr<ObjectReference> pOperandAsArray = boost::dynamic_pointer_cast<ObjectReference>(pOperand);
     if (nullptr == pOperandAsArray)
     {
-      throw InvalidStateException(__FUNCTION__ " - Expected an array.");
+      throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected an array." ));
     }
 
     if (pResolvedClass->IsInterface())
@@ -812,13 +813,13 @@ void BasicExecutionEngine::ExecuteOpCodeCheckCast(const std::shared_ptr<IVirtual
 
   if (!pOperand->IsReferenceType())
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected first operand to be an a reference type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected first operand to be an a reference type." ));
   }
 
   std::shared_ptr<ConstantPoolClassReference> pClassRef = pVirtualMachineState->GetConstantFromCurrentClass(classIndex)->AsClassReferencePointer();
   if (nullptr == pClassRef)
   {
-    throw InvalidStateException(__FUNCTION__ " - Expected index to be a reference to a class/interface/array.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Expected index to be a reference to a class/interface/array." ));
   }
 
   std::shared_ptr<JavaClass> pResolvedClass = nullptr;
@@ -846,7 +847,7 @@ void BasicExecutionEngine::ExecuteOpCodeCheckCast(const std::shared_ptr<IVirtual
     pResolvedClass = ResolveClass(pVirtualMachineState, className);
     if (nullptr == pResolvedClass)
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Could not resolve class reference.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Could not resolve class reference." ));
     }
   }
 
@@ -966,7 +967,7 @@ void BasicExecutionEngine::ValidateStaticFieldType(std::shared_ptr<ConstantPoolF
     boost::intrusive_ptr< JavaInteger > pInteger = boost::dynamic_pointer_cast<JavaInteger>(pOperand);
     if (nullptr == pInteger)
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Expected operand to be integer type.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected operand to be integer type." ));
     }
   }
   break;
@@ -976,7 +977,7 @@ void BasicExecutionEngine::ValidateStaticFieldType(std::shared_ptr<ConstantPoolF
     boost::intrusive_ptr<JavaFloat> pFloat = boost::dynamic_pointer_cast<JavaFloat>(pOperand);
     if (nullptr == pFloat)
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Expected operand to be float type.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected operand to be float type." ));
     }
   }
   break;
@@ -986,7 +987,7 @@ void BasicExecutionEngine::ValidateStaticFieldType(std::shared_ptr<ConstantPoolF
     boost::intrusive_ptr<JavaDouble> pDouble = boost::dynamic_pointer_cast<JavaDouble>(pOperand);
     if (nullptr == pDouble)
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Expected operand to be double type.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected operand to be double type." ));
     }
   }
   break;
@@ -996,7 +997,7 @@ void BasicExecutionEngine::ValidateStaticFieldType(std::shared_ptr<ConstantPoolF
     boost::intrusive_ptr<JavaLong> pLong = boost::dynamic_pointer_cast<JavaLong>(pOperand);
     if (nullptr == pLong)
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Expected operand to be long type.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected operand to be long type." ));
     }
   }
   break;
@@ -1017,7 +1018,7 @@ void BasicExecutionEngine::ValidateStaticFieldType(std::shared_ptr<ConstantPoolF
     boost::intrusive_ptr<ObjectReference> pReference = boost::dynamic_pointer_cast<ObjectReference>(pOperand);
     if (nullptr == pReference)
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Expected operand to be reference type.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected operand to be reference type." ));
     }
   }
   break;
@@ -1027,13 +1028,13 @@ void BasicExecutionEngine::ValidateStaticFieldType(std::shared_ptr<ConstantPoolF
     boost::intrusive_ptr<ObjectReference> pArray = boost::dynamic_pointer_cast<ObjectReference>(pOperand);
     if (nullptr == pArray)
     {
-      throw InvalidArgumentException(__FUNCTION__ " - Expected operand to be array type.");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected operand to be array type." ));
     }
   }
   break;
 
   default:
-    throw UnsupportedTypeException(__FUNCTION__ " - Unknown type found.");
+    throw UnsupportedTypeException(JVMX_FUNCTION_MESSAGE( " - Unknown type found." ));
     break;
   }
 }
@@ -1053,7 +1054,7 @@ void BasicExecutionEngine::ValidateArrayType(uint8_t type)
     break;
 
   default:
-    throw UnsupportedTypeException(__FUNCTION__ " - Creating array of unknown type");
+    throw UnsupportedTypeException(JVMX_FUNCTION_MESSAGE( " - Creating array of unknown type" ));
     break;
   }
 }

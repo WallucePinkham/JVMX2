@@ -212,6 +212,7 @@
     <ClInclude Include="ConstantPoolNullEntry.h" />
     <ClInclude Include="ConstantPoolStringReference.h" />
     <ClInclude Include="DataBuffer.h" />
+    <ClInclude Include="DebugBreak.h" />
     <ClInclude Include="DefaultClassLoader.h" />
     <ClInclude Include="DefaultGarbageCollector.h" />
     <ClInclude Include="DefaultJavaLangClassList.h" />
@@ -307,6 +308,7 @@
     <ClInclude Include="ObjectReference.h" />
     <ClInclude Include="ObjectRegistryLocalMachine.h" />
     <ClInclude Include="ObjectRegistryRedis.h" />
+    <ClInclude Include="OperatingSystemLinux.h" />
     <ClInclude Include="OperatingSystemWindows.h" />
     <ClInclude Include="OsFunctions.h" />
     <ClInclude Include="OsFunctionsSingletonFactory.h" />

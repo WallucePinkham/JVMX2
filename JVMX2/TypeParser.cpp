@@ -30,13 +30,13 @@ TypeParser::ParsedMethodType TypeParser::ParseMethodType(const JavaString& type)
 
   if (type.At(0) != c_JavaParametersStart)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Missing initial brace.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Missing initial brace." ));
   }
 
   size_t endParamBrace = type.FindNext(0, c_JavaParametersEnd);
   if (endParamBrace == type.GetLastStringPosition())
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Missing brace to end parameters.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Missing brace to end parameters." ));
   }
 
   result.returnType = type.SubString(endParamBrace + 1, type.GetLastStringPosition());
@@ -76,7 +76,7 @@ std::vector<boost::intrusive_ptr<JavaString> > TypeParser::ParseParameterList(co
 
       if (endPos >= params.GetLengthInCodePoints())
       {
-        throw InvalidArgumentException(__FUNCTION__ " - Unexpected end of parameter list.");
+        throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Unexpected end of parameter list." ));
       }
 
       while (endPos < params.GetLengthInCodePoints() && c_JavaTypeSpecifierArray == params.At(endPos))
@@ -88,14 +88,14 @@ std::vector<boost::intrusive_ptr<JavaString> > TypeParser::ParseParameterList(co
       {
         if (index >= params.GetLengthInCodePoints())
         {
-          throw InvalidArgumentException(__FUNCTION__ " - Index out of bounds.");
+          throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Index out of bounds." ));
         }
 
         size_t delimiterPos = params.FindNext(index, c_JavaObjectTypeDelimiter);
 
         if (delimiterPos == JavaString::NotFound())
         {
-          throw InvalidArgumentException(__FUNCTION__ " - Missing object type delimiter.");
+          throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Missing object type delimiter." ));
         }
 
         if (delimiterPos != params.GetLastStringPosition())
@@ -186,7 +186,7 @@ JavaString TypeParser::ConvertTypeToString(e_JavaVariableTypes type)
     break;
 
   default:
-    throw InvalidArgumentException(__FUNCTION__ " - Unknown type. ");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Unknown type. " ));
     break;
   }
 }
@@ -240,7 +240,7 @@ JavaString TypeParser::ConvertTypeToString(JVMX_CHAR_TYPE type)
     break;
 
   default:
-    throw InvalidArgumentException(__FUNCTION__ " - Unknown type. ");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Unknown type. " ));
     break;
   }
 }
@@ -374,7 +374,7 @@ boost::intrusive_ptr<IJavaVariableType> TypeParser::GetDefaultValue(const JavaSt
   }
 
   default:
-    throw UnsupportedTypeException(__FUNCTION__ " - Unknown type. ");
+    throw UnsupportedTypeException(JVMX_FUNCTION_MESSAGE( " - Unknown type. " ));
     break;
   }
 
@@ -426,7 +426,7 @@ e_JavaVariableTypes TypeParser::ConvertTypeDescriptorToVariableType(char16_t typ
     break;
 
   default:
-    throw InvalidArgumentException(__FUNCTION__ " - Unknown type. ");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Unknown type. " ));
     break;
   }
 }
@@ -476,7 +476,7 @@ e_JavaArrayTypes TypeParser::ConvertTypeDescriptorToArrayType(char16_t type)
     break;
 
   default:
-    throw InvalidArgumentException(__FUNCTION__ " - Unknown type. ");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Unknown type. " ));
     break;
   }
 }
@@ -540,7 +540,7 @@ JavaString TypeParser::ConvertArrayTypeToDescriptor(e_JavaArrayTypes type)
     break;
 
   default:
-    throw InvalidArgumentException(__FUNCTION__ " - Unknown array type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Unknown array type." ));
     break;
   }
 }
@@ -577,7 +577,7 @@ boost::intrusive_ptr<IJavaVariableType> TypeParser::DownCastFromInteger(boost::i
     break;
 
   default:
-    throw InvalidArgumentException(__FUNCTION__ " - This type is not compatible with the integer type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - This type is not compatible with the integer type." ));
     break;
   }
 
@@ -614,7 +614,7 @@ boost::intrusive_ptr< JavaInteger > TypeParser::UpCastToInteger(const IJavaVaria
     break;
 
   default:
-    throw InvalidArgumentException(__FUNCTION__ " - This type is not compatible with the integer type.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - This type is not compatible with the integer type." ));
     break;
   }
 }
@@ -629,13 +629,13 @@ JavaString TypeParser::ExtractClassNameFromReference(const JavaString& reference
 
   if (referenceName.At(startIndex) != c_JavaTypeSpecifierReference)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Expected reference type to be passed in.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Expected reference type to be passed in." ));
   }
 
   size_t endPos = referenceName.FindNext(startIndex, ';');
   if (JavaString::NotFound() == endPos)
   {
-    throw InvalidArgumentException(__FUNCTION__ " - Semicolon at the end of reference was not found.");
+    throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Semicolon at the end of reference was not found." ));
   }
 
   return referenceName.SubString(1, endPos - 1);
@@ -701,7 +701,7 @@ size_t TypeParser::ParsedMethodType::GetParameterCountAsIntegers() const
       break;
 
     default:
-      throw InvalidArgumentException(__FUNCTION__ " - Unknown type. ");
+      throw InvalidArgumentException(JVMX_FUNCTION_MESSAGE( " - Unknown type. " ));
       break;
     }
   }

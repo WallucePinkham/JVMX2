@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <mutex>
+#include <thread>
 #include <vector>
 #include "GlobalConstants.h"
 

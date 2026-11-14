@@ -56,7 +56,7 @@ uint32_t DefaultClassLoader::ReadMagicNumber()
 
   //   if ( magicNumber != c_JavaClassFileMagicNumber )
   //   {
-  //     throw FileInvalidException( __FUNCTION__ " - Magic Number Check Failed." );
+  //     throw FileInvalidException( JVMX_FUNCTION_MESSAGE( " - Magic Number Check Failed." ) );
   //   }
 
   return magicNumber;
@@ -70,7 +70,7 @@ uint16_t DefaultClassLoader::ReadMinorVersion()
   }
   catch ( FileInvalidException & )
   {
-    throw FileInvalidException( __FUNCTION__ " - Could not read minor version number." );
+    throw FileInvalidException( JVMX_FUNCTION_MESSAGE( " - Could not read minor version number." ) );
   }
 }
 
@@ -82,7 +82,7 @@ uint16_t DefaultClassLoader::ReadMajorVersion()
   }
   catch ( FileInvalidException & )
   {
-    throw FileInvalidException( __FUNCTION__ " - Could not read major version number." );
+    throw FileInvalidException( JVMX_FUNCTION_MESSAGE( " - Could not read major version number." ) );
   }
 }
 
@@ -94,7 +94,7 @@ uint16_t DefaultClassLoader::ReadConstantPoolCount()
   }
   catch ( FileInvalidException & )
   {
-    throw FileInvalidException( __FUNCTION__ " - Could not constant pool count." );
+    throw FileInvalidException( JVMX_FUNCTION_MESSAGE( " - Could not constant pool count." ) );
   }
 }
 
@@ -169,7 +169,7 @@ std::shared_ptr<ConstantPool> DefaultClassLoader::ReadConstantPoolTable( size_t 
         break;
 
       default:
-        throw UnsupportedTypeException( __FUNCTION__ " - Unsupported tag type read from constant pool." );
+        throw UnsupportedTypeException( JVMX_FUNCTION_MESSAGE( " - Unsupported tag type read from constant pool." ) );
         break;
     }
   }
@@ -191,7 +191,7 @@ JavaString DefaultClassLoader::ReadString()
   }
 
   DataBuffer buffer = ReadBuffer( length );
-  JavaString result = JavaString::FromUtf8ByteArray( buffer.GetByteLength(), buffer.ToByteArray() );
+  JavaString result = JavaString::FromModifiedUtf8ByteArray( buffer.GetByteLength(), buffer.ToByteArray() );
 
   return result;
 }
@@ -317,7 +317,7 @@ uint16_t DefaultClassLoader::ReadAccessFlags()
   }
   catch ( FileInvalidException & )
   {
-    throw FileInvalidException( __FUNCTION__ " - Could not read access flags. Possible end of file." );
+    throw FileInvalidException( JVMX_FUNCTION_MESSAGE( " - Could not read access flags. Possible end of file." ) );
   }
 }
 
@@ -334,7 +334,7 @@ uint16_t DefaultClassLoader::ReadInterfaceCount()
   }
   catch ( FileInvalidException & )
   {
-    throw FileInvalidException( __FUNCTION__ " - Could not read interface count. Possible end of file." );
+    throw FileInvalidException( JVMX_FUNCTION_MESSAGE( " - Could not read interface count. Possible end of file." ) );
   }
 }
 
@@ -360,7 +360,7 @@ uint16_t DefaultClassLoader::ReadFieldCount()
   }
   catch ( FileInvalidException & )
   {
-    throw FileInvalidException( __FUNCTION__ " - Could not read field count. Possible end of file." );
+    throw FileInvalidException( JVMX_FUNCTION_MESSAGE( " - Could not read field count. Possible end of file." ) );
   }
 }
 
@@ -397,7 +397,7 @@ uint16_t DefaultClassLoader::ReadMethodCount()
   }
   catch ( FileInvalidException & )
   {
-    throw FileInvalidException( __FUNCTION__ " - Could not read Method count. Possible end of file." );
+    throw FileInvalidException( JVMX_FUNCTION_MESSAGE( " - Could not read Method count. Possible end of file." ) );
   }
 }
 
@@ -427,7 +427,7 @@ uint16_t DefaultClassLoader::ReadAttributeCount()
   }
   catch ( FileInvalidException & )
   {
-    throw FileInvalidException( __FUNCTION__ " - Could not read Attribute count. Possible end of file." );
+    throw FileInvalidException( JVMX_FUNCTION_MESSAGE( " - Could not read Attribute count. Possible end of file." ) );
   }
 }
 
@@ -513,7 +513,7 @@ std::shared_ptr<JavaClass> DefaultClassLoader::LoadClass( BigEndianStream stream
   uint32_t magicNumber = ReadMagicNumber();
   if ( magicNumber != c_JavaClassFileMagicNumber )
   {
-    throw FileInvalidException( __FUNCTION__ " - The magic number for this file was not correct." );
+    throw FileInvalidException( JVMX_FUNCTION_MESSAGE( " - The magic number for this file was not correct." ) );
   }
 
   uint16_t minorVersion = ReadMinorVersion();

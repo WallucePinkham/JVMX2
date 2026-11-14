@@ -11,11 +11,11 @@ class IFloatingPointBase : public IJavaVariableType
 public:
   virtual ~IFloatingPointBase() {};
 
-  virtual e_JavaVariableTypes GetVariableType() const JVMX_PURE JVMX_OVERRIDE;
-  virtual bool IsReferenceType() const JVMX_PURE JVMX_OVERRIDE;
-  virtual bool IsIntegerCompatible() const JVMX_PURE JVMX_OVERRIDE;
-  virtual bool IsNull() const JVMX_PURE JVMX_OVERRIDE;
-  virtual JavaString ToString() const JVMX_PURE JVMX_OVERRIDE;
+  virtual e_JavaVariableTypes GetVariableType() const JVMX_OVERRIDE JVMX_PURE;
+  virtual bool IsReferenceType() const JVMX_OVERRIDE JVMX_PURE;
+  virtual bool IsIntegerCompatible() const JVMX_OVERRIDE JVMX_PURE;
+  virtual bool IsNull() const JVMX_OVERRIDE JVMX_PURE;
+  virtual JavaString ToString() const JVMX_OVERRIDE JVMX_PURE;
 
   virtual bool operator<(const IJavaVariableType &other) const JVMX_OVERRIDE;
   virtual bool operator==(const IJavaVariableType &other) const JVMX_OVERRIDE;

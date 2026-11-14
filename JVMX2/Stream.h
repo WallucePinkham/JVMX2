@@ -60,7 +60,7 @@ inline T Stream::ReadFromBuffer()
 {
   if ( m_StreamPosition + sizeof( T ) > m_Buffer.GetByteLength() )
   {
-    throw IndexOutOfBoundsException( __FUNCSIG__ " - Trying to read past the end of the buffer." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Trying to read past the end of the buffer." ) );
   }
 
   const uint8_t *pBuffer = m_Buffer.ToByteArray();

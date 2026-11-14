@@ -32,7 +32,7 @@ JavaObject::JavaObject( std::shared_ptr<JavaClass> pClass )
 {
   if ( nullptr == pClass )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Expected a non-null class pointer." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected a non-null class pointer." ) );
   }
 
 #ifdef _DEBUG
@@ -132,7 +132,7 @@ size_t JavaObject::InitialiseField( std::shared_ptr<JavaClass> pClass, int i, si
       break;
     case e_JavaVariableTypes::ClassReference:
       JVMX_ASSERT( false );
-      throw InvalidStateException( __FUNCTION__ " - Unexpected field type." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Unexpected field type." ) );
       break;
     case e_JavaVariableTypes::Bool:
       new ( pAddress ) JavaBool( JavaBool::FromDefault() );
@@ -147,7 +147,7 @@ size_t JavaObject::InitialiseField( std::shared_ptr<JavaClass> pClass, int i, si
       new ( pAddress ) ObjectReference( nullptr );
       break;
     default:
-      throw InvalidStateException( __FUNCTION__ " - Invalid field type." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Invalid field type." ) );
       break;
   }
 
@@ -167,7 +167,7 @@ bool JavaObject::ThrowJavaExceptionIfInterrupted() const
   auto pClass = pCurrentThreadState->InitialiseClass( JavaString::FromCString( c_JavaInterruptedException ) );
   if ( nullptr == pClass )
   {
-    throw InvalidStateException( __FUNCTION__ " - Java exception class could not be loaded." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Java exception class could not be loaded." ) );
   }
 
   //if ( !pCurrentThreadState->IsClassInitialised( *pClass->GetName() ) )
@@ -366,7 +366,7 @@ boost::intrusive_ptr<IJavaVariableType> JavaObject::GetFieldByNameConst( const J
   const IJavaVariableType *pFieldValue = reinterpret_cast<const IJavaVariableType *>( m_pFields + startingOffset + pFieldInfo->GetOffset() );
   if ( nullptr == pFieldInfo )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Field does not exist or is static." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Field does not exist or is static." ) );
   }
 
   JVMX_ASSERT( pFieldValue->IsNull() || pFieldValue->GetVariableType() == e_JavaVariableTypes::Array ||
@@ -406,7 +406,7 @@ boost::intrusive_ptr<IJavaVariableType> JavaObject::GetFieldByNameConst( const J
       break;
     case e_JavaVariableTypes::ClassReference:
       JVMX_ASSERT( false );
-      throw InvalidStateException( __FUNCTION__ " - Unexpected field type." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Unexpected field type." ) );
       break;
     case e_JavaVariableTypes::Bool:
       return new JavaBool( *dynamic_cast<const JavaBool *>( pFieldValue ) );
@@ -416,7 +416,7 @@ boost::intrusive_ptr<IJavaVariableType> JavaObject::GetFieldByNameConst( const J
       return new ObjectReference( *dynamic_cast<const ObjectReference *>( pFieldValue ) );
       break;
     default:
-      throw InvalidStateException( __FUNCTION__ " - Invalid field type." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Invalid field type." ) );
       break;
   }
 
@@ -447,12 +447,12 @@ JavaObject::~JavaObject() JVMX_NOEXCEPT
   m_JVMXFields.clear();
 }
 
-void JavaObject::operator delete ( void *pObject )
+void JavaObject::operator delete ( void *pObject ) JVMX_NOEXCEPT
 {
   //ObjectFactory::FreeObject( pObject );
 }
 
-void JavaObject::operator delete ( void *pObject, void * )
+void JavaObject::operator delete ( void *pObject, void * ) JVMX_NOEXCEPT
 {
   //ObjectFactory::FreeObject( pObject );
 }
@@ -506,17 +506,17 @@ void JavaObject::SetField( const JavaString &name, IJavaVariableType *pNewValue,
     pThreadManager->GetCurrentThreadState()->LogLocalVariables();
     pThreadManager->GetCurrentThreadState()->LogOperandStack();
 #endif // _DEBUG
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Field does not exist or is static." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Field does not exist or is static." ) );
   }
 
   if ( !ignoreFieldAccess && !pFieldInfo->IsPublic() )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Field is not public." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Field is not public." ) );
   }
 
   if ( !ignoreFieldAccess && pFieldInfo->IsFinal() )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Field is final." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Field is final." ) );
   }
 
   IJavaVariableType *pFieldValue = reinterpret_cast<IJavaVariableType *>( m_pFields + startingOffset + pFieldInfo->GetOffset() );

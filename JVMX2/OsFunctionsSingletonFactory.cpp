@@ -1,6 +1,8 @@
 
 #if defined(_WIN32) || defined (_WIN64)
 #include "OperatingSystemWindows.h"
+#elif defined(__linux__)
+#include "OperatingSystemLinux.h"
 #else
 #error "You need to create a operating system delegate for your OS."
 #endif
@@ -24,6 +26,8 @@ IOperatingSystemDelegate *OsFunctionsSingletonFactory::GetOsDelegate()
   {
 #if defined(_WIN32) || defined (_WIN64)
     m_pDelegate = new OperatingSystemWindows;
+#elif defined(__linux__)
+    m_pDelegate = new OperatingSystemLinux;
 #else
     return nullptr;
 #endif // defined(_WIN32) || defined (_WIN64)

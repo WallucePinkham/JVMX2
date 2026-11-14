@@ -32,7 +32,7 @@ public:
 
   virtual e_VerificationTypeInfoTypes GetType() const;
 
-  virtual DataBuffer ToBinary() const JVMX_ABSTRACT;
+  virtual DataBuffer ToBinary() const JVMX_PURE;
 
   bool operator==(const VerificationTypeInfo &other) const;
   virtual bool Equals( const VerificationTypeInfo &other ) const JVMX_PURE;

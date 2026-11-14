@@ -33,7 +33,7 @@ IJavaVariableType &IJavaVariableType::operator=( const IJavaVariableType &other 
 {
   if ( !IsReferenceType() && GetVariableType() != other.GetVariableType() )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Invalid argument passed. Types do not match." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Invalid argument passed. Types do not match." ) );
   }
 
   switch ( GetVariableType() )
@@ -83,7 +83,7 @@ IJavaVariableType &IJavaVariableType::operator=( const IJavaVariableType &other 
       reinterpret_cast<ObjectReference *>( this )->operator=( other );
       break;
     default:
-      throw InvalidStateException( __FUNCTION__ " - Invalid field type." );
+      throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Invalid field type." ) );
       break;
   }
 

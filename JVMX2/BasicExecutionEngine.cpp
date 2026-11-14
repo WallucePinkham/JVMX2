@@ -36,6 +36,7 @@
 #include "HelperClasses.h"
 
 #include "BasicExecutionEngine.h"
+#include "DebugBreak.h"
 
 #if 0
 #define __EXTRA_LOGGING
@@ -1157,7 +1158,7 @@ ConstantPoolIndex BasicExecutionEngine::ReadIndex(const std::shared_ptr<IVirtual
 {
   if (!pVirtualMachineState->CanReadBytes(sizeof(ConstantPoolIndex)))
   {
-    throw InvalidStateException(__FUNCTION__ " - Not enough space in current code segment to read an index.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Not enough space in current code segment to read an index." ));
   }
 
   uint8_t indexByte1 = pVirtualMachineState->GetCodeSegmentStart()[pVirtualMachineState->GetProgramCounter()];
@@ -1990,7 +1991,7 @@ void AddToStringPool(std::shared_ptr<ConstantPoolStringReference> pStringRef, bo
 // {
 //   if ( !pVirtualMachineState->CanReadBytes( 1 ) )
 //   {
-//     throw InvalidStateException( __FUNCTION__ " - Should be able to read 1 bytes for this instruction, but the code segment is too short." );
+//     throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - Should be able to read 1 bytes for this instruction, but the code segment is too short." ) );
 //   }
 //
 //   uint8_t result = pVirtualMachineState->GetCodeSegmentStart()[ pVirtualMachineState->GetProgramCounter() ];
@@ -2004,7 +2005,7 @@ int8_t BasicExecutionEngine::ReadByteSigned(const std::shared_ptr<IVirtualMachin
   if (!pVirtualMachineState->CanReadBytes(1))
   {
     pVirtualMachineState->LogCallStack();
-    throw InvalidStateException(__FUNCTION__ " - Should be able to read 1 bytes for this instruction, but the code segment is too short.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Should be able to read 1 bytes for this instruction, but the code segment is too short." ));
   }
 
   int8_t result = pVirtualMachineState->GetCodeSegmentStart()[pVirtualMachineState->GetProgramCounter()];
@@ -2017,7 +2018,7 @@ int16_t BasicExecutionEngine::ReadOffset(const std::shared_ptr<IVirtualMachineSt
 {
   if (!pVirtualMachineState->CanReadBytes(sizeof(ConstantPoolIndex)))
   {
-    throw InvalidStateException(__FUNCTION__ " - Not enough space in current code segment to read an index.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Not enough space in current code segment to read an index." ));
   }
 
   uint8_t branchByte1 = pVirtualMachineState->GetCodeSegmentStart()[pVirtualMachineState->GetProgramCounter()];
@@ -2040,7 +2041,7 @@ void BasicExecutionEngine::BreakDebug(const char* pString1, const char* pString2
 {
   if (strcmp(pString1, pString2) == 0)
   {
-    __asm int 3;
+    JvmxDebugBreak();
   }
 }
 
@@ -2048,7 +2049,7 @@ void BasicExecutionEngine::BreakDebug(const char16_t* pString1, const char16_t* 
 {
   if (wcscmp((const wchar_t*)pString1, (const wchar_t*)pString2) == 0)
   {
-    __asm int 3;
+    JvmxDebugBreak();
   }
 }
 
@@ -2107,7 +2108,7 @@ int16_t BasicExecutionEngine::ReadShort(const std::shared_ptr<IVirtualMachineSta
 {
   if (!pVirtualMachineState->CanReadBytes(sizeof(ConstantPoolIndex)))
   {
-    throw InvalidStateException(__FUNCTION__ " - Not enough space in current code segment to read a short.");
+    throw InvalidStateException(JVMX_FUNCTION_MESSAGE( " - Not enough space in current code segment to read a short." ));
   }
 
   int8_t branchByte1 = pVirtualMachineState->GetCodeSegmentStart()[pVirtualMachineState->GetProgramCounter()];

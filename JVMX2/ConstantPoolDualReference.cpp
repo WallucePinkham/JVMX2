@@ -51,7 +51,7 @@ boost::intrusive_ptr<JavaString> ConstantPoolDualReference::GetClassName() const
 {
   if ( !m_Prepared )
   {
-    throw InvalidStateException( __FUNCTION__ " - This class has not been prepared." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - This class has not been prepared." ) );
   }
 
   return m_ClassName;
@@ -61,7 +61,7 @@ boost::intrusive_ptr<JavaString> ConstantPoolDualReference::GetName() const
 {
   if ( !m_Prepared )
   {
-    throw InvalidStateException( __FUNCTION__ " - This class has not been prepared." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - This class has not been prepared." ) );
   }
 
   return m_Name;
@@ -71,7 +71,7 @@ boost::intrusive_ptr<JavaString> ConstantPoolDualReference::GetType() const
 {
   if ( !m_Prepared )
   {
-    throw InvalidStateException( __FUNCTION__ " - This class has not been prepared." );
+    throw InvalidStateException( JVMX_FUNCTION_MESSAGE( " - This class has not been prepared." ) );
   }
 
   return m_Type;

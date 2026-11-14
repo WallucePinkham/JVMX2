@@ -45,7 +45,7 @@ T BasicStackManager::InternalPeek( const T & ) const
 {
   if ( m_UsedBytes < sizeof( T ) )
   {
-    throw StackUnderrunException( __FUNCTION__ " - Not enough bytes on the stack to peek at the next " JVMX_STRINGIZE( T ) );
+    throw StackUnderrunException( ( std::string( JVMX_FUNCTION_MESSAGE( " - Not enough bytes on the stack to peek at the next " ) ) + JVMX_STRINGIZE( T ) ).c_str() );
   }
 
   return *reinterpret_cast<T *>(m_pBuffer.get() + m_UsedBytes - sizeof( T ));

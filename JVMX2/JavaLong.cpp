@@ -95,7 +95,7 @@ JavaLong & JavaLong::operator=( const IJavaVariableType &other )
   }
   else
   {
-    throw InvalidArgumentException( __FUNCTION__ " - Expected a type that was integer compatible." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - Expected a type that was integer compatible." ) );
   }
 
   return *this;
@@ -113,8 +113,7 @@ bool JavaLong::IsIntegerCompatible() const
 
 JavaString JavaLong::ToString() const
 {
-  char dest[ 34 ] = { 0 };
-  return JavaString::FromCString( _i64toa( m_Value, dest, 10 ) );
+  return JavaString::FromCString( std::to_string( m_Value ).c_str() );
 }
 
 bool JavaLong::IsNull() const

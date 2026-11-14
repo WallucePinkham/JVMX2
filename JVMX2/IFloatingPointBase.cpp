@@ -80,7 +80,7 @@ JavaString IFloatingPointBase::ConvertDoubleToString( double value )
 
 //   if ( 0 != err )
 //   {
-//     throw InternalErrorException( __FUNCTION__ " - Could not convert double value to a string.", err );
+//     throw InternalErrorException( JVMX_FUNCTION_MESSAGE( " - Could not convert double value to a string." ), err );
 //   }
 
   return JavaString::FromCString( sstr.str().c_str() );

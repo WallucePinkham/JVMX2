@@ -21,14 +21,14 @@ StackFrameAppendFrame::StackFrameAppendFrame( uint8_t tag, uint16_t offset, cons
 {
   if ( tag < c_MinValidAppendFrameTagNo || tag > c_MaxValidAppendFrameTagNo )
   {
-    throw UnsupportedTypeException( __FUNCTION__ " - Tag was not int he valid range for StackFrameAppendFrame." );
+    throw UnsupportedTypeException( JVMX_FUNCTION_MESSAGE( " - Tag was not int he valid range for StackFrameAppendFrame." ) );
   }
 
   m_NumberOfAddionalLocals = tag - c_LastAdditionalLocalsOffset;
 
   if ( m_NumberOfAddionalLocals != verificationList.size() )
   {
-    throw InvalidArgumentException( __FUNCTION__ " - The number of additional local variables didn't match the number of items in the list of VerificationTypeInfo structures." );
+    throw InvalidArgumentException( JVMX_FUNCTION_MESSAGE( " - The number of additional local variables didn't match the number of items in the list of VerificationTypeInfo structures." ) );
   }
 }
 
@@ -53,7 +53,7 @@ std::shared_ptr<VerificationTypeInfo> StackFrameAppendFrame::GetVerificationType
   }
   catch ( std::out_of_range & )
   {
-    throw IndexOutOfBoundsException( __FUNCTION__ " - Index out of bounds for verification type info in StackFrameAppendFrame." );
+    throw IndexOutOfBoundsException( JVMX_FUNCTION_MESSAGE( " - Index out of bounds for verification type info in StackFrameAppendFrame." ) );
   }
 }
 

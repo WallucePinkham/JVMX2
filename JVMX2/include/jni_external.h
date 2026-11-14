@@ -5,7 +5,7 @@
 #if defined(_WIN32) || defined (_WIN64)
 #define JNICALL __stdcall
 #else
-
+#define JNICALL
 #endif // __cplusplus
 
 #ifdef _MSC_VER
@@ -16,7 +16,8 @@
 #define JNIEXPORT_ __declspec( dllimport )
 #endif
 #else // _MSC_VER
-#error "You need to define JNIEXPORT for your compiler"
+#define JNIEXPORT __attribute__(( visibility( "default" ) ))
+#define JNIEXPORT_ JNIEXPORT
 #endif // _MSC_VER
 
 
